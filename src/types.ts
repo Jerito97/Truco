@@ -17,9 +17,6 @@ export interface PicaPicaDuel {
   scoreB: number
 }
 
-export type PointEvent = { team: 'A' | 'B' }
-export type PicaPicaPointEvent = { duelIndex: number; team: 'A' | 'B' }
-
 export interface PicaPicaDuelResult {
   aName: string
   bName: string
@@ -46,10 +43,8 @@ export interface ActiveMatch {
   scoreB: number
   manoTeam: 'A' | 'B'
   status: MatchStatus
-  history: PointEvent[]
   inPicaPica: boolean
   picaPicaDuels: PicaPicaDuel[]
-  picaPicaHistory: PicaPicaPointEvent[]
   picaPicaTotalA: number
   picaPicaTotalB: number
   picaPicaRounds: number

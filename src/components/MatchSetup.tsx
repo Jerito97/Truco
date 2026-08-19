@@ -3,13 +3,14 @@ import type { Pairing, User } from '../types'
 import { BackIcon, ChevronRightIcon, PeopleIcon } from './icons'
 import { TeamPicker } from './TeamPicker'
 
-const TEAM_SIZE = 3
+const TEAM_SIZE_OPTIONS = [1, 2, 3] as const
 
 function TeamCard({
   name,
   onNameChange,
   placeholder,
   ids,
+  teamSize,
   nameOf,
   onOpen,
 }: {
@@ -17,6 +18,7 @@ function TeamCard({
   onNameChange: (v: string) => void
   placeholder: string
   ids: string[]
+  teamSize: number
   nameOf: (id: string) => string
   onOpen: () => void
 }) {
@@ -35,7 +37,7 @@ function TeamCard({
           <p className="text-sm truncate" style={{ color: 'var(--color-paper-100)' }}>
             {ids.length === 0 ? 'Elegir jugadores' : ids.map(nameOf).join(', ')}
           </p>
-          <p className="text-xs opacity-50">{ids.length}/{TEAM_SIZE} seleccionados</p>
+          <p className="text-xs opacity-50">{ids.length}/{teamSize} seleccionados</p>
         </div>
         <ChevronRightIcon className="w-5 h-5 shrink-0 opacity-40" style={{ color: 'var(--color-paper-100)' }} />
       </button>
@@ -60,6 +62,7 @@ export function MatchSetup({
   }) => void
   onBack: () => void
 }) {
+  const [teamSize, setTeamSize] = useState(3)
   const [teamAName, setTeamAName] = useState('Nosotros')
   const [teamBName, setTeamBName] = useState('Ellos')
   const [teamAIds, setTeamAIds] = useState<string[]>([])
@@ -68,14 +71,22 @@ export function MatchSetup({
   const [known, setKnown] = useState<Record<string, string>>({ [currentUser.id]: currentUser.name })
   const [view, setView] = useState<'hub' | 'pickA' | 'pickB'>('hub')
 
+  const changeTeamSize = (size: number) => {
+    if (size === teamSize) return
+    setTeamSize(size)
+    setTeamAIds([])
+    setTeamBIds([])
+    setPairing([])
+  }
+
   const nameOf = (id: string) => known[id] ?? '?'
-  const ready = teamAIds.length === TEAM_SIZE && teamBIds.length === TEAM_SIZE
+  const ready = teamAIds.length === teamSize && teamBIds.length === teamSize
 
   const effectivePairing = useMemo(() => {
     if (!ready) return []
-    if (pairing.length === TEAM_SIZE && pairing.every((id) => teamBIds.includes(id))) return pairing
+    if (pairing.length === teamSize && pairing.every((id) => teamBIds.includes(id))) return pairing
     return teamBIds
-  }, [ready, pairing, teamBIds])
+  }, [ready, pairing, teamBIds, teamSize])
 
   const setPairSlot = (slotIndex: number, newBId: string) => {
     const current = effectivePairing.slice()
@@ -111,6 +122,7 @@ export function MatchSetup({
     return (
       <TeamPicker
         title={teamAName || 'Nosotros'}
+        teamSize={teamSize}
         initialSelectedIds={teamAIds}
         excludeIds={teamBIds}
         knownNames={known}
@@ -128,6 +140,7 @@ export function MatchSetup({
     return (
       <TeamPicker
         title={teamBName || 'Ellos'}
+        teamSize={teamSize}
         initialSelectedIds={teamBIds}
         excludeIds={teamAIds}
         knownNames={known}
@@ -142,7 +155,7 @@ export function MatchSetup({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col min-h-[calc(100vh-160px)]">
       <div className="flex items-center justify-between">
         <button type="button" onClick={onBack} aria-label="Volver">
           <BackIcon className="w-5 h-5" style={{ color: 'var(--color-paper-100)' }} />
@@ -153,69 +166,90 @@ export function MatchSetup({
         <span className="w-5" />
       </div>
 
-      <div className="space-y-3">
-        <TeamCard
-          name={teamAName}
-          onNameChange={setTeamAName}
-          placeholder="Nosotros"
-          ids={teamAIds}
-          nameOf={nameOf}
-          onOpen={() => setView('pickA')}
-        />
-        <TeamCard
-          name={teamBName}
-          onNameChange={setTeamBName}
-          placeholder="Ellos"
-          ids={teamBIds}
-          nameOf={nameOf}
-          onOpen={() => setView('pickB')}
-        />
-      </div>
-
-      {ready && (
-        <div className="rounded-2xl p-4 sm:p-5 border" style={{ borderColor: 'rgba(203, 170, 106, 0.25)' }}>
-          <h2 className="font-poster text-xl mb-1" style={{ color: 'var(--color-paper-50)' }}>
-            Parejas para pica-pica
-          </h2>
-          <p className="text-sm opacity-70 mb-3">Quién enfrenta a quién si se juega pica-pica.</p>
-          <div className="space-y-2">
-            {teamAIds.map((aId, i) => (
-              <div key={aId} className="flex items-center gap-2">
-                <span className="flex-1 truncate font-bold" style={{ color: 'var(--color-paper-100)' }}>
-                  {nameOf(aId)}
-                </span>
-                <span className="opacity-50">vs</span>
-                <select
-                  value={effectivePairing[i]}
-                  onChange={(e) => setPairSlot(i, e.target.value)}
-                  className="flex-1 rounded-md px-2 py-1.5 border"
-                  style={{
-                    borderColor: 'rgba(203, 170, 106, 0.35)',
-                    backgroundColor: 'rgba(0,0,0,0.2)',
-                    color: 'var(--color-paper-50)',
-                  }}
-                >
-                  {teamBIds.map((bId) => (
-                    <option key={bId} value={bId} style={{ color: 'black' }}>
-                      {nameOf(bId)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ))}
-          </div>
+      <div className="flex-1 flex flex-col justify-center gap-4 min-h-0">
+        <div className="grid grid-cols-3 gap-2">
+          {TEAM_SIZE_OPTIONS.map((size) => (
+            <button
+              key={size}
+              type="button"
+              onClick={() => changeTeamSize(size)}
+              className="py-2 rounded-lg font-bold border text-sm"
+              style={{
+                borderColor: teamSize === size ? 'var(--color-ember-600)' : 'var(--color-wood-600)',
+                color: teamSize === size ? 'var(--color-ember-500)' : 'var(--color-paper-100)',
+              }}
+            >
+              {size} vs {size}
+            </button>
+          ))}
         </div>
-      )}
 
-      <button
-        type="button"
-        onClick={handleStart}
-        disabled={!canStart}
-        className="w-full py-3 rounded-xl font-poster text-xl tracking-wide border disabled:opacity-30"
-        style={{ borderColor: 'var(--color-ember-600)', color: 'var(--color-ember-500)' }}
-      >
-        Empezar partido
-      </button>
+        <div className="space-y-3">
+          <TeamCard
+            name={teamAName}
+            onNameChange={setTeamAName}
+            placeholder="Nosotros"
+            ids={teamAIds}
+            teamSize={teamSize}
+            nameOf={nameOf}
+            onOpen={() => setView('pickA')}
+          />
+          <TeamCard
+            name={teamBName}
+            onNameChange={setTeamBName}
+            placeholder="Ellos"
+            ids={teamBIds}
+            teamSize={teamSize}
+            nameOf={nameOf}
+            onOpen={() => setView('pickB')}
+          />
+        </div>
+
+        {ready && teamSize > 1 && (
+          <div className="rounded-2xl p-4 sm:p-5 border" style={{ borderColor: 'rgba(203, 170, 106, 0.25)' }}>
+            <h2 className="font-poster text-xl mb-1" style={{ color: 'var(--color-paper-50)' }}>
+              Parejas para pica-pica
+            </h2>
+            <p className="text-sm opacity-70 mb-3">Quién enfrenta a quién si se juega pica-pica.</p>
+            <div className="space-y-2">
+              {teamAIds.map((aId, i) => (
+                <div key={aId} className="flex items-center gap-2">
+                  <span className="flex-1 truncate font-bold" style={{ color: 'var(--color-paper-100)' }}>
+                    {nameOf(aId)}
+                  </span>
+                  <span className="opacity-50">vs</span>
+                  <select
+                    value={effectivePairing[i]}
+                    onChange={(e) => setPairSlot(i, e.target.value)}
+                    className="flex-1 rounded-md px-2 py-1.5 border"
+                    style={{
+                      borderColor: 'rgba(203, 170, 106, 0.35)',
+                      backgroundColor: 'rgba(0,0,0,0.2)',
+                      color: 'var(--color-paper-50)',
+                    }}
+                  >
+                    {teamBIds.map((bId) => (
+                      <option key={bId} value={bId} style={{ color: 'black' }}>
+                        {nameOf(bId)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={handleStart}
+          disabled={!canStart}
+          className="w-full py-3 rounded-xl font-poster text-xl tracking-wide border disabled:opacity-30"
+          style={{ borderColor: 'var(--color-ember-600)', color: 'var(--color-ember-500)' }}
+        >
+          Empezar partido
+        </button>
+      </div>
     </div>
   )
 }

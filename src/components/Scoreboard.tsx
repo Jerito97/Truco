@@ -18,7 +18,7 @@ function CircleButton({
       onClick={onClick}
       disabled={disabled}
       aria-label={label}
-      className="flex items-center justify-center rounded-full w-11 h-11 sm:w-14 sm:h-14 text-2xl sm:text-3xl font-bold select-none
+      className="flex items-center justify-center rounded-full w-14 h-14 sm:w-16 sm:h-16 text-3xl sm:text-4xl font-bold select-none
         active:scale-95 transition-transform active:translate-y-[1px]
         disabled:opacity-30 disabled:pointer-events-none border-2"
       style={{
@@ -50,9 +50,9 @@ export function Scoreboard({
   size?: 'normal' | 'compact'
 }) {
   return (
-    <div className="px-1 py-3 sm:px-2 sm:py-4">
+    <div className="flex-1 min-h-0 flex flex-col px-1 py-3 sm:px-2 sm:py-4">
       <div
-        className="grid grid-cols-2 gap-2 pb-3 mb-4 border-b"
+        className="grid grid-cols-2 gap-2 pb-3 mb-4 border-b shrink-0"
         style={{ borderColor: 'rgba(203, 170, 106, 0.25)' }}
       >
         <div className="flex items-center gap-1.5 min-w-0">
@@ -81,8 +81,8 @@ export function Scoreboard({
         </div>
       </div>
 
-      <div className="flex items-stretch">
-        <div className="flex flex-col justify-center gap-2 sm:gap-3 pr-2 sm:pr-3">
+      <div className="flex-1 min-h-0 flex items-stretch">
+        <div className="flex flex-col justify-center gap-3 sm:gap-4 pr-2 sm:pr-3">
           <CircleButton onClick={left.onAdd} variant="add" label={`Sumar punto a ${left.label}`} />
           <CircleButton onClick={left.onSub} variant="sub" label={`Restar punto a ${left.label}`} disabled={left.score <= 0} />
         </div>
@@ -93,7 +93,7 @@ export function Scoreboard({
           <ScoreColumn score={right.score} align="right" />
         </div>
 
-        <div className="flex flex-col justify-center gap-2 sm:gap-3 pl-2 sm:pl-3">
+        <div className="flex flex-col justify-center gap-3 sm:gap-4 pl-2 sm:pl-3">
           <CircleButton onClick={right.onAdd} variant="add" label={`Sumar punto a ${right.label}`} />
           <CircleButton onClick={right.onSub} variant="sub" label={`Restar punto a ${right.label}`} disabled={right.score <= 0} />
         </div>

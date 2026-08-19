@@ -98,10 +98,8 @@ export function useAppState() {
           scoreB: 0,
           manoTeam: 'A',
           status: 'playing',
-          history: [],
           inPicaPica: false,
           picaPicaDuels: [],
-          picaPicaHistory: [],
           picaPicaTotalA: 0,
           picaPicaTotalB: 0,
           picaPicaRounds: 0,
@@ -136,10 +134,8 @@ export function useAppState() {
         scoreB: 0,
         manoTeam: prev.manoTeam === 'A' ? 'B' : 'A',
         status: 'playing',
-        history: [],
         inPicaPica: false,
         picaPicaDuels: [],
-        picaPicaHistory: [],
         picaPicaTotalA: 0,
         picaPicaTotalB: 0,
         picaPicaRounds: 0,
@@ -159,7 +155,6 @@ export function useAppState() {
         ...m,
         scoreA: team === 'A' ? m.scoreA + 1 : m.scoreA,
         scoreB: team === 'B' ? m.scoreB + 1 : m.scoreB,
-        history: [...m.history, { team }],
       }
       return { ...s, activeMatch: finishIfNeeded(updated) }
     })
@@ -180,51 +175,6 @@ export function useAppState() {
     })
   }, [])
 
-  const undoPoint = useCallback(() => {
-    setState((s) => {
-      const m = s.activeMatch
-      if (!m) return s
-      if (m.status === 'playing') {
-        const last = m.history[m.history.length - 1]
-        if (!last) return s
-        const updated: ActiveMatch = {
-          ...m,
-          scoreA: last.team === 'A' ? m.scoreA - 1 : m.scoreA,
-          scoreB: last.team === 'B' ? m.scoreB - 1 : m.scoreB,
-          history: m.history.slice(0, -1),
-        }
-        return { ...s, activeMatch: updated }
-      }
-      if (m.status === 'finished' && !m.serverSynced) {
-        const last = m.history[m.history.length - 1]
-        if (!last) return s
-        const revertedScoreA = last.team === 'A' ? m.scoreA - 1 : m.scoreA
-        const revertedScoreB = last.team === 'B' ? m.scoreB - 1 : m.scoreB
-        const stillFinished = revertedScoreA >= TARGET_SCORE || revertedScoreB >= TARGET_SCORE
-        const updated: ActiveMatch = {
-          ...m,
-          scoreA: revertedScoreA,
-          scoreB: revertedScoreB,
-          history: m.history.slice(0, -1),
-          status: stillFinished ? 'finished' : 'playing',
-          finishedAt: stillFinished ? m.finishedAt : undefined,
-        }
-        return { ...s, activeMatch: updated }
-      }
-      return s
-    })
-  }, [])
-
-  const passMano = useCallback(() => {
-    setState((s) => {
-      if (!s.activeMatch) return s
-      return {
-        ...s,
-        activeMatch: { ...s.activeMatch, manoTeam: s.activeMatch.manoTeam === 'A' ? 'B' : 'A' },
-      }
-    })
-  }, [])
-
   const enterPicaPica = useCallback(() => {
     setState((s) => {
       if (!s.activeMatch || s.activeMatch.status !== 'playing') return s
@@ -233,12 +183,7 @@ export function useAppState() {
         activeMatch: {
           ...s.activeMatch,
           inPicaPica: true,
-          picaPicaDuels: [
-            { scoreA: 0, scoreB: 0 },
-            { scoreA: 0, scoreB: 0 },
-            { scoreA: 0, scoreB: 0 },
-          ],
-          picaPicaHistory: [],
+          picaPicaDuels: s.activeMatch.pairings.map(() => ({ scoreA: 0, scoreB: 0 })),
         },
       }
     })
@@ -253,14 +198,7 @@ export function useAppState() {
           ? { scoreA: team === 'A' ? d.scoreA + 1 : d.scoreA, scoreB: team === 'B' ? d.scoreB + 1 : d.scoreB }
           : d,
       )
-      return {
-        ...s,
-        activeMatch: {
-          ...m,
-          picaPicaDuels: duels,
-          picaPicaHistory: [...m.picaPicaHistory, { duelIndex, team }],
-        },
-      }
+      return { ...s, activeMatch: { ...m, picaPicaDuels: duels } }
     })
   }, [])
 
@@ -277,31 +215,6 @@ export function useAppState() {
           : d,
       )
       return { ...s, activeMatch: { ...m, picaPicaDuels: duels } }
-    })
-  }, [])
-
-  const undoPicaPicaPoint = useCallback(() => {
-    setState((s) => {
-      const m = s.activeMatch
-      if (!m || !m.inPicaPica) return s
-      const last = m.picaPicaHistory[m.picaPicaHistory.length - 1]
-      if (!last) return s
-      const duels = m.picaPicaDuels.map((d, i) =>
-        i === last.duelIndex
-          ? {
-              scoreA: last.team === 'A' ? d.scoreA - 1 : d.scoreA,
-              scoreB: last.team === 'B' ? d.scoreB - 1 : d.scoreB,
-            }
-          : d,
-      )
-      return {
-        ...s,
-        activeMatch: {
-          ...m,
-          picaPicaDuels: duels,
-          picaPicaHistory: m.picaPicaHistory.slice(0, -1),
-        },
-      }
     })
   }, [])
 
@@ -326,7 +239,6 @@ export function useAppState() {
         scoreB: m.scoreB + (diff < 0 ? -diff : 0),
         inPicaPica: false,
         picaPicaDuels: [],
-        picaPicaHistory: [],
         picaPicaTotalA: m.picaPicaTotalA + sumA,
         picaPicaTotalB: m.picaPicaTotalB + sumB,
         picaPicaRounds: m.picaPicaRounds + 1,
@@ -343,12 +255,9 @@ export function useAppState() {
     rematch,
     addPoint,
     subtractPoint,
-    undoPoint,
-    passMano,
     enterPicaPica,
     addPicaPicaPoint,
     subtractPicaPicaPoint,
-    undoPicaPicaPoint,
     closePicaPica,
   }
 }

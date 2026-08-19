@@ -45,12 +45,9 @@ function App() {
             onStart={state.startMatch}
             onAdd={state.addPoint}
             onSub={state.subtractPoint}
-            onUndo={state.undoPoint}
-            onPassMano={state.passMano}
             onEnterPicaPica={state.enterPicaPica}
             onPicaPicaAdd={state.addPicaPicaPoint}
             onPicaPicaSub={state.subtractPicaPicaPoint}
-            onPicaPicaUndo={state.undoPicaPicaPoint}
             onPicaPicaClose={state.closePicaPica}
             onRematch={state.rematch}
             onNewMatch={state.clearMatch}

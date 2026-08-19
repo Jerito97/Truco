@@ -8,11 +8,11 @@ export function ScoreColumn({ score, align }: { score: number; align: 'left' | '
   const remainder = score % 5
 
   return (
-    <div className={`flex flex-col gap-2 ${align === 'right' ? 'items-end' : 'items-start'}`}>
+    <div className={`flex flex-col justify-between h-full gap-1.5 ${align === 'right' ? 'items-end' : 'items-start'}`}>
       {Array.from({ length: TOTAL_GROUPS }).map((_, i) => {
         const count = i < full ? 5 : i === full ? remainder : 0
         return (
-          <div key={i} className="w-7 h-7 sm:w-8 sm:h-8">
+          <div key={i} className="w-12 h-12 sm:w-16 sm:h-16 shrink-0">
             <TallyGroup count={count} />
           </div>
         )

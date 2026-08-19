@@ -7,23 +7,17 @@ export function MatchLive({
   match,
   onAdd,
   onSub,
-  onUndo,
-  onPassMano,
   onEnterPicaPica,
   onBack,
 }: {
   match: ActiveMatch
   onAdd: (team: 'A' | 'B') => void
   onSub: (team: 'A' | 'B') => void
-  onUndo: () => void
-  onPassMano: () => void
   onEnterPicaPica: () => void
   onBack: () => void
 }) {
-  const canUndo = match.history.length > 0
-
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col min-h-[calc(100vh-160px)]">
       <div className="flex items-center justify-between">
         <button type="button" onClick={onBack} aria-label="Volver">
           <BackIcon className="w-5 h-5" style={{ color: 'var(--color-paper-100)' }} />
@@ -34,47 +28,29 @@ export function MatchLive({
         <span className="w-5" />
       </div>
 
-      <Scoreboard
-        left={{
-          label: match.teamAName,
-          score: match.scoreA,
-          onAdd: () => onAdd('A'),
-          onSub: () => onSub('A'),
-          badge: match.manoTeam === 'A' ? <ManoBadge /> : undefined,
-        }}
-        right={{
-          label: match.teamBName,
-          score: match.scoreB,
-          onAdd: () => onAdd('B'),
-          onSub: () => onSub('B'),
-          badge: match.manoTeam === 'B' ? <ManoBadge /> : undefined,
-        }}
-      />
+      <div className="flex-1 min-h-0 flex flex-col">
+        <Scoreboard
+          left={{
+            label: match.teamAName,
+            score: match.scoreA,
+            onAdd: () => onAdd('A'),
+            onSub: () => onSub('A'),
+            badge: match.manoTeam === 'A' ? <ManoBadge /> : undefined,
+          }}
+          right={{
+            label: match.teamBName,
+            score: match.scoreB,
+            onAdd: () => onAdd('B'),
+            onSub: () => onSub('B'),
+            badge: match.manoTeam === 'B' ? <ManoBadge /> : undefined,
+          }}
+        />
 
-      {match.picaPicaRounds > 0 && (
-        <div className="text-center font-num text-sm opacity-70">
-          Pica-pica: {match.picaPicaTotalA} a {match.picaPicaTotalB}
-        </div>
-      )}
-
-      <div className="grid grid-cols-2 gap-3">
-        <button
-          type="button"
-          onClick={onPassMano}
-          className="py-2.5 rounded-xl font-bold border"
-          style={{ borderColor: 'var(--color-wood-600)', color: 'var(--color-paper-100)' }}
-        >
-          Pasar mano
-        </button>
-        <button
-          type="button"
-          onClick={onUndo}
-          disabled={!canUndo}
-          className="py-2.5 rounded-xl font-bold border disabled:opacity-30"
-          style={{ borderColor: 'var(--color-wood-600)', color: 'var(--color-paper-100)' }}
-        >
-          Deshacer
-        </button>
+        {match.picaPicaRounds > 0 && (
+          <div className="text-center font-num text-sm opacity-70 shrink-0">
+            Pica-pica: {match.picaPicaTotalA} a {match.picaPicaTotalB}
+          </div>
+        )}
       </div>
 
       <button

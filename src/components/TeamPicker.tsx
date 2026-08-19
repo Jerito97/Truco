@@ -2,10 +2,9 @@ import { useEffect, useState } from 'react'
 import type { User } from '../types'
 import { BackIcon } from './icons'
 
-const TEAM_SIZE = 3
-
 export function TeamPicker({
   title,
+  teamSize,
   initialSelectedIds,
   excludeIds,
   knownNames,
@@ -13,6 +12,7 @@ export function TeamPicker({
   onBack,
 }: {
   title: string
+  teamSize: number
   initialSelectedIds: string[]
   excludeIds: string[]
   knownNames: Record<string, string>
@@ -56,7 +56,7 @@ export function TeamPicker({
   const toggle = (id: string) => {
     setSelected((prev) => {
       if (prev.includes(id)) return prev.filter((x) => x !== id)
-      if (prev.length >= TEAM_SIZE) return prev
+      if (prev.length >= teamSize) return prev
       return [...prev, id]
     })
   }
@@ -124,7 +124,7 @@ export function TeamPicker({
               <button
                 type="button"
                 onClick={() => toggle(u.id)}
-                disabled={!isSelected && selected.length >= TEAM_SIZE}
+                disabled={!isSelected && selected.length >= teamSize}
                 className="w-full flex items-center justify-between py-2.5 disabled:opacity-30"
               >
                 <span style={{ color: 'var(--color-paper-100)' }}>{u.name}</span>
@@ -147,11 +147,11 @@ export function TeamPicker({
       <button
         type="button"
         onClick={() => onConfirm(selected, known)}
-        disabled={selected.length !== TEAM_SIZE}
+        disabled={selected.length !== teamSize}
         className="w-full py-3 rounded-xl font-poster text-xl tracking-wide border disabled:opacity-30"
         style={{ borderColor: 'var(--color-ember-600)', color: 'var(--color-ember-500)' }}
       >
-        Confirmar ({selected.length}/3)
+        Confirmar ({selected.length}/{teamSize})
       </button>
     </div>
   )
