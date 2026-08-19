@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { getPool } from '../_lib/db'
-import { ensureSchema } from '../_lib/ensureSchema'
+import { getPool } from '../_lib/db.js'
+import { ensureSchema } from '../_lib/ensureSchema.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {
