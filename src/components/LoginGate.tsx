@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { CardsIcon } from './icons'
 
 export function LoginGate({
   loading,
@@ -25,17 +24,7 @@ export function LoginGate({
 
   return (
     <div className="min-h-full flex flex-col items-center justify-center px-8 text-center">
-      <div
-        className="w-24 h-24 rounded-full flex items-center justify-center border mb-6"
-        style={{ borderColor: 'var(--color-ember-600)' }}
-      >
-        <CardsIcon className="w-11 h-11" style={{ color: 'var(--color-ember-500)' }} />
-      </div>
-
-      <h1 className="font-poster text-5xl tracking-wide" style={{ color: 'var(--color-paper-50)' }}>
-        Osobuco
-      </h1>
-      <p className="text-xs tracking-[0.3em] uppercase opacity-60 mt-2 mb-8">Marcador</p>
+      <img src="/logo.webp" alt="Osobuco" className="w-48 h-48 mb-6" />
 
       {pendingName ? (
         <div className="w-full max-w-xs">

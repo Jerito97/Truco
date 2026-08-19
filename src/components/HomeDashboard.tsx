@@ -1,5 +1,5 @@
 import type { ActiveMatch } from '../types'
-import { CardsIcon, ChevronRightIcon, PeopleIcon } from './icons'
+import { ChevronRightIcon, PeopleIcon } from './icons'
 
 export function HomeDashboard({
   activeMatch,
@@ -11,16 +11,10 @@ export function HomeDashboard({
   onResumeMatch: () => void
 }) {
   return (
-    <div className="space-y-8 pt-6">
-      <div className="flex justify-center">
-        <div
-          className="w-16 h-16 rounded-full flex items-center justify-center border"
-          style={{ borderColor: 'var(--color-ember-600)' }}
-        >
-          <CardsIcon className="w-7 h-7" style={{ color: 'var(--color-ember-500)' }} />
-        </div>
-      </div>
-
+    <div className="min-h-[calc(100vh-120px)] flex flex-col items-center">
+      <div className="flex-[4]" />
+      <img src="/wordmark.webp" alt="Osobuco" className="w-64" />
+      <div className="flex-[3]" />
       <button
         type="button"
         onClick={activeMatch ? onResumeMatch : onNewMatch}
@@ -40,6 +34,7 @@ export function HomeDashboard({
         </div>
         <ChevronRightIcon className="w-5 h-5 shrink-0 opacity-50" style={{ color: 'var(--color-paper-100)' }} />
       </button>
+      <div className="flex-[3]" />
     </div>
   )
 }
