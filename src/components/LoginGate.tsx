@@ -19,7 +19,7 @@ export function LoginGate({
   return (
     <div className="min-h-full flex items-center justify-center px-4">
       <div className="paper-card rounded-2xl p-6 w-full max-w-sm text-center">
-        <h1 className="font-poster text-4xl mb-1">La Mesa</h1>
+        <h1 className="font-poster text-4xl mb-1">Osobuco</h1>
         <p className="text-sm opacity-70 mb-6">Decinos tu nombre para entrar a la mesa</p>
         <input
           value={name}

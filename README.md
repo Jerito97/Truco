@@ -1,4 +1,4 @@
-# La Mesa — Marcador de Truco
+# Osobuco — Marcador de Truco
 
 App web para llevar el marcador de partidas de truco 3 vs 3 entre un grupo de amigos, con el conteo de puntos dibujado como fósforos (como en una mesa de bar real) en vez de números o barras.
 

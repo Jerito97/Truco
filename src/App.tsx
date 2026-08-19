@@ -30,7 +30,7 @@ function App() {
     <div className="min-h-full pb-24">
       <header className="max-w-md mx-auto px-4 pt-7 pb-5 text-center">
         <h1 className="font-poster text-4xl sm:text-5xl" style={{ color: 'var(--color-paper-50)' }}>
-          La Mesa
+          Osobuco
         </h1>
         <div className="flex items-center justify-center gap-3 mt-2">
           <span className="h-px w-8" style={{ backgroundColor: 'var(--color-ember-500)', opacity: 0.6 }} />

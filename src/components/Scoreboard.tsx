@@ -22,13 +22,10 @@ function CircleButton({
         active:scale-95 transition-transform active:translate-y-[1px]
         disabled:opacity-30 disabled:pointer-events-none border-2"
       style={{
-        backgroundColor: variant === 'add' ? 'var(--color-ember-500)' : 'var(--color-wood-800)',
-        borderColor: variant === 'add' ? 'var(--color-ember-600)' : 'var(--color-wood-950)',
-        color: variant === 'add' ? 'var(--color-wood-950)' : 'var(--color-paper-50)',
-        boxShadow:
-          variant === 'add'
-            ? 'inset 0 0 0 3px rgba(255,255,255,0.25), 0 3px 0 rgba(0,0,0,0.35)'
-            : 'inset 0 0 0 3px rgba(255,255,255,0.06), 0 3px 0 rgba(0,0,0,0.35)',
+        backgroundColor: variant === 'add' ? 'var(--color-ember-500)' : 'transparent',
+        borderColor: variant === 'add' ? 'var(--color-ember-600)' : 'var(--color-wood-600)',
+        color: variant === 'add' ? 'var(--color-wood-950)' : 'var(--color-paper-100)',
+        boxShadow: variant === 'add' ? 'inset 0 0 0 3px rgba(255,255,255,0.25), 0 3px 0 rgba(0,0,0,0.35)' : 'none',
       }}
     >
       {variant === 'add' ? '+' : '−'}
@@ -54,28 +51,34 @@ export function Scoreboard({
   size?: 'normal' | 'compact'
 }) {
   return (
-    <div className="paper-card rounded-2xl px-3 py-4 sm:px-5 sm:py-6">
-      <div className="grid grid-cols-2 gap-2 mb-3 sm:mb-4">
+    <div className="px-1 py-3 sm:px-2 sm:py-4">
+      <div
+        className="grid grid-cols-2 gap-2 pb-3 mb-4 border-b"
+        style={{ borderColor: 'rgba(203, 170, 106, 0.25)' }}
+      >
         <div className="flex items-center gap-1.5 min-w-0">
           {left.badge}
-          <h3 className={`font-poster truncate ${size === 'compact' ? 'text-base' : 'text-lg sm:text-2xl'}`}>
+          <h3
+            className={`font-poster truncate ${size === 'compact' ? 'text-base' : 'text-lg sm:text-2xl'}`}
+            style={{ color: 'var(--color-paper-50)' }}
+          >
             {left.label}
           </h3>
+          <span className="font-num text-sm opacity-60" style={{ color: 'var(--color-ember-500)' }}>
+            {left.score}
+          </span>
         </div>
         <div className="flex items-center gap-1.5 justify-end min-w-0">
-          <h3 className={`font-poster truncate text-right ${size === 'compact' ? 'text-base' : 'text-lg sm:text-2xl'}`}>
+          <span className="font-num text-sm opacity-60" style={{ color: 'var(--color-ember-500)' }}>
+            {right.score}
+          </span>
+          <h3
+            className={`font-poster truncate text-right ${size === 'compact' ? 'text-base' : 'text-lg sm:text-2xl'}`}
+            style={{ color: 'var(--color-paper-50)' }}
+          >
             {right.label}
           </h3>
           {right.badge}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-2 mb-3 sm:mb-4">
-        <div className={`font-num font-bold ${size === 'compact' ? 'text-2xl' : 'text-3xl sm:text-4xl'}`} style={{ color: 'var(--color-wood-700)' }}>
-          {left.score}
-        </div>
-        <div className={`font-num font-bold text-right ${size === 'compact' ? 'text-2xl' : 'text-3xl sm:text-4xl'}`} style={{ color: 'var(--color-wood-700)' }}>
-          {right.score}
         </div>
       </div>
 
@@ -85,14 +88,10 @@ export function Scoreboard({
           <CircleButton onClick={left.onSub} variant="sub" label={`Restar punto a ${left.label}`} disabled={left.score <= 0} />
         </div>
 
-        <div className="flex-1 min-w-0 flex">
-          <div className="flex-1 min-w-0">
-            <ScoreColumn score={left.score} align="left" />
-          </div>
-          <div className="w-px mx-1 sm:mx-2 self-stretch" style={{ backgroundColor: 'var(--color-wood-700)', opacity: 0.35 }} />
-          <div className="flex-1 min-w-0">
-            <ScoreColumn score={right.score} align="right" />
-          </div>
+        <div className="flex-1 min-w-0 flex justify-center gap-6 sm:gap-10">
+          <ScoreColumn score={left.score} align="left" />
+          <div className="w-px self-stretch" style={{ backgroundColor: 'var(--color-wood-600)', opacity: 0.4 }} />
+          <ScoreColumn score={right.score} align="right" />
         </div>
 
         <div className="flex flex-col justify-center gap-2 sm:gap-3 pl-2 sm:pl-3">
