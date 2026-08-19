@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Pairing, User } from '../types'
+import { BackIcon } from './icons'
 
 const TEAM_SIZE = 3
 
 export function MatchSetup({
   currentUser,
   onStart,
+  onBack,
 }: {
   currentUser: User
   onStart: (setup: {
@@ -17,6 +19,7 @@ export function MatchSetup({
     teamBPlayerNames: string[]
     pairings: Pairing[]
   }) => void
+  onBack: () => void
 }) {
   const [teamAName, setTeamAName] = useState('Equipo A')
   const [teamBName, setTeamBName] = useState('Equipo B')
@@ -119,24 +122,39 @@ export function MatchSetup({
     })
   }
 
+  const inputStyle = {
+    borderColor: 'rgba(203, 170, 106, 0.35)',
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    color: 'var(--color-paper-50)',
+  }
+  const panelStyle = { borderColor: 'rgba(203, 170, 106, 0.25)' }
+
   return (
     <div className="space-y-4">
-      <div className="paper-card rounded-2xl p-4 sm:p-5">
-        <h2 className="font-poster text-xl mb-4">Armar partido</h2>
+      <div className="flex items-center justify-between">
+        <button type="button" onClick={onBack} aria-label="Volver">
+          <BackIcon className="w-5 h-5" style={{ color: 'var(--color-paper-100)' }} />
+        </button>
+        <h2 className="font-poster text-2xl" style={{ color: 'var(--color-paper-50)' }}>
+          Armar partido
+        </h2>
+        <span className="w-5" />
+      </div>
 
+      <div className="rounded-2xl p-4 sm:p-5 border" style={panelStyle}>
         <div className="grid grid-cols-2 gap-3 mb-4">
           <input
             value={teamAName}
             onChange={(e) => setTeamAName(e.target.value)}
-            className="rounded-lg px-3 py-2 font-poster text-lg bg-white/40 border outline-none"
-            style={{ borderColor: 'var(--color-wood-600)' }}
+            className="rounded-lg px-3 py-2 font-poster text-lg border outline-none"
+            style={inputStyle}
             placeholder="Equipo A"
           />
           <input
             value={teamBName}
             onChange={(e) => setTeamBName(e.target.value)}
-            className="rounded-lg px-3 py-2 font-poster text-lg bg-white/40 border outline-none text-right"
-            style={{ borderColor: 'var(--color-wood-600)' }}
+            className="rounded-lg px-3 py-2 font-poster text-lg border outline-none text-right"
+            style={inputStyle}
             placeholder="Equipo B"
           />
         </div>
@@ -151,8 +169,8 @@ export function MatchSetup({
                     key={id}
                     type="button"
                     onClick={() => toggleTeam(id, 'A')}
-                    className="px-2.5 py-1 rounded-full text-xs font-bold border-2"
-                    style={{ borderColor: 'var(--color-ember-600)', backgroundColor: 'var(--color-ember-500)', color: 'var(--color-wood-950)' }}
+                    className="px-2.5 py-1 rounded-full text-xs font-bold border"
+                    style={{ borderColor: 'var(--color-ember-600)', color: 'var(--color-ember-500)' }}
                   >
                     {nameOf(id)} ×
                   </button>
@@ -167,8 +185,8 @@ export function MatchSetup({
                     key={id}
                     type="button"
                     onClick={() => toggleTeam(id, 'B')}
-                    className="px-2.5 py-1 rounded-full text-xs font-bold border-2"
-                    style={{ borderColor: 'var(--color-ember-600)', backgroundColor: 'var(--color-ember-500)', color: 'var(--color-wood-950)' }}
+                    className="px-2.5 py-1 rounded-full text-xs font-bold border"
+                    style={{ borderColor: 'var(--color-ember-600)', color: 'var(--color-ember-500)' }}
                   >
                     {nameOf(id)} ×
                   </button>
@@ -182,8 +200,8 @@ export function MatchSetup({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Buscar jugador registrado..."
-          className="w-full rounded-lg px-3 py-2 border-2 bg-white/40 outline-none mb-2"
-          style={{ borderColor: 'var(--color-wood-600)' }}
+          className="w-full rounded-lg px-3 py-2 border outline-none mb-2"
+          style={inputStyle}
         />
 
         {searchError && (
@@ -198,17 +216,19 @@ export function MatchSetup({
           </p>
         )}
 
-        <ul className="divide-y" style={{ borderColor: 'var(--color-wood-300)' }}>
+        <ul className="divide-y" style={{ borderColor: 'rgba(203, 170, 106, 0.2)' }}>
           {results.map((u) => (
             <li key={u.id} className="flex items-center justify-between py-2 gap-2">
-              <span className="truncate">{u.name}</span>
+              <span className="truncate" style={{ color: 'var(--color-paper-100)' }}>
+                {u.name}
+              </span>
               <div className="flex gap-2 shrink-0">
                 <button
                   type="button"
                   onClick={() => toggleTeam(u.id, 'A')}
                   disabled={teamAIds.length >= TEAM_SIZE}
-                  className="px-3 py-1 rounded-md text-sm font-bold border-2 disabled:opacity-30"
-                  style={{ borderColor: 'var(--color-wood-700)', color: 'var(--color-wood-700)' }}
+                  className="px-3 py-1 rounded-md text-sm font-bold border disabled:opacity-30"
+                  style={{ borderColor: 'var(--color-wood-600)', color: 'var(--color-paper-100)' }}
                 >
                   {teamAName || 'A'}
                 </button>
@@ -216,8 +236,8 @@ export function MatchSetup({
                   type="button"
                   onClick={() => toggleTeam(u.id, 'B')}
                   disabled={teamBIds.length >= TEAM_SIZE}
-                  className="px-3 py-1 rounded-md text-sm font-bold border-2 disabled:opacity-30"
-                  style={{ borderColor: 'var(--color-wood-700)', color: 'var(--color-wood-700)' }}
+                  className="px-3 py-1 rounded-md text-sm font-bold border disabled:opacity-30"
+                  style={{ borderColor: 'var(--color-wood-600)', color: 'var(--color-paper-100)' }}
                 >
                   {teamBName || 'B'}
                 </button>
@@ -228,22 +248,26 @@ export function MatchSetup({
       </div>
 
       {ready && (
-        <div className="paper-card rounded-2xl p-4 sm:p-5">
-          <h2 className="font-poster text-xl mb-1">Parejas para pica-pica</h2>
+        <div className="rounded-2xl p-4 sm:p-5 border" style={panelStyle}>
+          <h2 className="font-poster text-xl mb-1" style={{ color: 'var(--color-paper-50)' }}>
+            Parejas para pica-pica
+          </h2>
           <p className="text-sm opacity-70 mb-3">Quién enfrenta a quién si se juega pica-pica.</p>
           <div className="space-y-2">
             {teamAIds.map((aId, i) => (
               <div key={aId} className="flex items-center gap-2">
-                <span className="flex-1 truncate font-bold">{nameOf(aId)}</span>
+                <span className="flex-1 truncate font-bold" style={{ color: 'var(--color-paper-100)' }}>
+                  {nameOf(aId)}
+                </span>
                 <span className="opacity-50">vs</span>
                 <select
                   value={effectivePairing[i]}
                   onChange={(e) => setPairSlot(i, e.target.value)}
-                  className="flex-1 rounded-md px-2 py-1.5 border-2 bg-white/40"
-                  style={{ borderColor: 'var(--color-wood-600)' }}
+                  className="flex-1 rounded-md px-2 py-1.5 border"
+                  style={inputStyle}
                 >
                   {teamBIds.map((bId) => (
-                    <option key={bId} value={bId}>
+                    <option key={bId} value={bId} style={{ color: 'black' }}>
                       {nameOf(bId)}
                     </option>
                   ))}
@@ -258,8 +282,8 @@ export function MatchSetup({
         type="button"
         onClick={handleStart}
         disabled={!canStart}
-        className="w-full py-3 rounded-xl font-poster text-xl tracking-wide disabled:opacity-30"
-        style={{ backgroundColor: 'var(--color-ember-500)', color: 'var(--color-wood-950)' }}
+        className="w-full py-3 rounded-xl font-poster text-xl tracking-wide border disabled:opacity-30"
+        style={{ borderColor: 'var(--color-ember-600)', color: 'var(--color-ember-500)' }}
       >
         Empezar partido
       </button>

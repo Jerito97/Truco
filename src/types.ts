@@ -1,6 +1,7 @@
 export interface User {
   id: string
   name: string
+  created_at?: string
 }
 
 export interface Pairing {
@@ -50,6 +51,8 @@ export interface FinishedMatch {
   played_at: string
   team_a_name: string
   team_b_name: string
+  team_a_player_ids: string[]
+  team_b_player_ids: string[]
   team_a_player_names: string[]
   team_b_player_names: string[]
   score_a: number

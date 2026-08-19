@@ -23,7 +23,9 @@ export function PicaPica({
   return (
     <div className="space-y-4">
       <div className="text-center">
-        <h2 className="font-poster text-2xl">Pica-pica</h2>
+        <h2 className="font-poster text-2xl" style={{ color: 'var(--color-paper-50)' }}>
+          Pica-pica
+        </h2>
         <p className="text-sm opacity-70">Tres duelos 1 contra 1, al mismo tiempo</p>
       </div>
 
@@ -59,16 +61,16 @@ export function PicaPica({
           type="button"
           onClick={onUndo}
           disabled={!canUndo}
-          className="py-2.5 rounded-xl font-bold border-2 disabled:opacity-30"
-          style={{ borderColor: 'var(--color-paper-200)', color: 'var(--color-paper-100)' }}
+          className="py-2.5 rounded-xl font-bold border disabled:opacity-30"
+          style={{ borderColor: 'var(--color-wood-600)', color: 'var(--color-paper-100)' }}
         >
           Deshacer
         </button>
         <button
           type="button"
           onClick={onClose}
-          className="py-2.5 rounded-xl font-bold"
-          style={{ backgroundColor: 'var(--color-ember-500)', color: 'var(--color-paper-50)' }}
+          className="py-2.5 rounded-xl font-bold border"
+          style={{ borderColor: 'var(--color-ember-600)', color: 'var(--color-ember-500)' }}
         >
           Cerrar ronda
         </button>

@@ -22,10 +22,9 @@ function CircleButton({
         active:scale-95 transition-transform active:translate-y-[1px]
         disabled:opacity-30 disabled:pointer-events-none border-2"
       style={{
-        backgroundColor: variant === 'add' ? 'var(--color-ember-500)' : 'transparent',
+        backgroundColor: 'transparent',
         borderColor: variant === 'add' ? 'var(--color-ember-600)' : 'var(--color-wood-600)',
-        color: variant === 'add' ? 'var(--color-wood-950)' : 'var(--color-paper-100)',
-        boxShadow: variant === 'add' ? 'inset 0 0 0 3px rgba(255,255,255,0.25), 0 3px 0 rgba(0,0,0,0.35)' : 'none',
+        color: variant === 'add' ? 'var(--color-ember-500)' : 'var(--color-paper-100)',
       }}
     >
       {variant === 'add' ? '+' : '−'}

@@ -8,7 +8,7 @@ import { ProfileTab } from './components/ProfileTab'
 import { LoginGate } from './components/LoginGate'
 
 function App() {
-  const [tab, setTab] = useState<Tab>('partido')
+  const [tab, setTab] = useState<Tab>('inicio')
   const { user, loading, error, register, logout } = useSession()
   const state = useAppState()
   const [historialRefreshKey, setHistorialRefreshKey] = useState(0)
@@ -28,24 +28,12 @@ function App() {
 
   return (
     <div className="min-h-full pb-24">
-      <header className="max-w-md mx-auto px-4 pt-7 pb-5 text-center">
-        <h1 className="font-poster text-4xl sm:text-5xl" style={{ color: 'var(--color-paper-50)' }}>
-          Osobuco
-        </h1>
-        <div className="flex items-center justify-center gap-3 mt-2">
-          <span className="h-px w-8" style={{ backgroundColor: 'var(--color-ember-500)', opacity: 0.6 }} />
-          <p className="text-[11px] sm:text-xs tracking-[0.25em] uppercase" style={{ color: 'var(--color-ember-500)' }}>
-            Marcador de truco
-          </p>
-          <span className="h-px w-8" style={{ backgroundColor: 'var(--color-ember-500)', opacity: 0.6 }} />
-        </div>
-      </header>
-
-      <main className="max-w-md mx-auto px-4">
-        {tab === 'partido' && (
+      <main className="max-w-md mx-auto px-4 pt-6">
+        {tab === 'inicio' && (
           <PartidoTab
             currentUser={user}
             activeMatch={state.activeMatch}
+            historialRefreshKey={historialRefreshKey}
             onStart={state.startMatch}
             onAdd={state.addPoint}
             onSub={state.subtractPoint}
@@ -58,6 +46,7 @@ function App() {
             onPicaPicaClose={state.closePicaPica}
             onRematch={state.rematch}
             onNewMatch={state.clearMatch}
+            onSeeHistorial={() => setTab('historial')}
           />
         )}
         {tab === 'historial' && <HistorialTab user={user} refreshKey={historialRefreshKey} />}

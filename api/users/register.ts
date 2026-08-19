@@ -17,12 +17,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return
   }
 
-  const existing = await pool.query('select id, name from users where name_lower = lower($1) limit 1', [name])
+  const existing = await pool.query('select id, name, created_at from users where name_lower = lower($1) limit 1', [name])
   if (existing.rows.length > 0) {
     res.status(200).json(existing.rows[0])
     return
   }
 
-  const created = await pool.query('insert into users (name) values ($1) returning id, name', [name])
+  const created = await pool.query('insert into users (name) values ($1) returning id, name, created_at', [name])
   res.status(201).json(created.rows[0])
 }
