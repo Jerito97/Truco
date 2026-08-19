@@ -19,6 +19,17 @@ export interface PicaPicaDuel {
 export type PointEvent = { team: 'A' | 'B' }
 export type PicaPicaPointEvent = { duelIndex: number; team: 'A' | 'B' }
 
+export interface PicaPicaDuelResult {
+  aName: string
+  bName: string
+  scoreA: number
+  scoreB: number
+}
+
+export interface PicaPicaRoundResult {
+  duels: PicaPicaDuelResult[]
+}
+
 export type MatchStatus = 'playing' | 'finished'
 
 export interface ActiveMatch {
@@ -41,6 +52,7 @@ export interface ActiveMatch {
   picaPicaTotalA: number
   picaPicaTotalB: number
   picaPicaRounds: number
+  picaPicaRoundsHistory: PicaPicaRoundResult[]
   startedAt: string
   finishedAt?: string
   serverSynced: boolean
@@ -61,6 +73,7 @@ export interface FinishedMatch {
   pica_pica_played: boolean
   pica_pica_total_a: number
   pica_pica_total_b: number
+  pica_pica_rounds: PicaPicaRoundResult[]
 }
 
 export interface AppState {

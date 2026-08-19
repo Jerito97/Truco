@@ -42,6 +42,9 @@ async function createSchema(): Promise<void> {
   `)
   await pool.query('create index if not exists matches_team_a_idx on matches using gin (team_a_player_ids)')
   await pool.query('create index if not exists matches_team_b_idx on matches using gin (team_b_player_ids)')
+  await pool.query(
+    "alter table matches add column if not exists pica_pica_rounds jsonb not null default '[]'::jsonb",
+  )
 }
 
 export function ensureSchema(): Promise<void> {

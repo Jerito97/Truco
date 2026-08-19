@@ -23,6 +23,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       picaPicaPlayed,
       picaPicaTotalA,
       picaPicaTotalB,
+      picaPicaRounds,
     } = b
 
     const valid =
@@ -55,8 +56,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         team_a_player_ids, team_b_player_ids,
         team_a_player_names, team_b_player_names,
         score_a, score_b, winner,
-        pica_pica_played, pica_pica_total_a, pica_pica_total_b
-      ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+        pica_pica_played, pica_pica_total_a, pica_pica_total_b, pica_pica_rounds
+      ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb)
       returning id, played_at`,
       [
         teamAName,
@@ -71,6 +72,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         !!picaPicaPlayed,
         picaPicaTotalA || 0,
         picaPicaTotalB || 0,
+        JSON.stringify(Array.isArray(picaPicaRounds) ? picaPicaRounds : []),
       ],
     )
     res.status(201).json(result.rows[0])

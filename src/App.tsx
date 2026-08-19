@@ -9,7 +9,7 @@ import { LoginGate } from './components/LoginGate'
 
 function App() {
   const [tab, setTab] = useState<Tab>('inicio')
-  const { user, loading, error, register, logout } = useSession()
+  const { user, loading, error, pendingName, register, confirmPending, cancelPending, logout } = useSession()
   const state = useAppState()
   const [historialRefreshKey, setHistorialRefreshKey] = useState(0)
 
@@ -23,7 +23,16 @@ function App() {
   }, [state.activeMatch?.status])
 
   if (!user) {
-    return <LoginGate loading={loading} error={error} onSubmit={register} />
+    return (
+      <LoginGate
+        loading={loading}
+        error={error}
+        pendingName={pendingName}
+        onSubmit={register}
+        onConfirm={confirmPending}
+        onCancel={cancelPending}
+      />
+    )
   }
 
   return (

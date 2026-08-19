@@ -1,5 +1,86 @@
 import type { ActiveMatch } from '../types'
-import { Scoreboard } from './Scoreboard'
+
+function MiniButton({
+  onClick,
+  variant,
+  label,
+  disabled,
+}: {
+  onClick: () => void
+  variant: 'add' | 'sub'
+  label: string
+  disabled?: boolean
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      className="flex items-center justify-center rounded-full w-8 h-8 text-lg font-bold select-none
+        active:scale-95 transition-transform disabled:opacity-30 border"
+      style={{
+        borderColor: variant === 'add' ? 'var(--color-ember-600)' : 'var(--color-wood-600)',
+        color: variant === 'add' ? 'var(--color-ember-500)' : 'var(--color-paper-100)',
+      }}
+    >
+      {variant === 'add' ? '+' : '−'}
+    </button>
+  )
+}
+
+function DuelCard({
+  aName,
+  aScore,
+  onAddA,
+  onSubA,
+  bName,
+  bScore,
+  onAddB,
+  onSubB,
+}: {
+  aName: string
+  aScore: number
+  onAddA: () => void
+  onSubA: () => void
+  bName: string
+  bScore: number
+  onAddB: () => void
+  onSubB: () => void
+}) {
+  return (
+    <div
+      className="flex items-center justify-between rounded-xl border px-2 py-3"
+      style={{ borderColor: 'rgba(203, 170, 106, 0.25)' }}
+    >
+      <div className="flex-1 text-center min-w-0">
+        <p className="text-xs mb-1.5 truncate" style={{ color: 'var(--color-paper-100)' }}>
+          {aName}
+        </p>
+        <div className="flex items-center justify-center gap-2">
+          <MiniButton onClick={onSubA} variant="sub" label={`Restar a ${aName}`} disabled={aScore <= 0} />
+          <span className="font-num text-xl font-bold w-6 text-center" style={{ color: 'var(--color-paper-50)' }}>
+            {aScore}
+          </span>
+          <MiniButton onClick={onAddA} variant="add" label={`Sumar a ${aName}`} />
+        </div>
+      </div>
+      <span className="opacity-30 text-xs px-1 shrink-0">vs</span>
+      <div className="flex-1 text-center min-w-0">
+        <p className="text-xs mb-1.5 truncate" style={{ color: 'var(--color-paper-100)' }}>
+          {bName}
+        </p>
+        <div className="flex items-center justify-center gap-2">
+          <MiniButton onClick={onSubB} variant="sub" label={`Restar a ${bName}`} disabled={bScore <= 0} />
+          <span className="font-num text-xl font-bold w-6 text-center" style={{ color: 'var(--color-paper-50)' }}>
+            {bScore}
+          </span>
+          <MiniButton onClick={onAddB} variant="add" label={`Sumar a ${bName}`} />
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export function PicaPica({
   match,
@@ -29,23 +110,34 @@ export function PicaPica({
         <p className="text-sm opacity-70">Tres duelos 1 contra 1, al mismo tiempo</p>
       </div>
 
-      <div className="space-y-3">
+      {match.picaPicaRoundsHistory.length > 0 && (
+        <div className="text-xs opacity-60 space-y-1">
+          {match.picaPicaRoundsHistory.map((round, i) => (
+            <p key={i}>
+              Ronda {i + 1}:{' '}
+              {round.duels.map((d, j) => (
+                <span key={j}>
+                  {j > 0 && ', '}
+                  {d.aName} {d.scoreA}-{d.scoreB} {d.bName}
+                </span>
+              ))}
+            </p>
+          ))}
+        </div>
+      )}
+
+      <div className="space-y-2.5">
         {match.pairings.map((pair, i) => (
-          <Scoreboard
+          <DuelCard
             key={i}
-            size="compact"
-            left={{
-              label: pair.teamAPlayerName,
-              score: match.picaPicaDuels[i]?.scoreA ?? 0,
-              onAdd: () => onAdd(i, 'A'),
-              onSub: () => onSub(i, 'A'),
-            }}
-            right={{
-              label: pair.teamBPlayerName,
-              score: match.picaPicaDuels[i]?.scoreB ?? 0,
-              onAdd: () => onAdd(i, 'B'),
-              onSub: () => onSub(i, 'B'),
-            }}
+            aName={pair.teamAPlayerName}
+            aScore={match.picaPicaDuels[i]?.scoreA ?? 0}
+            onAddA={() => onAdd(i, 'A')}
+            onSubA={() => onSub(i, 'A')}
+            bName={pair.teamBPlayerName}
+            bScore={match.picaPicaDuels[i]?.scoreB ?? 0}
+            onAddB={() => onAdd(i, 'B')}
+            onSubB={() => onSub(i, 'B')}
           />
         ))}
       </div>

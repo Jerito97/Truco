@@ -47,6 +47,48 @@ export function MatchSummary({
         )}
       </div>
 
+      {match.picaPicaRoundsHistory.length > 0 && (
+        <div className="rounded-2xl p-4 border" style={{ borderColor: 'rgba(203, 170, 106, 0.25)' }}>
+          <h3 className="font-poster text-lg mb-2" style={{ color: 'var(--color-ember-500)' }}>
+            Mano a mano
+          </h3>
+          <div className="space-y-2.5">
+            {match.picaPicaRoundsHistory.map((round, i) => (
+              <div key={i}>
+                {match.picaPicaRoundsHistory.length > 1 && (
+                  <p className="text-xs opacity-50 mb-1">Ronda {i + 1}</p>
+                )}
+                <div className="space-y-1">
+                  {round.duels.map((d, j) => {
+                    const aWon = d.scoreA > d.scoreB
+                    const bWon = d.scoreB > d.scoreA
+                    return (
+                      <div key={j} className="flex items-center justify-between text-sm">
+                        <span
+                          className="truncate"
+                          style={{ color: aWon ? 'var(--color-ember-500)' : 'var(--color-paper-100)', fontWeight: aWon ? 700 : 400 }}
+                        >
+                          {d.aName}
+                        </span>
+                        <span className="font-num shrink-0 px-2 opacity-70">
+                          {d.scoreA} - {d.scoreB}
+                        </span>
+                        <span
+                          className="truncate text-right"
+                          style={{ color: bWon ? 'var(--color-ember-500)' : 'var(--color-paper-100)', fontWeight: bWon ? 700 : 400 }}
+                        >
+                          {d.bName}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 gap-3">
         <button
           type="button"

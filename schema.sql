@@ -26,6 +26,7 @@ create table if not exists matches (
   pica_pica_played boolean not null default false,
   pica_pica_total_a int not null default 0,
   pica_pica_total_b int not null default 0,
+  pica_pica_rounds jsonb not null default '[]'::jsonb,
   played_at timestamptz not null default now()
 );
 

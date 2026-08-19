@@ -57,6 +57,7 @@ export function useAppState() {
         picaPicaPlayed: m.picaPicaRounds > 0,
         picaPicaTotalA: m.picaPicaTotalA,
         picaPicaTotalB: m.picaPicaTotalB,
+        picaPicaRounds: m.picaPicaRoundsHistory,
       }),
     })
       .then((res) => {
@@ -104,6 +105,7 @@ export function useAppState() {
           picaPicaTotalA: 0,
           picaPicaTotalB: 0,
           picaPicaRounds: 0,
+          picaPicaRoundsHistory: [],
           startedAt: new Date().toISOString(),
           serverSynced: false,
         }
@@ -141,6 +143,7 @@ export function useAppState() {
         picaPicaTotalA: 0,
         picaPicaTotalB: 0,
         picaPicaRounds: 0,
+        picaPicaRoundsHistory: [],
         startedAt: new Date().toISOString(),
         serverSynced: false,
       }
@@ -309,6 +312,14 @@ export function useAppState() {
       const sumA = m.picaPicaDuels.reduce((acc, d) => acc + d.scoreA, 0)
       const sumB = m.picaPicaDuels.reduce((acc, d) => acc + d.scoreB, 0)
       const diff = sumA - sumB
+      const roundResult = {
+        duels: m.pairings.map((p, i) => ({
+          aName: p.teamAPlayerName,
+          bName: p.teamBPlayerName,
+          scoreA: m.picaPicaDuels[i]?.scoreA ?? 0,
+          scoreB: m.picaPicaDuels[i]?.scoreB ?? 0,
+        })),
+      }
       const updated: ActiveMatch = {
         ...m,
         scoreA: m.scoreA + (diff > 0 ? diff : 0),
@@ -319,6 +330,7 @@ export function useAppState() {
         picaPicaTotalA: m.picaPicaTotalA + sumA,
         picaPicaTotalB: m.picaPicaTotalB + sumB,
         picaPicaRounds: m.picaPicaRounds + 1,
+        picaPicaRoundsHistory: [...m.picaPicaRoundsHistory, roundResult],
       }
       return { ...s, activeMatch: finishIfNeeded(updated) }
     })

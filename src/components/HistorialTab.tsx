@@ -30,7 +30,7 @@ export function HistorialTab({ user, refreshKey }: { user: User; refreshKey: num
       {!error && matches !== null && matches.length > 0 && (
         <div className="divide-y" style={{ borderColor: 'rgba(203, 170, 106, 0.2)' }}>
           {matches.map((m) => (
-            <MatchRow key={m.id} match={m} />
+            <MatchRow key={m.id} match={m} expandable />
           ))}
         </div>
       )}
