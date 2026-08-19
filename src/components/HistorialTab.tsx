@@ -7,7 +7,7 @@ export function HistorialTab({ user, refreshKey }: { user: User; refreshKey: num
 
   return (
     <div className="space-y-4">
-      <h2 className="font-poster text-2xl" style={{ color: 'var(--color-paper-50)' }}>
+      <h2 className="font-poster text-2xl text-center" style={{ color: 'var(--color-paper-50)' }}>
         Historial
       </h2>
 

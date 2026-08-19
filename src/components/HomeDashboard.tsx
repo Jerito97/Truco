@@ -1,36 +1,24 @@
-import type { ActiveMatch, User } from '../types'
-import { useMatches } from '../state/useMatches'
-import { MatchRow } from './MatchRow'
-import { CardsIcon, ChevronRightIcon, MenuIcon, PeopleIcon } from './icons'
+import type { ActiveMatch } from '../types'
+import { CardsIcon, ChevronRightIcon, PeopleIcon } from './icons'
 
 export function HomeDashboard({
-  user,
   activeMatch,
-  refreshKey,
   onNewMatch,
   onResumeMatch,
-  onSeeHistorial,
 }: {
-  user: User
   activeMatch: ActiveMatch | null
-  refreshKey: number
   onNewMatch: () => void
   onResumeMatch: () => void
-  onSeeHistorial: () => void
 }) {
-  const { matches } = useMatches(user.id, refreshKey)
-  const recent = (matches ?? []).slice(0, 3)
-
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <MenuIcon className="w-5 h-5 opacity-50" style={{ color: 'var(--color-paper-100)' }} />
-        <h2 className="font-poster text-2xl" style={{ color: 'var(--color-paper-50)' }}>
-          Inicio
-        </h2>
-        <button type="button" onClick={onNewMatch} aria-label="Nuevo partido">
-          <CardsIcon className="w-5 h-5" style={{ color: 'var(--color-ember-500)' }} />
-        </button>
+    <div className="space-y-8 pt-6">
+      <div className="flex justify-center">
+        <div
+          className="w-16 h-16 rounded-full flex items-center justify-center border"
+          style={{ borderColor: 'var(--color-ember-600)' }}
+        >
+          <CardsIcon className="w-7 h-7" style={{ color: 'var(--color-ember-500)' }} />
+        </div>
       </div>
 
       <button
@@ -52,23 +40,6 @@ export function HomeDashboard({
         </div>
         <ChevronRightIcon className="w-5 h-5 shrink-0 opacity-50" style={{ color: 'var(--color-paper-100)' }} />
       </button>
-
-      <div>
-        <h3 className="font-poster text-lg mb-2" style={{ color: 'var(--color-ember-500)' }}>
-          Partidos recientes
-        </h3>
-        {recent.length === 0 ? (
-          <p className="text-sm opacity-60">Todavía no jugaste ningún partido.</p>
-        ) : (
-          <div className="divide-y" style={{ borderColor: 'rgba(203, 170, 106, 0.2)' }}>
-            {recent.map((m) => (
-              <button key={m.id} type="button" onClick={onSeeHistorial} className="w-full text-left">
-                <MatchRow match={m} />
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
     </div>
   )
 }

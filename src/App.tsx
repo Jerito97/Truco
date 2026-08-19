@@ -42,7 +42,6 @@ function App() {
           <PartidoTab
             currentUser={user}
             activeMatch={state.activeMatch}
-            historialRefreshKey={historialRefreshKey}
             onStart={state.startMatch}
             onAdd={state.addPoint}
             onSub={state.subtractPoint}
@@ -55,7 +54,6 @@ function App() {
             onPicaPicaClose={state.closePicaPica}
             onRematch={state.rematch}
             onNewMatch={state.clearMatch}
-            onSeeHistorial={() => setTab('historial')}
           />
         )}
         {tab === 'historial' && <HistorialTab user={user} refreshKey={historialRefreshKey} />}

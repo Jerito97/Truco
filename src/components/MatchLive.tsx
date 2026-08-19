@@ -1,7 +1,7 @@
 import type { ActiveMatch } from '../types'
 import { Scoreboard } from './Scoreboard'
 import { ManoBadge } from './ManoBadge'
-import { BackIcon, MenuIcon } from './icons'
+import { BackIcon } from './icons'
 
 export function MatchLive({
   match,
@@ -31,7 +31,7 @@ export function MatchLive({
         <h2 className="font-poster text-2xl" style={{ color: 'var(--color-paper-50)' }}>
           Anotador
         </h2>
-        <MenuIcon className="w-5 h-5 opacity-50" style={{ color: 'var(--color-paper-100)' }} />
+        <span className="w-5" />
       </div>
 
       <Scoreboard

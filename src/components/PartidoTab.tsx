@@ -11,7 +11,6 @@ type View = 'dashboard' | 'setup' | 'anotador'
 export function PartidoTab({
   currentUser,
   activeMatch,
-  historialRefreshKey,
   onStart,
   onAdd,
   onSub,
@@ -24,11 +23,9 @@ export function PartidoTab({
   onPicaPicaClose,
   onRematch,
   onNewMatch,
-  onSeeHistorial,
 }: {
   currentUser: User
   activeMatch: ActiveMatch | null
-  historialRefreshKey: number
   onStart: (setup: {
     teamAName: string
     teamBName: string
@@ -49,7 +46,6 @@ export function PartidoTab({
   onPicaPicaClose: () => void
   onRematch: () => void
   onNewMatch: () => void
-  onSeeHistorial: () => void
 }) {
   const [view, setView] = useState<View>(activeMatch && activeMatch.status === 'playing' ? 'anotador' : 'dashboard')
 
@@ -58,14 +54,7 @@ export function PartidoTab({
       return <MatchSetup currentUser={currentUser} onStart={onStart} onBack={() => setView('dashboard')} />
     }
     return (
-      <HomeDashboard
-        user={currentUser}
-        activeMatch={null}
-        refreshKey={historialRefreshKey}
-        onNewMatch={() => setView('setup')}
-        onResumeMatch={() => setView('setup')}
-        onSeeHistorial={onSeeHistorial}
-      />
+      <HomeDashboard activeMatch={null} onNewMatch={() => setView('setup')} onResumeMatch={() => setView('setup')} />
     )
   }
 
@@ -100,12 +89,9 @@ export function PartidoTab({
   if (view === 'dashboard') {
     return (
       <HomeDashboard
-        user={currentUser}
         activeMatch={activeMatch}
-        refreshKey={historialRefreshKey}
         onNewMatch={() => setView('anotador')}
         onResumeMatch={() => setView('anotador')}
-        onSeeHistorial={onSeeHistorial}
       />
     )
   }

@@ -2,18 +2,9 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 import type { User } from '../types'
 import { useMatches } from '../state/useMatches'
-import {
-  BackIcon,
-  ChartIcon,
-  ChevronRightIcon,
-  GearIcon,
-  LogoutIcon,
-  PencilIcon,
-  PersonIcon,
-  ShieldIcon,
-  TrophyIcon,
-} from './icons'
+import { BackIcon, ChartIcon, ChevronRightIcon, GearIcon, LogoutIcon, PersonIcon, ShieldIcon, TrophyIcon } from './icons'
 import { AdminScreen } from './AdminScreen'
+import { StatsScreen } from './StatsScreen'
 
 function StatBlock({ value, label }: { value: string; label: string }) {
   return (
@@ -112,7 +103,7 @@ export function ProfileTab({
   onLogout: () => void
   onUnlockAdmin: (code: string) => Promise<string | null>
 }) {
-  const [view, setView] = useState<'profile' | 'unlock' | 'admin'>('profile')
+  const [view, setView] = useState<'profile' | 'unlock' | 'admin' | 'stats'>('profile')
   const { matches } = useMatches(user.id, 0)
   const played = matches?.length ?? 0
   const won =
@@ -141,15 +132,15 @@ export function ProfileTab({
     return <AdminScreen currentUser={user} onBack={() => setView('profile')} />
   }
 
+  if (view === 'stats') {
+    return <StatsScreen user={user} matches={matches} onBack={() => setView('profile')} />
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <BackIcon className="w-5 h-5 opacity-0" aria-hidden />
-        <h2 className="font-poster text-2xl" style={{ color: 'var(--color-paper-50)' }}>
-          Mi perfil
-        </h2>
-        <PencilIcon className="w-5 h-5 opacity-50" style={{ color: 'var(--color-paper-100)' }} />
-      </div>
+      <h2 className="font-poster text-2xl text-center" style={{ color: 'var(--color-paper-50)' }}>
+        Mi perfil
+      </h2>
 
       <div className="text-center">
         <div
@@ -173,7 +164,7 @@ export function ProfileTab({
       </div>
 
       <div className="divide-y" style={{ borderColor: 'rgba(203, 170, 106, 0.15)' }}>
-        <MenuRow icon={<ChartIcon className="w-5 h-5" />} label="Estadísticas" />
+        <MenuRow icon={<ChartIcon className="w-5 h-5" />} label="Estadísticas" onClick={() => setView('stats')} />
         <MenuRow icon={<TrophyIcon className="w-5 h-5" />} label="Logros" />
         <MenuRow icon={<GearIcon className="w-5 h-5" />} label="Configuración" />
         <MenuRow
