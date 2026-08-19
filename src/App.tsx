@@ -9,7 +9,7 @@ import { LoginGate } from './components/LoginGate'
 
 function App() {
   const [tab, setTab] = useState<Tab>('inicio')
-  const { user, loading, error, pendingName, register, confirmPending, cancelPending, logout } = useSession()
+  const { user, loading, error, pendingName, register, confirmPending, cancelPending, logout, unlockAdmin } = useSession()
   const state = useAppState()
   const [historialRefreshKey, setHistorialRefreshKey] = useState(0)
 
@@ -59,7 +59,7 @@ function App() {
           />
         )}
         {tab === 'historial' && <HistorialTab user={user} refreshKey={historialRefreshKey} />}
-        {tab === 'perfil' && <ProfileTab user={user} onLogout={logout} />}
+        {tab === 'perfil' && <ProfileTab user={user} onLogout={logout} onUnlockAdmin={unlockAdmin} />}
       </main>
 
       <TabBar active={tab} onChange={setTab} />

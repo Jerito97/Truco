@@ -7,7 +7,8 @@ create table if not exists users (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   name_lower text generated always as (lower(name)) stored,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  is_admin boolean not null default false
 );
 
 create unique index if not exists users_name_lower_idx on users (name_lower);

@@ -18,7 +18,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return
   }
 
-  const existing = await pool.query('select id, name, created_at from users where name_lower = lower($1) limit 1', [name])
+  const existing = await pool.query(
+    'select id, name, created_at, is_admin from users where name_lower = lower($1) limit 1',
+    [name],
+  )
   if (existing.rows.length > 0) {
     if (!confirm) {
       res.status(200).json({ exists: true, name: existing.rows[0].name })
@@ -28,6 +31,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return
   }
 
-  const created = await pool.query('insert into users (name) values ($1) returning id, name, created_at', [name])
+  const created = await pool.query(
+    'insert into users (name) values ($1) returning id, name, created_at, is_admin',
+    [name],
+  )
   res.status(201).json({ exists: false, ...created.rows[0] })
 }

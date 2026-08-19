@@ -21,6 +21,7 @@ async function createSchema(): Promise<void> {
     )
   `)
   await pool.query('create unique index if not exists users_name_lower_idx on users (name_lower)')
+  await pool.query('alter table users add column if not exists is_admin boolean not null default false')
 
   await pool.query(`
     create table if not exists matches (

@@ -39,6 +39,17 @@ Las tablas se crean solas la primera vez que la app hace una consulta — no hac
 
 Con eso alcanza — al primer login o búsqueda de jugador, la app crea las tablas sola.
 
+## Modo administrador
+
+Desde Perfil → Modo administrador se puede renombrar o borrar cualquier usuario registrado (útil para limpiar cuentas de prueba). Para habilitarlo:
+
+1. En Vercel → el proyecto → **Settings** → **Environment Variables**, agregá otra variable:
+   - Name: `ADMIN_CODE`
+   - Value: un código que elijas vos (una palabra o PIN, lo que quieras — es la "contraseña" del modo administrador).
+   - Aplicala a **Production**.
+2. Redeploy.
+3. En la app, entrá a Perfil → Modo administrador, y poné ese código una vez. A partir de ahí tu cuenta queda marcada como administrador para siempre (no hace falta volver a ingresarlo).
+
 ## Desarrollo
 
 ```bash

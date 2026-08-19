@@ -137,3 +137,12 @@ export function LogoutIcon(props: SVGProps<SVGSVGElement>) {
     </Icon>
   )
 }
+
+export function ShieldIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M12 3.5 5 6v5.5c0 4.2 2.9 7.4 7 9 4.1-1.6 7-4.8 7-9V6l-7-2.5Z" />
+      <path d="M9.3 12.2 11.3 14l3.6-4" />
+    </Icon>
+  )
+}
