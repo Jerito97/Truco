@@ -18,6 +18,7 @@ export function PartidoTab({
   onPicaPicaAdd,
   onPicaPicaSub,
   onPicaPicaClose,
+  onPicaPicaCancel,
   onRematch,
   onNewMatch,
 }: {
@@ -38,6 +39,7 @@ export function PartidoTab({
   onPicaPicaAdd: (duelIndex: number, team: 'A' | 'B') => void
   onPicaPicaSub: (duelIndex: number, team: 'A' | 'B') => void
   onPicaPicaClose: () => void
+  onPicaPicaCancel: () => void
   onRematch: () => void
   onNewMatch: () => void
 }) {
@@ -59,6 +61,7 @@ export function PartidoTab({
         onAdd={onPicaPicaAdd}
         onSub={onPicaPicaSub}
         onClose={onPicaPicaClose}
+        onBack={onPicaPicaCancel}
       />
     )
   }
@@ -85,6 +88,10 @@ export function PartidoTab({
         activeMatch={activeMatch}
         onNewMatch={() => setView('anotador')}
         onResumeMatch={() => setView('anotador')}
+        onDiscardAndNew={() => {
+          onNewMatch()
+          setView('setup')
+        }}
       />
     )
   }

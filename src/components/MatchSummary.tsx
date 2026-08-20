@@ -1,5 +1,6 @@
 import type { ActiveMatch } from '../types'
 import { TrophyIcon } from './icons'
+import { aggregatePicaPicaRounds } from '../lib/picaPica'
 
 export function MatchSummary({
   match,
@@ -11,6 +12,7 @@ export function MatchSummary({
   onNewMatch: () => void
 }) {
   const winnerName = match.scoreA >= match.scoreB ? match.teamAName : match.teamBName
+  const picaPicaTotals = aggregatePicaPicaRounds(match.picaPicaRoundsHistory)
 
   return (
     <div className="space-y-5">
@@ -47,44 +49,35 @@ export function MatchSummary({
         )}
       </div>
 
-      {match.picaPicaRoundsHistory.length > 0 && (
+      {picaPicaTotals.length > 0 && (
         <div className="rounded-2xl p-4 border" style={{ borderColor: 'rgba(203, 170, 106, 0.25)' }}>
           <h3 className="font-poster text-lg mb-2 text-center" style={{ color: 'var(--color-ember-500)' }}>
             Mano a mano
           </h3>
-          <div className="space-y-2.5">
-            {match.picaPicaRoundsHistory.map((round, i) => (
-              <div key={i}>
-                {match.picaPicaRoundsHistory.length > 1 && (
-                  <p className="text-xs opacity-50 mb-1 text-center">Ronda {i + 1}</p>
-                )}
-                <div className="space-y-1">
-                  {round.duels.map((d, j) => {
-                    const aWon = d.scoreA > d.scoreB
-                    const bWon = d.scoreB > d.scoreA
-                    return (
-                      <div key={j} className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 text-sm">
-                        <span
-                          className="truncate text-right"
-                          style={{ color: aWon ? 'var(--color-ember-500)' : 'var(--color-paper-100)', fontWeight: aWon ? 700 : 400 }}
-                        >
-                          {d.aName}
-                        </span>
-                        <span className="font-num shrink-0 opacity-70">
-                          {d.scoreA} - {d.scoreB}
-                        </span>
-                        <span
-                          className="truncate text-left"
-                          style={{ color: bWon ? 'var(--color-ember-500)' : 'var(--color-paper-100)', fontWeight: bWon ? 700 : 400 }}
-                        >
-                          {d.bName}
-                        </span>
-                      </div>
-                    )
-                  })}
+          <div className="space-y-1">
+            {picaPicaTotals.map((d, j) => {
+              const aWon = d.scoreA > d.scoreB
+              const bWon = d.scoreB > d.scoreA
+              return (
+                <div key={j} className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 text-sm">
+                  <span
+                    className="truncate text-right"
+                    style={{ color: aWon ? 'var(--color-ember-500)' : 'var(--color-paper-100)', fontWeight: aWon ? 700 : 400 }}
+                  >
+                    {d.aName}
+                  </span>
+                  <span className="font-num shrink-0 opacity-70">
+                    {d.scoreA} - {d.scoreB}
+                  </span>
+                  <span
+                    className="truncate text-left"
+                    style={{ color: bWon ? 'var(--color-ember-500)' : 'var(--color-paper-100)', fontWeight: bWon ? 700 : 400 }}
+                  >
+                    {d.bName}
+                  </span>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       )}

@@ -45,22 +45,18 @@ export function MatchLive({
             badge: match.manoTeam === 'B' ? <ManoBadge /> : undefined,
           }}
         />
-
-        {match.picaPicaRounds > 0 && (
-          <div className="text-center font-num text-sm opacity-70 shrink-0">
-            Pica-pica: {match.picaPicaTotalA} a {match.picaPicaTotalB}
-          </div>
-        )}
       </div>
 
-      <button
-        type="button"
-        onClick={onEnterPicaPica}
-        className="w-full py-3 rounded-xl font-poster text-xl tracking-wide border"
-        style={{ borderColor: 'var(--color-ember-600)', color: 'var(--color-ember-500)' }}
-      >
-        Pica-pica
-      </button>
+      {match.pairings.length === 3 && (
+        <button
+          type="button"
+          onClick={onEnterPicaPica}
+          className="w-full py-3 rounded-xl font-poster text-xl tracking-wide border"
+          style={{ borderColor: 'var(--color-ember-600)', color: 'var(--color-ember-500)' }}
+        >
+          Pica-pica
+        </button>
+      )}
     </div>
   )
 }

@@ -189,6 +189,13 @@ export function useAppState() {
     })
   }, [])
 
+  const cancelPicaPica = useCallback(() => {
+    setState((s) => {
+      if (!s.activeMatch || !s.activeMatch.inPicaPica) return s
+      return { ...s, activeMatch: { ...s.activeMatch, inPicaPica: false, picaPicaDuels: [] } }
+    })
+  }, [])
+
   const addPicaPicaPoint = useCallback((duelIndex: number, team: 'A' | 'B') => {
     setState((s) => {
       if (!s.activeMatch || !s.activeMatch.inPicaPica) return s
@@ -256,6 +263,7 @@ export function useAppState() {
     addPoint,
     subtractPoint,
     enterPicaPica,
+    cancelPicaPica,
     addPicaPicaPoint,
     subtractPicaPicaPoint,
     closePicaPica,

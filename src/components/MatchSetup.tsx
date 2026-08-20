@@ -205,7 +205,7 @@ export function MatchSetup({
           />
         </div>
 
-        {ready && teamSize > 1 && (
+        {ready && teamSize === 3 && (
           <div className="rounded-2xl p-4 sm:p-5 border" style={{ borderColor: 'rgba(203, 170, 106, 0.25)' }}>
             <h2 className="font-poster text-xl mb-1" style={{ color: 'var(--color-paper-50)' }}>
               Parejas para pica-pica

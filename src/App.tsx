@@ -49,6 +49,7 @@ function App() {
             onPicaPicaAdd={state.addPicaPicaPoint}
             onPicaPicaSub={state.subtractPicaPicaPoint}
             onPicaPicaClose={state.closePicaPica}
+            onPicaPicaCancel={state.cancelPicaPica}
             onRematch={state.rematch}
             onNewMatch={state.clearMatch}
           />

@@ -1,4 +1,5 @@
 import type { ActiveMatch } from '../types'
+import { BackIcon } from './icons'
 
 function MiniButton({
   onClick,
@@ -93,71 +94,66 @@ export function PicaPica({
   onAdd,
   onSub,
   onClose,
+  onBack,
 }: {
   match: ActiveMatch
   onAdd: (duelIndex: number, team: 'A' | 'B') => void
   onSub: (duelIndex: number, team: 'A' | 'B') => void
   onClose: () => void
+  onBack: () => void
 }) {
   const sumA = match.picaPicaDuels.reduce((acc, d) => acc + d.scoreA, 0)
   const sumB = match.picaPicaDuels.reduce((acc, d) => acc + d.scoreB, 0)
   const diff = sumA - sumB
 
   return (
-    <div className="flex flex-col justify-center min-h-[calc(100vh-160px)] space-y-4">
-      <div className="text-center">
+    <div className="flex flex-col min-h-[calc(100vh-160px)]">
+      <div className="flex items-center justify-between">
+        <button type="button" onClick={onBack} aria-label="Volver">
+          <BackIcon className="w-5 h-5" style={{ color: 'var(--color-paper-100)' }} />
+        </button>
         <h2 className="font-poster text-2xl" style={{ color: 'var(--color-paper-50)' }}>
           Pica-pica
         </h2>
-        <p className="text-sm opacity-70">{DUEL_COUNT_LABEL[match.pairings.length] ?? 'Duelos 1 contra 1, al mismo tiempo'}</p>
+        <span className="w-5" />
       </div>
 
-      {match.picaPicaRoundsHistory.length > 0 && (
-        <div className="text-xs opacity-60 space-y-1">
-          {match.picaPicaRoundsHistory.map((round, i) => (
-            <p key={i}>
-              Ronda {i + 1}:{' '}
-              {round.duels.map((d, j) => (
-                <span key={j}>
-                  {j > 0 && ', '}
-                  {d.aName} {d.scoreA}-{d.scoreB} {d.bName}
-                </span>
-              ))}
-            </p>
+      <div className="flex-1 flex flex-col justify-center min-h-0 space-y-4">
+        <p className="text-sm opacity-70 text-center">
+          {DUEL_COUNT_LABEL[match.pairings.length] ?? 'Duelos 1 contra 1, al mismo tiempo'}
+        </p>
+
+        <div className="space-y-2.5">
+          {match.pairings.map((pair, i) => (
+            <DuelCard
+              key={i}
+              aName={pair.teamAPlayerName}
+              aScore={match.picaPicaDuels[i]?.scoreA ?? 0}
+              onAddA={() => onAdd(i, 'A')}
+              onSubA={() => onSub(i, 'A')}
+              bName={pair.teamBPlayerName}
+              bScore={match.picaPicaDuels[i]?.scoreB ?? 0}
+              onAddB={() => onAdd(i, 'B')}
+              onSubB={() => onSub(i, 'B')}
+            />
           ))}
         </div>
-      )}
 
-      <div className="space-y-2.5">
-        {match.pairings.map((pair, i) => (
-          <DuelCard
-            key={i}
-            aName={pair.teamAPlayerName}
-            aScore={match.picaPicaDuels[i]?.scoreA ?? 0}
-            onAddA={() => onAdd(i, 'A')}
-            onSubA={() => onSub(i, 'A')}
-            bName={pair.teamBPlayerName}
-            bScore={match.picaPicaDuels[i]?.scoreB ?? 0}
-            onAddB={() => onAdd(i, 'B')}
-            onSubB={() => onSub(i, 'B')}
-          />
-        ))}
+        <div className="text-center font-num text-sm opacity-80">
+          {diff === 0 && 'Diferencia: 0 (no suma a nadie todavía)'}
+          {diff > 0 && `Diferencia: +${diff} para ${match.teamAName}`}
+          {diff < 0 && `Diferencia: +${-diff} para ${match.teamBName}`}
+        </div>
+
+        <button
+          type="button"
+          onClick={onClose}
+          className="w-full py-2.5 rounded-xl font-bold border"
+          style={{ borderColor: 'var(--color-ember-600)', color: 'var(--color-ember-500)' }}
+        >
+          Cerrar ronda
+        </button>
       </div>
-
-      <div className="text-center font-num text-sm opacity-80">
-        {diff === 0 && 'Diferencia: 0 (no suma a nadie todavía)'}
-        {diff > 0 && `Diferencia: +${diff} para ${match.teamAName}`}
-        {diff < 0 && `Diferencia: +${-diff} para ${match.teamBName}`}
-      </div>
-
-      <button
-        type="button"
-        onClick={onClose}
-        className="w-full py-2.5 rounded-xl font-bold border"
-        style={{ borderColor: 'var(--color-ember-600)', color: 'var(--color-ember-500)' }}
-      >
-        Cerrar ronda
-      </button>
     </div>
   )
 }
