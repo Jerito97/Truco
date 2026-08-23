@@ -87,10 +87,24 @@ export function Scoreboard({
           <CircleButton onClick={left.onSub} variant="sub" label={`Restar punto a ${left.label}`} disabled={left.score <= 0} />
         </div>
 
-        <div className="flex-1 min-w-0 flex justify-center gap-6 sm:gap-10">
-          <ScoreColumn score={left.score} align="left" />
-          <div className="w-px self-stretch" style={{ backgroundColor: 'var(--color-wood-600)', opacity: 0.4 }} />
-          <ScoreColumn score={right.score} align="right" />
+        <div className="flex-1 min-w-0 flex items-stretch">
+          <button
+            type="button"
+            onClick={left.onAdd}
+            aria-label={`Sumar punto a ${left.label}`}
+            className="flex-1 min-w-0 flex justify-end pr-3 sm:pr-5 active:scale-[0.98] transition-transform"
+            style={{ borderRight: '1px solid rgba(94, 61, 21, 0.4)' }}
+          >
+            <ScoreColumn score={left.score} align="left" />
+          </button>
+          <button
+            type="button"
+            onClick={right.onAdd}
+            aria-label={`Sumar punto a ${right.label}`}
+            className="flex-1 min-w-0 flex justify-start pl-3 sm:pl-5 active:scale-[0.98] transition-transform"
+          >
+            <ScoreColumn score={right.score} align="right" />
+          </button>
         </div>
 
         <div className="flex flex-col justify-center gap-3 sm:gap-4 pl-2 sm:pl-3">
