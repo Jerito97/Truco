@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 import type { User } from '../types'
 import { useMatches } from '../state/useMatches'
-import { BackIcon, ChartIcon, ChevronRightIcon, GearIcon, LogoutIcon, PersonIcon, ShieldIcon, TrophyIcon } from './icons'
+import { BackIcon, ChartIcon, ChevronRightIcon, LogoutIcon, PencilIcon, PersonIcon, ShieldIcon, TrophyIcon } from './icons'
 import { AdminScreen } from './AdminScreen'
 import { StatsScreen } from './StatsScreen'
 import { RankingScreen } from './RankingScreen'
@@ -99,12 +99,18 @@ export function ProfileTab({
   user,
   onLogout,
   onUnlockAdmin,
+  onRenameSelf,
 }: {
   user: User
   onLogout: () => void
   onUnlockAdmin: (code: string) => Promise<string | null>
+  onRenameSelf: (name: string) => Promise<string | null>
 }) {
   const [view, setView] = useState<'profile' | 'unlock' | 'admin' | 'stats' | 'ranking'>('profile')
+  const [editingName, setEditingName] = useState(false)
+  const [nameDraft, setNameDraft] = useState(user.name)
+  const [renameError, setRenameError] = useState<string | null>(null)
+  const [renaming, setRenaming] = useState(false)
   const { matches } = useMatches(user.id, 0)
   const played = matches?.length ?? 0
   const won =
@@ -115,6 +121,28 @@ export function ProfileTab({
     ).length ?? 0
   const pct = played > 0 ? Math.round((won / played) * 100) : 0
   const since = user.created_at ? new Date(user.created_at).getFullYear() : null
+
+  const startEditName = () => {
+    setNameDraft(user.name)
+    setRenameError(null)
+    setEditingName(true)
+  }
+
+  const saveEditName = async () => {
+    const name = nameDraft.trim()
+    if (!name || name === user.name) {
+      setEditingName(false)
+      return
+    }
+    setRenaming(true)
+    const err = await onRenameSelf(name)
+    setRenaming(false)
+    if (err) {
+      setRenameError(err)
+      return
+    }
+    setEditingName(false)
+  }
 
   if (view === 'unlock') {
     return (
@@ -154,9 +182,31 @@ export function ProfileTab({
         >
           <PersonIcon className="w-9 h-9" style={{ color: 'var(--color-ember-500)' }} />
         </div>
-        <h3 className="font-poster text-2xl" style={{ color: 'var(--color-paper-50)' }}>
-          {user.name}
-        </h3>
+        {editingName ? (
+          <input
+            value={nameDraft}
+            onChange={(e) => setNameDraft(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && saveEditName()}
+            onBlur={saveEditName}
+            autoFocus
+            maxLength={40}
+            disabled={renaming}
+            className="font-poster text-2xl bg-transparent border-b outline-none text-center disabled:opacity-50"
+            style={{ color: 'var(--color-paper-50)', borderColor: 'var(--color-ember-600)' }}
+          />
+        ) : (
+          <button type="button" onClick={startEditName} className="inline-flex items-center gap-2">
+            <h3 className="font-poster text-2xl" style={{ color: 'var(--color-paper-50)' }}>
+              {user.name}
+            </h3>
+            <PencilIcon className="w-4 h-4 opacity-40" style={{ color: 'var(--color-paper-100)' }} />
+          </button>
+        )}
+        {renameError && (
+          <p className="text-xs mt-1" style={{ color: '#d9695f' }}>
+            {renameError}
+          </p>
+        )}
         {since && <p className="text-sm opacity-60">Jugando desde {since}</p>}
       </div>
 
@@ -171,7 +221,6 @@ export function ProfileTab({
       <div className="divide-y" style={{ borderColor: 'rgba(203, 170, 106, 0.15)' }}>
         <MenuRow icon={<ChartIcon className="w-5 h-5" />} label="Estadísticas" onClick={() => setView('stats')} />
         <MenuRow icon={<TrophyIcon className="w-5 h-5" />} label="Ranking general" onClick={() => setView('ranking')} />
-        <MenuRow icon={<GearIcon className="w-5 h-5" />} label="Configuración" />
         <MenuRow
           icon={<ShieldIcon className="w-5 h-5" />}
           label="Modo administrador"

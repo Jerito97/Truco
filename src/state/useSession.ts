@@ -81,5 +81,25 @@ export function useSession() {
     [user],
   )
 
-  return { user, loading, error, pendingName, register, confirmPending, cancelPending, logout, unlockAdmin }
+  const renameSelf = useCallback(
+    async (name: string): Promise<string | null> => {
+      if (!user) return 'No hay sesión activa'
+      try {
+        const res = await fetch(`/api/users/${user.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ requesterId: user.id, name }),
+        })
+        const data = (await res.json()) as { error?: string; name?: string }
+        if (!res.ok) return data.error ?? 'No se pudo renombrar'
+        setUser({ ...user, name: data.name ?? name })
+        return null
+      } catch {
+        return 'No se pudo conectar. Revisá la conexión.'
+      }
+    },
+    [user],
+  )
+
+  return { user, loading, error, pendingName, register, confirmPending, cancelPending, logout, unlockAdmin, renameSelf }
 }
