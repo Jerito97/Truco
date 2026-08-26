@@ -147,6 +147,15 @@ export function PlusIcon(props: SVGProps<SVGSVGElement>) {
   )
 }
 
+export function ShareIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M12 15V4M12 4 8 8M12 4l4 4" />
+      <path d="M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6" />
+    </Icon>
+  )
+}
+
 export function ShieldIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <Icon {...props}>

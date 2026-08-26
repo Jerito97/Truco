@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { User } from '../types'
 import { BackIcon } from './icons'
+import { useTeamPresets, type TeamPreset } from '../state/useTeamPresets'
 
 export function TeamPicker({
   title,
@@ -24,6 +25,15 @@ export function TeamPicker({
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<User[]>([])
   const [searchError, setSearchError] = useState(false)
+  const { presets, savePreset, deletePreset } = useTeamPresets()
+
+  const matchingPresets = useMemo(
+    () =>
+      presets.filter(
+        (p) => p.playerIds.length === teamSize && p.playerIds.every((id) => !excludeIds.includes(id)),
+      ),
+    [presets, teamSize, excludeIds],
+  )
 
   useEffect(() => {
     setSearchError(false)
@@ -62,6 +72,26 @@ export function TeamPicker({
   }
 
   const nameOf = (id: string) => known[id] ?? '?'
+
+  const loadPreset = (preset: TeamPreset) => {
+    setSelected(preset.playerIds)
+    setKnown((k) => ({ ...k, ...preset.playerNames }))
+  }
+
+  const handleSavePreset = () => {
+    const name = window.prompt('Nombre para este grupo (ej: "Los de siempre")')?.trim()
+    if (!name) return
+    const names: Record<string, string> = {}
+    selected.forEach((id) => {
+      names[id] = nameOf(id)
+    })
+    savePreset(name, selected, names)
+  }
+
+  const handleDeletePreset = (preset: TeamPreset) => {
+    if (window.confirm(`¿Borrar el grupo "${preset.name}"?`)) deletePreset(preset.id)
+  }
+
   const inputStyle = {
     borderColor: 'rgba(203, 170, 106, 0.35)',
     backgroundColor: 'rgba(0,0,0,0.2)',
@@ -81,18 +111,62 @@ export function TeamPicker({
       </div>
 
       {selected.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {selected.map((id) => (
+        <div className="space-y-2">
+          <div className="flex flex-wrap gap-1.5">
+            {selected.map((id) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => toggle(id)}
+                className="px-2.5 py-1 rounded-full text-xs font-bold border"
+                style={{ borderColor: 'var(--color-ember-600)', color: 'var(--color-ember-500)' }}
+              >
+                {nameOf(id)} ×
+              </button>
+            ))}
+          </div>
+          {selected.length === teamSize && (
             <button
-              key={id}
               type="button"
-              onClick={() => toggle(id)}
-              className="px-2.5 py-1 rounded-full text-xs font-bold border"
-              style={{ borderColor: 'var(--color-ember-600)', color: 'var(--color-ember-500)' }}
+              onClick={handleSavePreset}
+              className="text-xs font-bold underline"
+              style={{ color: 'var(--color-paper-200)' }}
             >
-              {nameOf(id)} ×
+              Guardar este grupo
             </button>
-          ))}
+          )}
+        </div>
+      )}
+
+      {matchingPresets.length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-xs opacity-50">Grupos guardados</p>
+          <div className="flex flex-wrap gap-1.5">
+            {matchingPresets.map((preset) => (
+              <div
+                key={preset.id}
+                className="flex items-center rounded-full border pl-1"
+                style={{ borderColor: 'var(--color-wood-600)' }}
+              >
+                <button
+                  type="button"
+                  onClick={() => loadPreset(preset)}
+                  className="px-2 py-1 text-xs font-bold"
+                  style={{ color: 'var(--color-paper-100)' }}
+                >
+                  {preset.name}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDeletePreset(preset)}
+                  aria-label={`Borrar grupo ${preset.name}`}
+                  className="w-6 h-6 rounded-full flex items-center justify-center text-xs opacity-50 shrink-0"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

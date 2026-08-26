@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import type { ActiveMatch } from '../types'
-import { TrophyIcon } from './icons'
+import { ShareIcon, TrophyIcon } from './icons'
 import { aggregatePicaPicaRounds } from '../lib/picaPica'
+import { generateShareImageBlob } from '../lib/shareImage'
 
 export function MatchSummary({
   match,
@@ -11,8 +13,36 @@ export function MatchSummary({
   onRematch: () => void
   onNewMatch: () => void
 }) {
+  const [sharing, setSharing] = useState(false)
   const winnerName = match.scoreA >= match.scoreB ? match.teamAName : match.teamBName
   const picaPicaTotals = aggregatePicaPicaRounds(match.picaPicaRoundsHistory)
+
+  const handleShare = async () => {
+    if (sharing) return
+    setSharing(true)
+    try {
+      const blob = await generateShareImageBlob(match)
+      if (!blob) return
+      const file = new File([blob], 'osobuco-resultado.png', { type: 'image/png' })
+      const shareData = { files: [file], title: 'Osobuco', text: `¡Ganó ${winnerName}! ${match.scoreA} - ${match.scoreB}` }
+      if (navigator.canShare?.(shareData)) {
+        await navigator.share(shareData)
+      } else {
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'osobuco-resultado.png'
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+        setTimeout(() => URL.revokeObjectURL(url), 10000)
+      }
+    } catch {
+      // El usuario cancela el share sheet o el navegador no lo soporta: no hay nada que mostrar.
+    } finally {
+      setSharing(false)
+    }
+  }
 
   return (
     <div className="space-y-5">
@@ -83,6 +113,16 @@ export function MatchSummary({
       )}
 
       <div className="grid grid-cols-1 gap-3">
+        <button
+          type="button"
+          onClick={handleShare}
+          disabled={sharing}
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold border disabled:opacity-50"
+          style={{ borderColor: 'var(--color-wood-600)', color: 'var(--color-paper-100)' }}
+        >
+          <ShareIcon className="w-4 h-4" />
+          Compartir resultado
+        </button>
         <button
           type="button"
           onClick={onRematch}
