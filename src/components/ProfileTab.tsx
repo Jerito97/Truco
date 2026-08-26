@@ -5,6 +5,7 @@ import { useMatches } from '../state/useMatches'
 import { BackIcon, ChartIcon, ChevronRightIcon, GearIcon, LogoutIcon, PersonIcon, ShieldIcon, TrophyIcon } from './icons'
 import { AdminScreen } from './AdminScreen'
 import { StatsScreen } from './StatsScreen'
+import { RankingScreen } from './RankingScreen'
 
 function StatBlock({ value, label }: { value: string; label: string }) {
   return (
@@ -103,7 +104,7 @@ export function ProfileTab({
   onLogout: () => void
   onUnlockAdmin: (code: string) => Promise<string | null>
 }) {
-  const [view, setView] = useState<'profile' | 'unlock' | 'admin' | 'stats'>('profile')
+  const [view, setView] = useState<'profile' | 'unlock' | 'admin' | 'stats' | 'ranking'>('profile')
   const { matches } = useMatches(user.id, 0)
   const played = matches?.length ?? 0
   const won =
@@ -136,6 +137,10 @@ export function ProfileTab({
     return <StatsScreen user={user} matches={matches} onBack={() => setView('profile')} />
   }
 
+  if (view === 'ranking') {
+    return <RankingScreen currentUser={user} onBack={() => setView('profile')} />
+  }
+
   return (
     <div className="space-y-6">
       <h2 className="font-poster text-2xl text-center" style={{ color: 'var(--color-paper-50)' }}>
@@ -165,7 +170,7 @@ export function ProfileTab({
 
       <div className="divide-y" style={{ borderColor: 'rgba(203, 170, 106, 0.15)' }}>
         <MenuRow icon={<ChartIcon className="w-5 h-5" />} label="Estadísticas" onClick={() => setView('stats')} />
-        <MenuRow icon={<TrophyIcon className="w-5 h-5" />} label="Logros" />
+        <MenuRow icon={<TrophyIcon className="w-5 h-5" />} label="Ranking general" onClick={() => setView('ranking')} />
         <MenuRow icon={<GearIcon className="w-5 h-5" />} label="Configuración" />
         <MenuRow
           icon={<ShieldIcon className="w-5 h-5" />}

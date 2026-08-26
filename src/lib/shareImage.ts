@@ -1,6 +1,10 @@
 import type { ActiveMatch } from '../types'
 import { aggregatePicaPicaRounds } from './picaPica'
 
+// Dibujado a mano en canvas (en vez de renderizar el DOM a imagen) para no
+// sumar una librería aparte: son pocos elementos y las fuentes (Georgia,
+// system sans) ya son del sistema, así que no hace falta esperar a que
+// carguen antes de dibujar texto.
 const WOOD_900 = '#241708'
 const WOOD_950 = '#1a1108'
 const PAPER_50 = '#fdf6e6'

@@ -26,20 +26,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       picaPicaRounds,
     } = b
 
+    const teamSize = Array.isArray(teamAPlayerIds) ? teamAPlayerIds.length : 0
+
     const valid =
       typeof teamAName === 'string' &&
       typeof teamBName === 'string' &&
+      teamSize >= 1 &&
+      teamSize <= 3 &&
       Array.isArray(teamAPlayerIds) &&
-      teamAPlayerIds.length === 3 &&
       teamAPlayerIds.every((id: unknown) => typeof id === 'string' && UUID_RE.test(id)) &&
       Array.isArray(teamBPlayerIds) &&
-      teamBPlayerIds.length === 3 &&
+      teamBPlayerIds.length === teamSize &&
       teamBPlayerIds.every((id: unknown) => typeof id === 'string' && UUID_RE.test(id)) &&
       Array.isArray(teamAPlayerNames) &&
-      teamAPlayerNames.length === 3 &&
+      teamAPlayerNames.length === teamSize &&
       teamAPlayerNames.every((n: unknown) => typeof n === 'string') &&
       Array.isArray(teamBPlayerNames) &&
-      teamBPlayerNames.length === 3 &&
+      teamBPlayerNames.length === teamSize &&
       teamBPlayerNames.every((n: unknown) => typeof n === 'string') &&
       typeof scoreA === 'number' &&
       typeof scoreB === 'number' &&

@@ -155,7 +155,7 @@ export function MatchSetup({
   }
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-160px)]">
+    <div className="screen-fill flex flex-col">
       <div className="flex items-center justify-between">
         <button type="button" onClick={onBack} aria-label="Volver">
           <BackIcon className="w-5 h-5" style={{ color: 'var(--color-paper-100)' }} />

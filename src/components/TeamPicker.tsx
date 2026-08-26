@@ -27,6 +27,8 @@ export function TeamPicker({
   const [searchError, setSearchError] = useState(false)
   const { presets, savePreset, deletePreset } = useTeamPresets()
 
+  // Solo mostramos presets que calzan con el tamaño de equipo actual y que no
+  // pisan a nadie ya elegido para el otro equipo.
   const matchingPresets = useMemo(
     () =>
       presets.filter(

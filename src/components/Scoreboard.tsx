@@ -87,6 +87,9 @@ export function Scoreboard({
           <CircleButton onClick={left.onSub} variant="sub" label={`Restar punto a ${left.label}`} disabled={left.score <= 0} />
         </div>
 
+        {/* Todo el lado izquierdo/derecho de los fósforos suma un punto, no solo el
+            recuadro chico de cada columna: es un blanco de toque mucho más grande
+            que los botones +/-. El borde reemplaza al divisor central que había antes. */}
         <div className="flex-1 min-w-0 flex items-stretch">
           <button
             type="button"

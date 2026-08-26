@@ -62,6 +62,19 @@ body {
   color: var(--color-wood-950);
 }
 
+/* Alto disponible debajo del padding de <main> y por encima de la TabBar fija
+   de abajo, para que las pantallas de una sola vista (Anotador, Armar
+   partido, Pica-pica) puedan centrar su contenido en vez de quedar pegado
+   arriba. La variante "no-header" es para pantallas sin fila de volver/título
+   propia (le resta menos, porque no hay esa fila que descontar). */
+.screen-fill {
+  min-height: calc(100vh - 160px);
+}
+
+.screen-fill-no-header {
+  min-height: calc(100vh - 120px);
+}
+
 .paper-card {
   background-color: var(--color-paper-100);
   background-image:

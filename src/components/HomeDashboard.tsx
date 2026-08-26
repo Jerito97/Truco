@@ -19,7 +19,9 @@ export function HomeDashboard({
   }
 
   return (
-    <div className="min-h-[calc(100vh-120px)] flex flex-col items-center">
+    // Espaciadores 4/3/3 en vez de centrar todo junto: así el logo queda un
+    // poco arriba del centro y los botones un poco más abajo, como se pidió.
+    <div className="screen-fill-no-header flex flex-col items-center">
       <div className="flex-[4]" />
       <img src="/wordmark.webp" alt="Osobuco" className="w-80" />
       <div className="flex-[3]" />
