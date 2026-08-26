@@ -46,6 +46,14 @@ async function createSchema(): Promise<void> {
   await pool.query(
     "alter table matches add column if not exists pica_pica_rounds jsonb not null default '[]'::jsonb",
   )
+
+  // La app nunca usa la API REST de Supabase (solo se conecta por Postgres
+  // directo con DATABASE_URL), pero activamos RLS igual para que las tablas
+  // no queden expuestas por esa vía. Al no definir policies, esa API no
+  // devuelve ni deja tocar ninguna fila; nuestra conexión no se ve afectada
+  // porque usa el rol dueño de la base, que no está sujeto a RLS.
+  await pool.query('alter table users enable row level security')
+  await pool.query('alter table matches enable row level security')
 }
 
 export function ensureSchema(): Promise<void> {

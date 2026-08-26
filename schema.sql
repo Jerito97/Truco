@@ -33,3 +33,8 @@ create table if not exists matches (
 
 create index if not exists matches_team_a_idx on matches using gin (team_a_player_ids);
 create index if not exists matches_team_b_idx on matches using gin (team_b_player_ids);
+
+-- La app se conecta por Postgres directo (no usa la API REST de Supabase),
+-- pero activamos RLS para que las tablas no queden expuestas por esa vía.
+alter table users enable row level security;
+alter table matches enable row level security;
