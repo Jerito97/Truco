@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { makeId } from '../lib/id'
 import type { ActiveMatch, AppState, Pairing } from '../types'
 import { TARGET_SCORE } from '../types'
+import { useSyncQueue } from './useSyncQueue'
 
 const STORAGE_KEY = 'la-mesa-truco-state-v2'
 
@@ -24,55 +25,45 @@ function finishIfNeeded(match: ActiveMatch): ActiveMatch {
     status: 'finished',
     finishedAt: new Date().toISOString(),
     inPicaPica: false,
-    serverSynced: false,
   }
 }
 
 export function useAppState() {
   const [state, setState] = useState<AppState>(() => loadState())
+  const { enqueue, pendingIds } = useSyncQueue()
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
   }, [state])
 
-  // Sync a freshly-finished match to the server exactly once.
+  // En cuanto un partido queda "finished" se manda a la cola de sincronización
+  // (funciona con o sin señal: si falla, useSyncQueue lo reintenta solo). El
+  // enqueue de acá adentro es idempotente por id, así que no importa si este
+  // efecto se dispara de nuevo para el mismo partido ya terminado.
   useEffect(() => {
     const m = state.activeMatch
-    if (!m || m.status !== 'finished' || m.serverSynced) return
+    if (!m || m.status !== 'finished') return
     const winner = m.scoreA >= TARGET_SCORE ? 'A' : 'B'
-    let cancelled = false
-    fetch('/api/matches', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        teamAName: m.teamAName,
-        teamBName: m.teamBName,
-        teamAPlayerIds: m.teamAPlayerIds,
-        teamBPlayerIds: m.teamBPlayerIds,
-        teamAPlayerNames: m.teamAPlayerNames,
-        teamBPlayerNames: m.teamBPlayerNames,
-        scoreA: m.scoreA,
-        scoreB: m.scoreB,
-        winner,
-        picaPicaPlayed: m.picaPicaRounds > 0,
-        picaPicaTotalA: m.picaPicaTotalA,
-        picaPicaTotalB: m.picaPicaTotalB,
-        picaPicaRounds: m.picaPicaRoundsHistory,
-      }),
+    enqueue(m.id, {
+      teamAName: m.teamAName,
+      teamBName: m.teamBName,
+      teamAPlayerIds: m.teamAPlayerIds,
+      teamBPlayerIds: m.teamBPlayerIds,
+      teamAPlayerNames: m.teamAPlayerNames,
+      teamBPlayerNames: m.teamBPlayerNames,
+      scoreA: m.scoreA,
+      scoreB: m.scoreB,
+      winner,
+      picaPicaPlayed: m.picaPicaRounds > 0,
+      picaPicaTotalA: m.picaPicaTotalA,
+      picaPicaTotalB: m.picaPicaTotalB,
+      picaPicaRounds: m.picaPicaRoundsHistory,
     })
-      .then((res) => {
-        if (!res.ok || cancelled) return
-        setState((s) =>
-          s.activeMatch && s.activeMatch.id === m.id ? { ...s, activeMatch: { ...s.activeMatch, serverSynced: true } } : s,
-        )
-      })
-      .catch(() => {
-        // Se reintenta solo: el flag serverSynced sigue en false hasta que ande la conexión.
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [state.activeMatch])
+  }, [state.activeMatch, enqueue])
+
+  const isSyncPending = Boolean(
+    state.activeMatch && state.activeMatch.status === 'finished' && pendingIds.includes(state.activeMatch.id),
+  )
 
   const startMatch = useCallback(
     (setup: {
@@ -105,7 +96,6 @@ export function useAppState() {
           picaPicaRounds: 0,
           picaPicaRoundsHistory: [],
           startedAt: new Date().toISOString(),
-          serverSynced: false,
         }
         return { ...s, activeMatch: match }
       })
@@ -141,7 +131,6 @@ export function useAppState() {
         picaPicaRounds: 0,
         picaPicaRoundsHistory: [],
         startedAt: new Date().toISOString(),
-        serverSynced: false,
       }
       return { ...s, activeMatch: match }
     })
@@ -257,6 +246,7 @@ export function useAppState() {
 
   return {
     activeMatch: state.activeMatch,
+    isSyncPending,
     startMatch,
     clearMatch,
     rematch,

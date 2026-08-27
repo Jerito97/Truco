@@ -6,10 +6,12 @@ import { generateShareImageBlob } from '../lib/shareImage'
 
 export function MatchSummary({
   match,
+  isSyncPending,
   onRematch,
   onNewMatch,
 }: {
   match: ActiveMatch
+  isSyncPending: boolean
   onRematch: () => void
   onNewMatch: () => void
 }) {
@@ -77,6 +79,10 @@ export function MatchSummary({
             Pica-pica: {match.picaPicaTotalA} a {match.picaPicaTotalB}
           </p>
         )}
+
+        <p className="mt-3 text-xs opacity-60">
+          {isSyncPending ? 'Se va a guardar en cuanto haya señal' : 'Guardado ✓'}
+        </p>
       </div>
 
       {picaPicaTotals.length > 0 && (

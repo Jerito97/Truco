@@ -11,6 +11,7 @@ type View = 'dashboard' | 'setup' | 'anotador'
 export function PartidoTab({
   currentUser,
   activeMatch,
+  isSyncPending,
   onStart,
   onAdd,
   onSub,
@@ -24,6 +25,7 @@ export function PartidoTab({
 }: {
   currentUser: User
   activeMatch: ActiveMatch | null
+  isSyncPending: boolean
   onStart: (setup: {
     teamAName: string
     teamBName: string
@@ -70,6 +72,7 @@ export function PartidoTab({
     return (
       <MatchSummary
         match={activeMatch}
+        isSyncPending={isSyncPending}
         onRematch={() => {
           onRematch()
           setView('anotador')

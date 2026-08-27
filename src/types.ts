@@ -51,7 +51,6 @@ export interface ActiveMatch {
   picaPicaRoundsHistory: PicaPicaRoundResult[]
   startedAt: string
   finishedAt?: string
-  serverSynced: boolean
 }
 
 export interface FinishedMatch {
