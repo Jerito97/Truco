@@ -136,10 +136,7 @@ export function TeamPicker({
           </div>
         </div>
 
-        <div className="text-center space-y-1 mt-1">
-          <p className="text-sm tracking-[0.3em]" style={{ color: 'var(--color-ember-500)', opacity: 0.7 }}>
-            ♣ ♥ ♦ ♠
-          </p>
+        <div className="text-center space-y-1 mt-2">
           <h2 className="font-poster text-2xl truncate" style={{ color: 'var(--color-paper-50)' }}>
             {title}
           </h2>
