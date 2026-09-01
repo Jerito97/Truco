@@ -87,6 +87,15 @@ export function CardsIcon(props: SVGProps<SVGSVGElement>) {
   )
 }
 
+export function SearchIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <circle cx={10.5} cy={10.5} r={6.5} />
+      <line x1={15.3} y1={15.3} x2={20} y2={20} />
+    </Icon>
+  )
+}
+
 export function PencilIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <Icon {...props}>
