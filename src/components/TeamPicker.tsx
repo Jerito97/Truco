@@ -123,7 +123,7 @@ export function TeamPicker({
 
   return (
     <>
-      <div className="space-y-5 pb-32">
+      <div className="space-y-5 pb-40">
         <div>
           <div className="flex items-center justify-between">
             <button type="button" onClick={onBack} aria-label="Volver">
@@ -308,19 +308,16 @@ export function TeamPicker({
         </div>
       </div>
 
+      {/* 62px = alto real de la TabBar (nav de Inicio/Historial/Perfil) fijada
+          abajo de todo: pegamos esta barra justo arriba, sin hueco. */}
       <div
-        className="fixed bottom-24 left-0 right-0 z-10 px-4 pt-6 pb-3"
+        className="fixed bottom-[62px] left-0 right-0 z-10 px-4 py-3"
         style={{
           backgroundColor: 'var(--color-wood-900)',
+          borderTop: '1px solid rgba(203, 170, 106, 0.2)',
           boxShadow: '0 -8px 20px rgba(0,0,0,0.35)',
         }}
       >
-        <img
-          src="/matchstick.webp"
-          alt=""
-          aria-hidden="true"
-          className="absolute top-0 left-1/2 h-20 w-auto -translate-x-1/2 -translate-y-[40%] pointer-events-none select-none"
-        />
         <button
           type="button"
           onClick={() => onConfirm(selected, known)}
