@@ -11,6 +11,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'POST') {
     const b = req.body ?? {}
     const {
+      clientId,
       teamAName,
       teamBName,
       teamAPlayerIds,
@@ -46,7 +47,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       teamBPlayerNames.every((n: unknown) => typeof n === 'string') &&
       typeof scoreA === 'number' &&
       typeof scoreB === 'number' &&
-      (winner === 'A' || winner === 'B')
+      (winner === 'A' || winner === 'B') &&
+      (clientId === undefined || (typeof clientId === 'string' && clientId.length > 0 && clientId.length <= 100))
 
     if (!valid) {
       res.status(400).json({ error: 'Datos de partido inválidos' })
@@ -55,14 +57,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const result = await pool.query(
       `insert into matches (
+        client_id,
         team_a_name, team_b_name,
         team_a_player_ids, team_b_player_ids,
         team_a_player_names, team_b_player_names,
         score_a, score_b, winner,
         pica_pica_played, pica_pica_total_a, pica_pica_total_b, pica_pica_rounds
-      ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb)
+      ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14::jsonb)
+      on conflict (client_id) where client_id is not null do nothing
       returning id, played_at`,
       [
+        clientId || null,
         teamAName,
         teamBName,
         teamAPlayerIds,
@@ -78,7 +83,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         JSON.stringify(Array.isArray(picaPicaRounds) ? picaPicaRounds : []),
       ],
     )
-    res.status(201).json(result.rows[0])
+
+    // Reintento de un partido que ya se había guardado (conflicto por
+    // client_id): no insertamos de nuevo, devolvemos la fila existente.
+    let row = result.rows[0]
+    if (!row && clientId) {
+      const existing = await pool.query('select id, played_at from matches where client_id = $1', [clientId])
+      row = existing.rows[0]
+    }
+    res.status(201).json(row)
     return
   }
 

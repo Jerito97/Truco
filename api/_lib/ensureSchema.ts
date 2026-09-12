@@ -46,6 +46,13 @@ async function createSchema(): Promise<void> {
   await pool.query(
     "alter table matches add column if not exists pica_pica_rounds jsonb not null default '[]'::jsonb",
   )
+  await pool.query('alter table matches add column if not exists client_id text')
+  // Partido ya guardado que se reintenta (reinicio de la app antes de vaciar
+  // la cola local, doble POST, etc.): el client_id identifica ese partido
+  // desde el dispositivo, así el insert de abajo lo ignora en vez de duplicarlo.
+  await pool.query(
+    'create unique index if not exists matches_client_id_idx on matches (client_id) where client_id is not null',
+  )
 
   // La app nunca usa la API REST de Supabase (solo se conecta por Postgres
   // directo con DATABASE_URL), pero activamos RLS igual para que las tablas
