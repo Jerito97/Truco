@@ -45,6 +45,7 @@ export function useAppState() {
     if (!m || m.status !== 'finished') return
     const winner = m.scoreA >= TARGET_SCORE ? 'A' : 'B'
     enqueue(m.id, {
+      clientId: m.id,
       teamAName: m.teamAName,
       teamBName: m.teamBName,
       teamAPlayerIds: m.teamAPlayerIds,

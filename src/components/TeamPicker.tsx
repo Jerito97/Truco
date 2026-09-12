@@ -122,200 +122,216 @@ export function TeamPicker({
   }
 
   return (
-    <div className="space-y-5">
-      <div>
-        <div className="flex items-center justify-between">
-          <button type="button" onClick={onBack} aria-label="Volver">
-            <BackIcon className="w-5 h-5" style={{ color: 'var(--color-paper-100)' }} />
-          </button>
-          <div
-            className="px-3 py-1 rounded-full border text-sm font-bold"
-            style={{ borderColor: 'var(--color-ember-600)', color: 'var(--color-ember-500)' }}
-          >
-            {selected.length}/{teamSize}
-          </div>
-        </div>
-
-        <div className="text-center space-y-1 mt-2">
-          <h2 className="font-poster text-2xl truncate" style={{ color: 'var(--color-paper-50)' }}>
-            {title}
-          </h2>
-          <p className="text-sm opacity-60">Elegí a los jugadores de tu equipo</p>
-        </div>
-      </div>
-
-      <SectionLabel>Tu equipo</SectionLabel>
-
-      <div className="flex justify-center gap-3">
-        {Array.from({ length: teamSize }).map((_, i) => {
-          const id = selected[i]
-          return (
-            <button
-              key={i}
-              type="button"
-              onClick={() => id && toggle(id)}
-              className="w-24 h-24 sm:w-28 sm:h-28 shrink-0 rounded-2xl border flex flex-col items-center justify-center gap-1.5 px-1"
-              style={{
-                borderStyle: id ? 'solid' : 'dashed',
-                borderColor: id ? 'var(--color-ember-600)' : 'rgba(203, 170, 106, 0.35)',
-                backgroundColor: id ? 'rgba(203, 170, 106, 0.08)' : 'transparent',
-              }}
-            >
-              {id ? (
-                <>
-                  <div
-                    className="w-9 h-9 rounded-full border flex items-center justify-center font-bold text-sm"
-                    style={{ borderColor: 'var(--color-ember-500)', color: 'var(--color-ember-500)' }}
-                  >
-                    {initials(nameOf(id))}
-                  </div>
-                  <span className="text-xs truncate max-w-full" style={{ color: 'var(--color-paper-100)' }}>
-                    {nameOf(id)}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <PlusIcon className="w-6 h-6 opacity-40" style={{ color: 'var(--color-paper-100)' }} />
-                  <span className="text-xs opacity-40">Jugador {i + 1}</span>
-                </>
-              )}
+    <>
+      <div className="space-y-5 pb-32">
+        <div>
+          <div className="flex items-center justify-between">
+            <button type="button" onClick={onBack} aria-label="Volver">
+              <BackIcon className="w-5 h-5" style={{ color: 'var(--color-paper-100)' }} />
             </button>
-          )
-        })}
-      </div>
+            <div
+              className="px-3 py-1 rounded-full border text-sm font-bold"
+              style={{ borderColor: 'var(--color-ember-600)', color: 'var(--color-ember-500)' }}
+            >
+              {selected.length}/{teamSize}
+            </div>
+          </div>
 
-      {remaining > 0 ? (
-        <p className="text-sm opacity-60 text-center -mt-2">
-          Elegí {remaining} jugador{remaining === 1 ? '' : 'es'} para continuar
-        </p>
-      ) : (
-        <button
-          type="button"
-          onClick={handleSavePreset}
-          className="block mx-auto text-xs font-bold underline -mt-2"
-          style={{ color: 'var(--color-paper-200)' }}
-        >
-          Guardar este grupo
-        </button>
-      )}
-
-      {matchingPresets.length > 0 && (
-        <div className="space-y-2">
-          <SectionLabel>Grupos guardados</SectionLabel>
-          <div className="flex flex-wrap justify-center gap-1.5">
-            {matchingPresets.map((preset) => (
-              <div
-                key={preset.id}
-                className="flex items-center rounded-full border pl-1"
-                style={{ borderColor: 'var(--color-wood-600)' }}
-              >
-                <button
-                  type="button"
-                  onClick={() => loadPreset(preset)}
-                  className="px-2 py-1 text-xs font-bold"
-                  style={{ color: 'var(--color-paper-100)' }}
-                >
-                  {preset.name}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDeletePreset(preset)}
-                  aria-label={`Borrar grupo ${preset.name}`}
-                  className="w-6 h-6 rounded-full flex items-center justify-center text-xs opacity-50 shrink-0"
-                >
-                  ×
-                </button>
-              </div>
-            ))}
+          <div className="text-center space-y-1 mt-2">
+            <h2 className="font-poster text-2xl truncate" style={{ color: 'var(--color-paper-50)' }}>
+              {title}
+            </h2>
+            <p className="text-sm opacity-60">Elegí a los jugadores de tu equipo</p>
           </div>
         </div>
-      )}
 
-      <div className="space-y-3">
-        <div className="relative">
-          <SearchIcon
-            className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 opacity-50 pointer-events-none"
-            style={{ color: 'var(--color-paper-100)' }}
-          />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar jugador registrado..."
-            className="w-full rounded-lg pl-9 pr-3 py-2.5 border outline-none"
-            style={inputStyle}
-          />
-        </div>
+        <SectionLabel>Tu equipo</SectionLabel>
 
-        {searchError && (
-          <p className="text-sm text-center py-2" style={{ color: '#d9695f' }}>
-            No se pudo buscar jugadores. Revisá la conexión e intentá de nuevo.
-          </p>
-        )}
-
-        {!searchError && results.length === 0 && (
-          <p className="text-sm opacity-60 text-center py-3">
-            {query ? 'Nadie con ese nombre todavía.' : 'Escribí para buscar jugadores registrados.'}
-          </p>
-        )}
-
-        {!searchError && results.length > 0 && (
-          <>
-            <SectionLabel>Jugadores registrados</SectionLabel>
-            <div className="space-y-2.5">
-              {results.map((u) => {
-                const isSelected = selected.includes(u.id)
-                return (
-                  <button
-                    key={u.id}
-                    type="button"
-                    onClick={() => toggle(u.id)}
-                    disabled={!isSelected && selected.length >= teamSize}
-                    className="w-full flex items-center gap-3 rounded-2xl border px-4 py-3 text-left disabled:opacity-30"
-                    style={{
-                      borderColor: isSelected ? 'var(--color-ember-600)' : 'rgba(203, 170, 106, 0.2)',
-                      backgroundColor: isSelected ? 'rgba(203, 170, 106, 0.08)' : 'transparent',
-                    }}
-                  >
+        <div className="flex justify-center gap-3">
+          {Array.from({ length: teamSize }).map((_, i) => {
+            const id = selected[i]
+            return (
+              <button
+                key={i}
+                type="button"
+                onClick={() => id && toggle(id)}
+                className="w-24 h-24 sm:w-28 sm:h-28 shrink-0 rounded-2xl border flex flex-col items-center justify-center gap-1.5 px-1"
+                style={{
+                  borderStyle: id ? 'solid' : 'dashed',
+                  borderColor: id ? 'var(--color-ember-600)' : 'rgba(203, 170, 106, 0.35)',
+                  backgroundColor: id ? 'rgba(203, 170, 106, 0.08)' : 'transparent',
+                }}
+              >
+                {id ? (
+                  <>
                     <div
-                      className="w-11 h-11 rounded-full border flex items-center justify-center font-bold text-sm shrink-0"
+                      className="w-9 h-9 rounded-full border flex items-center justify-center font-bold text-sm"
                       style={{ borderColor: 'var(--color-ember-500)', color: 'var(--color-ember-500)' }}
                     >
-                      {initials(u.name)}
+                      {initials(nameOf(id))}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold truncate" style={{ color: 'var(--color-paper-50)' }}>
-                        {u.name}
-                      </p>
-                      <p className="text-xs opacity-50">Jugador registrado</p>
-                    </div>
-                    <span
-                      className="w-6 h-6 rounded-full border flex items-center justify-center text-sm font-bold shrink-0"
+                    <span className="text-xs truncate max-w-full" style={{ color: 'var(--color-paper-100)' }}>
+                      {nameOf(id)}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <PlusIcon className="w-6 h-6 opacity-40" style={{ color: 'var(--color-paper-100)' }} />
+                    <span className="text-xs opacity-40">Jugador {i + 1}</span>
+                  </>
+                )}
+              </button>
+            )
+          })}
+        </div>
+
+        {remaining > 0 ? (
+          <p className="text-sm opacity-60 text-center -mt-2">
+            Elegí {remaining} jugador{remaining === 1 ? '' : 'es'} para continuar
+          </p>
+        ) : (
+          <button
+            type="button"
+            onClick={handleSavePreset}
+            className="block mx-auto text-xs font-bold underline -mt-2"
+            style={{ color: 'var(--color-paper-200)' }}
+          >
+            Guardar este grupo
+          </button>
+        )}
+
+        {matchingPresets.length > 0 && (
+          <div className="space-y-2">
+            <SectionLabel>Grupos guardados</SectionLabel>
+            <div className="flex flex-wrap justify-center gap-1.5">
+              {matchingPresets.map((preset) => (
+                <div
+                  key={preset.id}
+                  className="flex items-center rounded-full border pl-1"
+                  style={{ borderColor: 'var(--color-wood-600)' }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => loadPreset(preset)}
+                    className="px-2 py-1 text-xs font-bold"
+                    style={{ color: 'var(--color-paper-100)' }}
+                  >
+                    {preset.name}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDeletePreset(preset)}
+                    aria-label={`Borrar grupo ${preset.name}`}
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-xs opacity-50 shrink-0"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-3">
+          <div className="relative">
+            <SearchIcon
+              className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 opacity-50 pointer-events-none"
+              style={{ color: 'var(--color-paper-100)' }}
+            />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Buscar jugador registrado..."
+              className="w-full rounded-lg pl-9 pr-3 py-2.5 border outline-none"
+              style={inputStyle}
+            />
+          </div>
+
+          {searchError && (
+            <p className="text-sm text-center py-2" style={{ color: '#d9695f' }}>
+              No se pudo buscar jugadores. Revisá la conexión e intentá de nuevo.
+            </p>
+          )}
+
+          {!searchError && results.length === 0 && (
+            <p className="text-sm opacity-60 text-center py-3">
+              {query ? 'Nadie con ese nombre todavía.' : 'Escribí para buscar jugadores registrados.'}
+            </p>
+          )}
+
+          {!searchError && results.length > 0 && (
+            <>
+              <SectionLabel>Jugadores registrados</SectionLabel>
+              <div className="space-y-2.5">
+                {results.map((u) => {
+                  const isSelected = selected.includes(u.id)
+                  return (
+                    <button
+                      key={u.id}
+                      type="button"
+                      onClick={() => toggle(u.id)}
+                      disabled={!isSelected && selected.length >= teamSize}
+                      className="w-full flex items-center gap-3 rounded-2xl border px-4 py-3 text-left disabled:opacity-30"
                       style={{
-                        borderColor: isSelected ? 'var(--color-ember-500)' : 'var(--color-wood-600)',
-                        backgroundColor: isSelected ? 'var(--color-ember-500)' : 'transparent',
-                        color: isSelected ? 'var(--color-wood-950)' : 'transparent',
+                        borderColor: isSelected ? 'var(--color-ember-600)' : 'rgba(203, 170, 106, 0.2)',
+                        backgroundColor: isSelected ? 'rgba(203, 170, 106, 0.08)' : 'transparent',
                       }}
                     >
-                      ✓
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
-          </>
-        )}
+                      <div
+                        className="w-11 h-11 rounded-full border flex items-center justify-center font-bold text-sm shrink-0"
+                        style={{ borderColor: 'var(--color-ember-500)', color: 'var(--color-ember-500)' }}
+                      >
+                        {initials(u.name)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold truncate" style={{ color: 'var(--color-paper-50)' }}>
+                          {u.name}
+                        </p>
+                        <p className="text-xs opacity-50">Jugador registrado</p>
+                      </div>
+                      <span
+                        className="w-6 h-6 rounded-full border flex items-center justify-center text-sm font-bold shrink-0"
+                        style={{
+                          borderColor: isSelected ? 'var(--color-ember-500)' : 'var(--color-wood-600)',
+                          backgroundColor: isSelected ? 'var(--color-ember-500)' : 'transparent',
+                          color: isSelected ? 'var(--color-wood-950)' : 'transparent',
+                        }}
+                      >
+                        ✓
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
-      <button
-        type="button"
-        onClick={() => onConfirm(selected, known)}
-        disabled={remaining > 0}
-        className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-poster text-lg tracking-wide border disabled:opacity-50"
-        style={{ borderColor: 'var(--color-ember-600)', color: 'var(--color-ember-500)' }}
+      <div
+        className="fixed bottom-24 left-0 right-0 z-10 px-4 pt-6 pb-3"
+        style={{
+          backgroundColor: 'var(--color-wood-900)',
+          boxShadow: '0 -8px 20px rgba(0,0,0,0.35)',
+        }}
       >
-        <CardsIcon className="w-5 h-5" />
-        {remaining > 0 ? `Seleccioná ${remaining} jugador${remaining === 1 ? '' : 'es'}` : 'Confirmar equipo'}
-      </button>
-    </div>
+        <img
+          src="/matchstick.webp"
+          alt=""
+          aria-hidden="true"
+          className="absolute top-0 left-1/2 h-20 w-auto -translate-x-1/2 -translate-y-[40%] pointer-events-none select-none"
+        />
+        <button
+          type="button"
+          onClick={() => onConfirm(selected, known)}
+          disabled={remaining > 0}
+          className="w-full max-w-md mx-auto flex items-center justify-center gap-2 py-3.5 rounded-xl font-poster text-lg tracking-wide border disabled:opacity-50"
+          style={{ borderColor: 'var(--color-ember-600)', color: 'var(--color-ember-500)' }}
+        >
+          <CardsIcon className="w-5 h-5" />
+          {remaining > 0 ? `Seleccioná ${remaining} jugador${remaining === 1 ? '' : 'es'}` : 'Confirmar equipo'}
+        </button>
+      </div>
+    </>
   )
 }

@@ -28,11 +28,13 @@ create table if not exists matches (
   pica_pica_total_a int not null default 0,
   pica_pica_total_b int not null default 0,
   pica_pica_rounds jsonb not null default '[]'::jsonb,
+  client_id text,
   played_at timestamptz not null default now()
 );
 
 create index if not exists matches_team_a_idx on matches using gin (team_a_player_ids);
 create index if not exists matches_team_b_idx on matches using gin (team_b_player_ids);
+create unique index if not exists matches_client_id_idx on matches (client_id) where client_id is not null;
 
 -- La app se conecta por Postgres directo (no usa la API REST de Supabase),
 -- pero activamos RLS para que las tablas no queden expuestas por esa vía.
