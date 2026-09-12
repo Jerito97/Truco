@@ -309,13 +309,18 @@ export function TeamPicker({
       </div>
 
       <div
-        className="fixed bottom-24 left-0 right-0 z-10 px-4 py-3"
+        className="fixed bottom-24 left-0 right-0 z-10 px-4 pt-6 pb-3"
         style={{
           backgroundColor: 'var(--color-wood-900)',
-          borderTop: '1px solid rgba(203, 170, 106, 0.2)',
           boxShadow: '0 -8px 20px rgba(0,0,0,0.35)',
         }}
       >
+        <img
+          src="/matchstick.webp"
+          alt=""
+          aria-hidden="true"
+          className="absolute top-0 left-1/2 h-20 w-auto -translate-x-1/2 -translate-y-[40%] pointer-events-none select-none"
+        />
         <button
           type="button"
           onClick={() => onConfirm(selected, known)}
