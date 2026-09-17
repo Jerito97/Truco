@@ -1,8 +1,34 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useLayoutEffect, useEffect, useState } from 'react'
 import { makeId } from '../lib/id'
 import type { ActiveMatch, AppState, Pairing } from '../types'
 import { TARGET_SCORE } from '../types'
 import { useSyncQueue } from './useSyncQueue'
+
+function buildFreshMatch(base: {
+  teamAName: string
+  teamBName: string
+  teamAPlayerIds: string[]
+  teamBPlayerIds: string[]
+  teamAPlayerNames: string[]
+  teamBPlayerNames: string[]
+  pairings: Pairing[]
+  manoTeam: 'A' | 'B'
+}): ActiveMatch {
+  return {
+    ...base,
+    id: makeId(),
+    scoreA: 0,
+    scoreB: 0,
+    status: 'playing',
+    inPicaPica: false,
+    picaPicaDuels: [],
+    picaPicaTotalA: 0,
+    picaPicaTotalB: 0,
+    picaPicaRounds: 0,
+    picaPicaRoundsHistory: [],
+    startedAt: new Date().toISOString(),
+  }
+}
 
 const STORAGE_KEY = 'la-mesa-truco-state-v2'
 
@@ -40,12 +66,14 @@ export function useAppState() {
   // (funciona con o sin señal: si falla, useSyncQueue lo reintenta solo). El
   // enqueue de acá adentro es idempotente por id, así que no importa si este
   // efecto se dispara de nuevo para el mismo partido ya terminado.
-  useEffect(() => {
+  // useLayoutEffect (no useEffect) para que "isSyncPending" ya sea correcto
+  // en el primer pintado tras terminar el partido, en vez de arrancar en
+  // false por un frame hasta que el efecto encole y actualice pendingIds.
+  useLayoutEffect(() => {
     const m = state.activeMatch
     if (!m || m.status !== 'finished') return
     const winner = m.scoreA >= TARGET_SCORE ? 'A' : 'B'
     enqueue(m.id, {
-      clientId: m.id,
       teamAName: m.teamAName,
       teamBName: m.teamBName,
       teamAPlayerIds: m.teamAPlayerIds,
@@ -76,9 +104,9 @@ export function useAppState() {
       teamBPlayerNames: string[]
       pairings: Pairing[]
     }) => {
-      setState((s) => {
-        const match: ActiveMatch = {
-          id: makeId(),
+      setState((s) => ({
+        ...s,
+        activeMatch: buildFreshMatch({
           teamAName: setup.teamAName.trim() || 'Equipo A',
           teamBName: setup.teamBName.trim() || 'Equipo B',
           teamAPlayerIds: setup.teamAPlayerIds,
@@ -86,20 +114,9 @@ export function useAppState() {
           teamAPlayerNames: setup.teamAPlayerNames,
           teamBPlayerNames: setup.teamBPlayerNames,
           pairings: setup.pairings,
-          scoreA: 0,
-          scoreB: 0,
           manoTeam: 'A',
-          status: 'playing',
-          inPicaPica: false,
-          picaPicaDuels: [],
-          picaPicaTotalA: 0,
-          picaPicaTotalB: 0,
-          picaPicaRounds: 0,
-          picaPicaRoundsHistory: [],
-          startedAt: new Date().toISOString(),
-        }
-        return { ...s, activeMatch: match }
-      })
+        }),
+      }))
     },
     [],
   )
@@ -112,28 +129,19 @@ export function useAppState() {
     setState((s) => {
       const prev = s.activeMatch
       if (!prev) return s
-      const match: ActiveMatch = {
-        id: makeId(),
-        teamAName: prev.teamAName,
-        teamBName: prev.teamBName,
-        teamAPlayerIds: prev.teamAPlayerIds,
-        teamBPlayerIds: prev.teamBPlayerIds,
-        teamAPlayerNames: prev.teamAPlayerNames,
-        teamBPlayerNames: prev.teamBPlayerNames,
-        pairings: prev.pairings,
-        scoreA: 0,
-        scoreB: 0,
-        manoTeam: prev.manoTeam === 'A' ? 'B' : 'A',
-        status: 'playing',
-        inPicaPica: false,
-        picaPicaDuels: [],
-        picaPicaTotalA: 0,
-        picaPicaTotalB: 0,
-        picaPicaRounds: 0,
-        picaPicaRoundsHistory: [],
-        startedAt: new Date().toISOString(),
+      return {
+        ...s,
+        activeMatch: buildFreshMatch({
+          teamAName: prev.teamAName,
+          teamBName: prev.teamBName,
+          teamAPlayerIds: prev.teamAPlayerIds,
+          teamBPlayerIds: prev.teamBPlayerIds,
+          teamAPlayerNames: prev.teamAPlayerNames,
+          teamBPlayerNames: prev.teamBPlayerNames,
+          pairings: prev.pairings,
+          manoTeam: prev.manoTeam === 'A' ? 'B' : 'A',
+        }),
       }
-      return { ...s, activeMatch: match }
     })
   }, [])
 

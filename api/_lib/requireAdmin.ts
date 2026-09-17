@@ -1,6 +1,5 @@
 import type { Pool } from 'pg'
-
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+import { UUID_RE } from './validation.js'
 
 export async function isAdmin(pool: Pool, requesterId: unknown): Promise<boolean> {
   if (typeof requesterId !== 'string' || !UUID_RE.test(requesterId)) return false

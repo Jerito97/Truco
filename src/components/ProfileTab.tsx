@@ -129,6 +129,7 @@ export function ProfileTab({
   }
 
   const saveEditName = async () => {
+    if (renaming) return
     const name = nameDraft.trim()
     if (!name || name === user.name) {
       setEditingName(false)
@@ -186,7 +187,7 @@ export function ProfileTab({
           <input
             value={nameDraft}
             onChange={(e) => setNameDraft(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && saveEditName()}
+            onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
             onBlur={saveEditName}
             autoFocus
             maxLength={40}

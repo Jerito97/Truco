@@ -1,8 +1,17 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
+import { createHash, timingSafeEqual } from 'node:crypto'
 import { getPool } from '../_lib/db.js'
 import { ensureSchema } from '../_lib/ensureSchema.js'
+import { UUID_RE } from '../_lib/validation.js'
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+// Hasheamos antes de comparar para que timingSafeEqual (que exige buffers del
+// mismo largo) sirva también cuando el código ingresado tiene otra longitud
+// que ADMIN_CODE, sin filtrar esa diferencia de longitud por timing.
+function safeEqual(a: string, b: string): boolean {
+  const ha = createHash('sha256').update(a).digest()
+  const hb = createHash('sha256').update(b).digest()
+  return timingSafeEqual(ha, hb)
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -26,7 +35,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(400).json({ error: 'Usuario inválido' })
     return
   }
-  if (code !== adminCode) {
+  if (!safeEqual(code, adminCode)) {
     res.status(403).json({ error: 'Código incorrecto' })
     return
   }
