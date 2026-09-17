@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import type { ActiveMatch } from '../types'
 import { ChevronRightIcon, PeopleIcon, PlusIcon } from './icons'
+import { ConfirmDialog } from './Dialog'
 
 export function HomeDashboard({
   activeMatch,
@@ -12,11 +14,7 @@ export function HomeDashboard({
   onResumeMatch: () => void
   onDiscardAndNew?: () => void
 }) {
-  const handleDiscardAndNew = () => {
-    if (window.confirm('¿Seguro que querés empezar un partido nuevo? El partido en curso se va a eliminar.')) {
-      onDiscardAndNew?.()
-    }
-  }
+  const [confirmingDiscard, setConfirmingDiscard] = useState(false)
 
   return (
     // Espaciadores 4/3/3 en vez de centrar todo junto: así el logo queda un
@@ -49,7 +47,7 @@ export function HomeDashboard({
         {activeMatch && (
           <button
             type="button"
-            onClick={handleDiscardAndNew}
+            onClick={() => setConfirmingDiscard(true)}
             className="w-full flex items-center gap-4 rounded-2xl px-4 py-4 text-left border"
             style={{ borderColor: 'var(--color-wood-600)' }}
           >
@@ -65,6 +63,19 @@ export function HomeDashboard({
         )}
       </div>
       <div className="flex-[3]" />
+
+      <ConfirmDialog
+        open={confirmingDiscard}
+        title="¿Empezar de cero?"
+        message="El partido en curso se va a eliminar."
+        confirmLabel="Empezar de cero"
+        danger
+        onConfirm={() => {
+          setConfirmingDiscard(false)
+          onDiscardAndNew?.()
+        }}
+        onCancel={() => setConfirmingDiscard(false)}
+      />
     </div>
   )
 }

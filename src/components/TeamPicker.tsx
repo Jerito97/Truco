@@ -3,6 +3,7 @@ import type { User } from '../types'
 import { BackIcon, CardsIcon, PlusIcon, SearchIcon } from './icons'
 import { useTeamPresets, type TeamPreset } from '../state/useTeamPresets'
 import { TABBAR_HEIGHT } from './TabBar'
+import { ConfirmDialog, PromptDialog } from './Dialog'
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean)
@@ -101,18 +102,16 @@ export function TeamPicker({
     setKnown((k) => ({ ...k, ...preset.playerNames }))
   }
 
-  const handleSavePreset = () => {
-    const name = window.prompt('Nombre para este grupo (ej: "Los de siempre")')?.trim()
-    if (!name) return
+  const [savingPreset, setSavingPreset] = useState(false)
+  const [deletingPreset, setDeletingPreset] = useState<TeamPreset | null>(null)
+
+  const handleSavePreset = (name: string) => {
+    setSavingPreset(false)
     const names: Record<string, string> = {}
     selected.forEach((id) => {
       names[id] = nameOf(id)
     })
     savePreset(name, selected, names)
-  }
-
-  const handleDeletePreset = (preset: TeamPreset) => {
-    if (window.confirm(`¿Borrar el grupo "${preset.name}"?`)) deletePreset(preset.id)
   }
 
   const remaining = teamSize - selected.length
@@ -193,7 +192,7 @@ export function TeamPicker({
         ) : (
           <button
             type="button"
-            onClick={handleSavePreset}
+            onClick={() => setSavingPreset(true)}
             className="block mx-auto text-xs font-bold underline -mt-2"
             style={{ color: 'var(--color-paper-200)' }}
           >
@@ -221,7 +220,7 @@ export function TeamPicker({
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleDeletePreset(preset)}
+                    onClick={() => setDeletingPreset(preset)}
                     aria-label={`Borrar grupo ${preset.name}`}
                     className="w-6 h-6 rounded-full flex items-center justify-center text-xs opacity-50 shrink-0"
                   >
@@ -331,6 +330,26 @@ export function TeamPicker({
           {remaining > 0 ? `Seleccioná ${remaining} jugador${remaining === 1 ? '' : 'es'}` : 'Confirmar equipo'}
         </button>
       </div>
+
+      <PromptDialog
+        open={savingPreset}
+        title="Nombre para este grupo"
+        placeholder='Ej: "Los de siempre"'
+        onSubmit={handleSavePreset}
+        onCancel={() => setSavingPreset(false)}
+      />
+      <ConfirmDialog
+        open={deletingPreset !== null}
+        title="¿Borrar grupo?"
+        message={deletingPreset ? `¿Borrar el grupo "${deletingPreset.name}"?` : ''}
+        confirmLabel="Borrar"
+        danger
+        onConfirm={() => {
+          if (deletingPreset) deletePreset(deletingPreset.id)
+          setDeletingPreset(null)
+        }}
+        onCancel={() => setDeletingPreset(null)}
+      />
     </>
   )
 }

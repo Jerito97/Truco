@@ -25,19 +25,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // El exclude se aplica en la consulta (no filtrando la respuesta en JS
   // después), para que el LIMIT 15 no se gaste en filas que van a terminar
   // descartadas y la búsqueda no devuelva menos resultados de los que hay.
-  const result = q
-    ? await pool.query(
-        `select id, name from users
-         where name_lower like $1 escape '\\' and not (id = any($2::uuid[]))
-         order by name limit 15`,
-        ['%' + escapeLike(q.toLowerCase()) + '%', excludeIds],
-      )
-    : await pool.query(
-        `select id, name from users
-         where not (id = any($1::uuid[]))
-         order by name limit 15`,
-        [excludeIds],
-      )
+  // (Sin ESCAPE explícito: la barra invertida ya es el escape por default
+  // de LIKE en Postgres, así que escapeLike() ya alcanza con eso.)
+  try {
+    const result = q
+      ? await pool.query(
+          `select id, name from users
+           where name_lower like $1 and not (id = any($2::uuid[]))
+           order by name limit 15`,
+          ['%' + escapeLike(q.toLowerCase()) + '%', excludeIds],
+        )
+      : await pool.query(
+          `select id, name from users
+           where not (id = any($1::uuid[]))
+           order by name limit 15`,
+          [excludeIds],
+        )
 
-  res.status(200).json(result.rows)
+    res.status(200).json(result.rows)
+  } catch (err) {
+    console.error('users/search failed', err)
+    res.status(500).json({ error: 'No se pudo buscar' })
+  }
 }

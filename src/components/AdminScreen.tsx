@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { User } from '../types'
 import { BackIcon } from './icons'
 import { formatDate } from '../lib/formatDate'
+import { ConfirmDialog } from './Dialog'
 
 interface AdminUser {
   id: string
@@ -15,10 +16,51 @@ interface AdminMatch {
   played_at: string
   team_a_name: string
   team_b_name: string
+  team_a_player_ids: string[]
+  team_b_player_ids: string[]
   team_a_player_names: string[]
   team_b_player_names: string[]
   score_a: number
   score_b: number
+  winner: 'A' | 'B'
+}
+
+// Ventana generosa (los reintentos de la cola offline pueden tardar en
+// disparar si el celular estuvo sin señal un rato) para no cruzar dos
+// partidos iguales jugados en días distintos por pura coincidencia.
+const DUPLICATE_WINDOW_MS = 3 * 60 * 60 * 1000
+
+function duplicateKey(m: AdminMatch): string {
+  const a = [...m.team_a_player_ids].sort().join(',')
+  const b = [...m.team_b_player_ids].sort().join(',')
+  return `${a}|${b}|${m.score_a}|${m.score_b}|${m.winner}`
+}
+
+// Agrupa partidos con exactamente los mismos jugadores (de cada lado),
+// mismo resultado y jugados cerca en el tiempo: es la firma que deja el bug
+// de sincronización viejo (antes de que el guardado tuviera client_id) al
+// reintentar y guardar el mismo partido dos veces.
+function findDuplicateIds(matches: AdminMatch[]): Set<string> {
+  const groups = new Map<string, AdminMatch[]>()
+  for (const m of matches) {
+    const key = duplicateKey(m)
+    const group = groups.get(key)
+    if (group) group.push(m)
+    else groups.set(key, [m])
+  }
+  const duplicateIds = new Set<string>()
+  for (const group of groups.values()) {
+    if (group.length < 2) continue
+    const sorted = [...group].sort((a, b) => new Date(a.played_at).getTime() - new Date(b.played_at).getTime())
+    for (let i = 1; i < sorted.length; i++) {
+      const gap = new Date(sorted[i].played_at).getTime() - new Date(sorted[i - 1].played_at).getTime()
+      if (gap <= DUPLICATE_WINDOW_MS) {
+        duplicateIds.add(sorted[i - 1].id)
+        duplicateIds.add(sorted[i].id)
+      }
+    }
+  }
+  return duplicateIds
 }
 
 function UsersPanel({ currentUser }: { currentUser: User }) {
@@ -27,6 +69,7 @@ function UsersPanel({ currentUser }: { currentUser: User }) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editValue, setEditValue] = useState('')
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [pendingDelete, setPendingDelete] = useState<AdminUser | null>(null)
 
   const load = () => {
     setError(null)
@@ -72,7 +115,7 @@ function UsersPanel({ currentUser }: { currentUser: User }) {
   }
 
   const remove = async (u: AdminUser) => {
-    if (!window.confirm(`¿Borrar a "${u.name}"? Esto no se puede deshacer.`)) return
+    setPendingDelete(null)
     setBusyId(u.id)
     try {
       const res = await fetch(`/api/admin/users/${u.id}?requesterId=${encodeURIComponent(currentUser.id)}`, {
@@ -138,7 +181,7 @@ function UsersPanel({ currentUser }: { currentUser: User }) {
               )}
               <button
                 type="button"
-                onClick={() => remove(u)}
+                onClick={() => setPendingDelete(u)}
                 disabled={busyId === u.id}
                 className="text-xs font-bold px-2 py-1.5 rounded-md border shrink-0 disabled:opacity-30"
                 style={{ borderColor: '#8a3f38', color: '#d9695f' }}
@@ -149,6 +192,16 @@ function UsersPanel({ currentUser }: { currentUser: User }) {
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        title="¿Borrar usuario?"
+        message={pendingDelete ? `¿Borrar a "${pendingDelete.name}"? Esto no se puede deshacer.` : ''}
+        confirmLabel="Borrar"
+        danger
+        onConfirm={() => pendingDelete && remove(pendingDelete)}
+        onCancel={() => setPendingDelete(null)}
+      />
     </div>
   )
 }
@@ -157,6 +210,8 @@ function MatchesPanel({ currentUser }: { currentUser: User }) {
   const [matches, setMatches] = useState<AdminMatch[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [pendingDelete, setPendingDelete] = useState<AdminMatch | null>(null)
+  const [onlyDuplicates, setOnlyDuplicates] = useState(false)
 
   const load = () => {
     setError(null)
@@ -171,8 +226,11 @@ function MatchesPanel({ currentUser }: { currentUser: User }) {
 
   useEffect(load, [currentUser.id])
 
+  const duplicateIds = useMemo(() => findDuplicateIds(matches ?? []), [matches])
+  const visibleMatches = matches && onlyDuplicates ? matches.filter((m) => duplicateIds.has(m.id)) : matches
+
   const remove = async (m: AdminMatch) => {
-    if (!window.confirm(`¿Borrar el partido ${m.team_a_name} ${m.score_a}-${m.score_b} ${m.team_b_name}?`)) return
+    setPendingDelete(null)
     setBusyId(m.id)
     try {
       const res = await fetch(`/api/admin/matches/${m.id}?requesterId=${encodeURIComponent(currentUser.id)}`, {
@@ -200,32 +258,72 @@ function MatchesPanel({ currentUser }: { currentUser: User }) {
       )}
       {matches === null && !error && <p className="text-center opacity-60 py-6">Cargando...</p>}
       {matches && matches.length === 0 && <p className="text-center opacity-60 py-6">No hay partidos registrados.</p>}
+
       {matches && matches.length > 0 && (
-        <div className="divide-y" style={{ borderColor: 'rgba(203, 170, 106, 0.15)' }}>
-          {matches.map((m) => (
-            <div key={m.id} className="flex items-center gap-2 py-3">
-              <div className="flex-1 min-w-0">
-                <p className="truncate text-sm" style={{ color: 'var(--color-paper-100)' }}>
-                  {m.team_a_player_names.join(', ')} <span className="opacity-40">vs</span>{' '}
-                  {m.team_b_player_names.join(', ')}
-                </p>
-                <p className="text-xs opacity-50 mt-0.5">
-                  {formatDate(m.played_at)} · {m.score_a} - {m.score_b}
-                </p>
+        <>
+          <button
+            type="button"
+            onClick={() => setOnlyDuplicates((v) => !v)}
+            disabled={duplicateIds.size === 0}
+            className="w-full text-xs font-bold py-2 mb-2 rounded-lg border disabled:opacity-40"
+            style={{
+              borderColor: duplicateIds.size > 0 ? '#8a6a2e' : 'var(--color-wood-600)',
+              color: duplicateIds.size > 0 ? 'var(--color-ember-500)' : 'var(--color-paper-100)',
+              backgroundColor: onlyDuplicates ? 'rgba(203, 170, 106, 0.1)' : 'transparent',
+            }}
+          >
+            {duplicateIds.size === 0
+              ? 'No se encontraron posibles duplicados'
+              : onlyDuplicates
+                ? `Mostrando ${duplicateIds.size} posibles duplicados — tocá para ver todos`
+                : `⚠ ${duplicateIds.size} partidos parecen duplicados — tocá para verlos`}
+          </button>
+
+          <div className="divide-y" style={{ borderColor: 'rgba(203, 170, 106, 0.15)' }}>
+            {visibleMatches?.map((m) => (
+              <div key={m.id} className="flex items-center gap-2 py-3">
+                <div className="flex-1 min-w-0">
+                  <p className="truncate text-sm" style={{ color: 'var(--color-paper-100)' }}>
+                    {m.team_a_player_names.join(', ')} <span className="opacity-40">vs</span>{' '}
+                    {m.team_b_player_names.join(', ')}
+                    {duplicateIds.has(m.id) && (
+                      <span className="ml-2 text-xs font-bold" style={{ color: '#d9695f' }}>
+                        ¿duplicado?
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-xs opacity-50 mt-0.5">
+                    {formatDate(m.played_at)} · {m.score_a} - {m.score_b}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPendingDelete(m)}
+                  disabled={busyId === m.id}
+                  className="text-xs font-bold px-2 py-1.5 rounded-md border shrink-0 disabled:opacity-30"
+                  style={{ borderColor: '#8a3f38', color: '#d9695f' }}
+                >
+                  Borrar
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => remove(m)}
-                disabled={busyId === m.id}
-                className="text-xs font-bold px-2 py-1.5 rounded-md border shrink-0 disabled:opacity-30"
-                style={{ borderColor: '#8a3f38', color: '#d9695f' }}
-              >
-                Borrar
-              </button>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </>
       )}
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        title="¿Borrar partido?"
+        message={
+          pendingDelete
+            ? `¿Borrar el partido ${pendingDelete.team_a_name} ${pendingDelete.score_a}-${pendingDelete.score_b} ${pendingDelete.team_b_name}?`
+            : ''
+        }
+        confirmLabel="Borrar"
+        danger
+        onConfirm={() => pendingDelete && remove(pendingDelete)}
+        onCancel={() => setPendingDelete(null)}
+      />
     </div>
   )
 }
