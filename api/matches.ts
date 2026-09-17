@@ -98,13 +98,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       res.status(400).json({ error: 'Falta userId' })
       return
     }
-    const result = await pool.query(
-      `select * from matches
-       where $1 = any(team_a_player_ids) or $1 = any(team_b_player_ids)
-       order by played_at desc
-       limit 50`,
-      [userId],
-    )
+    // scope=all trae los últimos partidos de todos los jugadores (para el
+    // historial general); el default sigue filtrando solo los del usuario
+    // (lo sigue usando el perfil para calcular sus propias estadísticas).
+    const scope = req.query.scope === 'all' ? 'all' : 'mine'
+    const result =
+      scope === 'all'
+        ? await pool.query('select * from matches order by played_at desc limit 50')
+        : await pool.query(
+            `select * from matches
+             where $1 = any(team_a_player_ids) or $1 = any(team_b_player_ids)
+             order by played_at desc
+             limit 50`,
+            [userId],
+          )
     res.status(200).json(result.rows)
     return
   }

@@ -3,7 +3,7 @@ import { useMatches } from '../state/useMatches'
 import { MatchRow } from './MatchRow'
 
 export function HistorialTab({ user, refreshKey }: { user: User; refreshKey: number }) {
-  const { matches, error } = useMatches(user.id, refreshKey)
+  const { matches, error } = useMatches(user.id, refreshKey, 'all')
 
   return (
     <div className="space-y-4">
@@ -23,7 +23,7 @@ export function HistorialTab({ user, refreshKey }: { user: User; refreshKey: num
       {!error && matches !== null && matches.length === 0 && (
         <div className="text-center py-10 opacity-70">
           <p className="font-poster text-lg mb-1">Todavía no hay partidos jugados</p>
-          <p className="text-sm">Cuando termine un partido tuyo, va a aparecer acá.</p>
+          <p className="text-sm">Cuando termine un partido, va a aparecer acá.</p>
         </div>
       )}
 
