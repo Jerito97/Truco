@@ -101,17 +101,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // scope=all trae los últimos partidos de todos los jugadores (para el
     // historial general); el default sigue filtrando solo los del usuario
     // (lo sigue usando el perfil para calcular sus propias estadísticas).
+    // player filtra por cualquier jugador puntual (buscador del historial) y
+    // gana por sobre scope si viene: es el mismo filtro de "partidos donde
+    // jugó tal id", solo que con un id distinto al de quien pregunta.
+    const playerParam = typeof req.query.player === 'string' ? req.query.player : ''
+    const player = UUID_RE.test(playerParam) ? playerParam : null
     const scope = req.query.scope === 'all' ? 'all' : 'mine'
-    const result =
-      scope === 'all'
-        ? await pool.query('select * from matches order by played_at desc limit 50')
-        : await pool.query(
-            `select * from matches
-             where $1 = any(team_a_player_ids) or $1 = any(team_b_player_ids)
-             order by played_at desc
-             limit 50`,
-            [userId],
-          )
+    const filterId = player ?? (scope === 'mine' ? userId : null)
+
+    const result = filterId
+      ? await pool.query(
+          `select * from matches
+           where $1 = any(team_a_player_ids) or $1 = any(team_b_player_ids)
+           order by played_at desc
+           limit 50`,
+          [filterId],
+        )
+      : await pool.query('select * from matches order by played_at desc limit 50')
     res.status(200).json(result.rows)
     return
   }

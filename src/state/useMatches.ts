@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react'
 import type { FinishedMatch } from '../types'
 
-export function useMatches(userId: string, refreshKey: number, scope: 'mine' | 'all' = 'mine') {
+export function useMatches(
+  userId: string,
+  refreshKey: number,
+  scope: 'mine' | 'all' = 'mine',
+  playerFilter?: string | null,
+) {
   const [matches, setMatches] = useState<FinishedMatch[] | null>(null)
   const [error, setError] = useState(false)
 
@@ -10,7 +15,8 @@ export function useMatches(userId: string, refreshKey: number, scope: 'mine' | '
     setMatches(null)
     setError(false)
     const scopeParam = scope === 'all' ? '&scope=all' : ''
-    fetch(`/api/matches?userId=${encodeURIComponent(userId)}${scopeParam}`)
+    const playerParam = playerFilter ? `&player=${encodeURIComponent(playerFilter)}` : ''
+    fetch(`/api/matches?userId=${encodeURIComponent(userId)}${scopeParam}${playerParam}`)
       .then((r) => {
         if (!r.ok) throw new Error()
         return r.json() as Promise<FinishedMatch[]>
@@ -24,7 +30,7 @@ export function useMatches(userId: string, refreshKey: number, scope: 'mine' | '
     return () => {
       cancelled = true
     }
-  }, [userId, refreshKey, scope])
+  }, [userId, refreshKey, scope, playerFilter])
 
   return { matches, error }
 }
