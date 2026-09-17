@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { User } from '../types'
 import { BackIcon, CardsIcon, PlusIcon, SearchIcon } from './icons'
 import { useTeamPresets, type TeamPreset } from '../state/useTeamPresets'
+import { TABBAR_HEIGHT } from './TabBar'
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean)
@@ -308,11 +309,12 @@ export function TeamPicker({
         </div>
       </div>
 
-      {/* 62px = alto real de la TabBar (nav de Inicio/Historial/Perfil) fijada
-          abajo de todo: pegamos esta barra justo arriba, sin hueco. */}
+      {/* Pegada justo arriba de la TabBar (Inicio/Historial/Perfil), sin
+          hueco: comparte su altura real en vez de un número copiado a mano. */}
       <div
-        className="fixed bottom-[62px] left-0 right-0 z-10 px-4 py-3"
+        className="fixed left-0 right-0 z-10 px-4 py-3"
         style={{
+          bottom: TABBAR_HEIGHT,
           backgroundColor: 'var(--color-wood-900)',
           borderTop: '1px solid rgba(203, 170, 106, 0.2)',
           boxShadow: '0 -8px 20px rgba(0,0,0,0.35)',

@@ -64,7 +64,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         score_a, score_b, winner,
         pica_pica_played, pica_pica_total_a, pica_pica_total_b, pica_pica_rounds
       ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14::jsonb)
-      on conflict (client_id) where client_id is not null do nothing
+      on conflict (client_id) where client_id is not null
+        do update set client_id = excluded.client_id
       returning id, played_at`,
       [
         clientId || null,
@@ -85,13 +86,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     )
 
     // Reintento de un partido que ya se había guardado (conflicto por
-    // client_id): no insertamos de nuevo, devolvemos la fila existente.
-    let row = result.rows[0]
-    if (!row && clientId) {
-      const existing = await pool.query('select id, played_at from matches where client_id = $1', [clientId])
-      row = existing.rows[0]
-    }
-    res.status(201).json(row)
+    // client_id): el "do update" no cambia nada de verdad, pero nos deja
+    // devolver la fila existente en la misma consulta en vez de una
+    // segunda ida a la base.
+    res.status(201).json(result.rows[0])
     return
   }
 
