@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { User } from '../types'
 import { BackIcon } from './icons'
+import { formatDate } from '../lib/formatDate'
 
 interface AdminUser {
   id: string
@@ -18,11 +19,6 @@ interface AdminMatch {
   team_b_player_names: string[]
   score_a: number
   score_b: number
-}
-
-function formatDate(iso: string) {
-  const d = new Date(iso)
-  return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
 function UsersPanel({ currentUser }: { currentUser: User }) {
@@ -51,6 +47,7 @@ function UsersPanel({ currentUser }: { currentUser: User }) {
   }
 
   const saveEdit = async (id: string) => {
+    if (busyId === id) return
     const name = editValue.trim()
     setEditingId(null)
     if (!name) return
@@ -111,7 +108,7 @@ function UsersPanel({ currentUser }: { currentUser: User }) {
                 <input
                   value={editValue}
                   onChange={(e) => setEditValue(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && saveEdit(u.id)}
+                  onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
                   onBlur={() => saveEdit(u.id)}
                   autoFocus
                   maxLength={40}

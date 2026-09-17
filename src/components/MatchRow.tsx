@@ -2,15 +2,11 @@ import { useState } from 'react'
 import type { FinishedMatch } from '../types'
 import { ChevronRightIcon } from './icons'
 import { aggregatePicaPicaRounds } from '../lib/picaPica'
+import { formatDate } from '../lib/formatDate'
 
 function joinNames(names: string[]): string {
   if (names.length <= 1) return names.join('')
   return `${names.slice(0, -1).join(', ')} y ${names[names.length - 1]}`
-}
-
-function formatDate(iso: string) {
-  const d = new Date(iso)
-  return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
 export function MatchRow({ match, expandable }: { match: FinishedMatch; expandable?: boolean }) {

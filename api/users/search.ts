@@ -1,6 +1,13 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { getPool } from '../_lib/db.js'
 import { ensureSchema } from '../_lib/ensureSchema.js'
+import { UUID_RE } from '../_lib/validation.js'
+
+// Escapa % y _ (comodines de LIKE) y la barra invertida (nuestro propio
+// carácter de escape) para que el texto buscado se compare literal.
+function escapeLike(s: string): string {
+  return s.replace(/[\\%_]/g, '\\$&')
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {
@@ -13,14 +20,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const q = typeof req.query.q === 'string' ? req.query.q.trim() : ''
   const excludeParam = typeof req.query.exclude === 'string' ? req.query.exclude : ''
-  const excludeIds = new Set(excludeParam.split(',').filter(Boolean))
+  const excludeIds = excludeParam.split(',').filter((id) => UUID_RE.test(id))
 
+  // El exclude se aplica en la consulta (no filtrando la respuesta en JS
+  // después), para que el LIMIT 15 no se gaste en filas que van a terminar
+  // descartadas y la búsqueda no devuelva menos resultados de los que hay.
   const result = q
-    ? await pool.query('select id, name from users where name_lower like $1 order by name limit 15', [
-        '%' + q.toLowerCase() + '%',
-      ])
-    : await pool.query('select id, name from users order by name limit 15')
+    ? await pool.query(
+        `select id, name from users
+         where name_lower like $1 escape '\\' and not (id = any($2::uuid[]))
+         order by name limit 15`,
+        ['%' + escapeLike(q.toLowerCase()) + '%', excludeIds],
+      )
+    : await pool.query(
+        `select id, name from users
+         where not (id = any($1::uuid[]))
+         order by name limit 15`,
+        [excludeIds],
+      )
 
-  const rows = result.rows.filter((r) => !excludeIds.has(r.id as string))
-  res.status(200).json(rows)
+  res.status(200).json(result.rows)
 }

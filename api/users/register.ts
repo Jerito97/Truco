@@ -31,9 +31,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return
   }
 
-  const created = await pool.query(
-    'insert into users (name) values ($1) returning id, name, created_at, is_admin',
-    [name],
-  )
-  res.status(201).json({ exists: false, ...created.rows[0] })
+  try {
+    const created = await pool.query(
+      'insert into users (name) values ($1) returning id, name, created_at, is_admin',
+      [name],
+    )
+    res.status(201).json({ exists: false, ...created.rows[0] })
+  } catch (err) {
+    // Dos registros simultáneos con el mismo nombre pueden pasar el chequeo
+    // de arriba antes de que ninguno de los dos haga commit: si el insert
+    // choca con el índice único, tratamos esto igual que el caso normal de
+    // "ya existe" en vez de dejar pasar un 500.
+    const isUniqueViolation = typeof err === 'object' && err !== null && 'code' in err && err.code === '23505'
+    if (!isUniqueViolation) throw err
+    const existing = await pool.query('select name from users where name_lower = lower($1) limit 1', [name])
+    res.status(200).json({ exists: true, name: existing.rows[0]?.name ?? name })
+  }
 }
