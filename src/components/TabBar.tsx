@@ -9,11 +9,18 @@ const TABS: { id: Tab; label: string; Icon: ComponentType<SVGProps<SVGSVGElement
   { id: 'perfil', label: 'Perfil', Icon: PersonIcon },
 ]
 
+// Alto real de la barra (medido: py-2.5 + ícono + gap + texto). Fijado acá en
+// vez de dejarlo flotar con el contenido para que cualquier otra pantalla que
+// necesite pegarse justo arriba (ver TeamPicker) tenga un único valor del que
+// depender en vez de un número copiado a mano.
+export const TABBAR_HEIGHT = 62
+
 export function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-10"
       style={{
+        height: TABBAR_HEIGHT,
         backgroundColor: 'var(--color-wood-900)',
         borderTop: '1px solid rgba(203, 170, 106, 0.2)',
         boxShadow: '0 -8px 20px rgba(0,0,0,0.35)',

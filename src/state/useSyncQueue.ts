@@ -37,10 +37,16 @@ export function useSyncQueue() {
     try {
       for (const item of queueRef.current) {
         try {
+          // El clientId identifica el partido para que el servidor no lo
+          // duplique si se reintenta: los ítems encolados por una versión
+          // vieja de la app (antes de que el payload lo incluyera) no lo
+          // tienen, así que lo completamos acá con el localId, que siempre
+          // fue el mismo valor.
+          const payload = { clientId: item.localId, ...item.payload }
           const res = await fetch('/api/matches', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(item.payload),
+            body: JSON.stringify(payload),
           })
           if (res.ok) {
             setQueue((q) => q.filter((x) => x.localId !== item.localId))
