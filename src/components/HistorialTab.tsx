@@ -78,6 +78,12 @@ function PlayerFilterBar({
           color: 'var(--color-paper-50)',
         }}
       />
+      {query.trim() && searchError && (
+        <p className="text-xs text-center mt-2" style={{ color: '#d9695f' }}>
+          No se pudo buscar. Revisá la conexión e intentá de nuevo.
+        </p>
+      )}
+
       {query.trim() && !searchError && results.length > 0 && (
         <div
           className="absolute z-10 mt-1 w-full rounded-lg border overflow-hidden"
