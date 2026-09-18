@@ -9,7 +9,10 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // 'prompt' (no 'autoUpdate'): que el usuario decida cuándo recargar en
+      // vez de que la pestaña abierta se recargue sola de golpe en medio de
+      // una partida. Ver src/components/UpdateToast.tsx.
+      registerType: 'prompt',
       // El manifest y los íconos ya están armados a mano en index.html/public
       // (ver public/manifest.webmanifest): este plugin solo se encarga de
       // generar y registrar el service worker que cachea el build para que

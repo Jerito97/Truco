@@ -7,6 +7,7 @@ import { PartidoTab } from './components/PartidoTab'
 import { HistorialTab } from './components/HistorialTab'
 import { ProfileTab } from './components/ProfileTab'
 import { LoginGate } from './components/LoginGate'
+import { UpdateToast } from './components/UpdateToast'
 
 function OfflineBanner() {
   return (
@@ -39,6 +40,7 @@ function App() {
   if (!user) {
     return (
       <>
+        <UpdateToast />
         {!online && <OfflineBanner />}
         <LoginGate
           loading={loading}
@@ -54,6 +56,7 @@ function App() {
 
   return (
     <div className="min-h-full pb-24">
+      <UpdateToast />
       {!online && <OfflineBanner />}
       <main className="max-w-md mx-auto px-4 pt-6">
         {tab === 'inicio' && (
