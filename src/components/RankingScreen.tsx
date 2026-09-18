@@ -11,19 +11,35 @@ interface LeaderboardEntry {
 
 const MEDALS = ['🥇', '🥈', '🥉']
 
+type Period = 'all' | 'year' | 'month'
+
+const PERIOD_LABEL: Record<Period, string> = { all: 'Todo', year: 'Este año', month: 'Este mes' }
+
+function sinceFor(period: Period): string | null {
+  const now = new Date()
+  if (period === 'year') return new Date(now.getFullYear(), 0, 1).toISOString()
+  if (period === 'month') return new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+  return null
+}
+
 export function RankingScreen({ currentUser, onBack }: { currentUser: User; onBack: () => void }) {
+  const [period, setPeriod] = useState<Period>('all')
   const [rows, setRows] = useState<LeaderboardEntry[] | null>(null)
   const [error, setError] = useState(false)
 
   useEffect(() => {
-    fetch('/api/leaderboard')
+    setRows(null)
+    setError(false)
+    const since = sinceFor(period)
+    const query = since ? `?since=${encodeURIComponent(since)}` : ''
+    fetch(`/api/leaderboard${query}`)
       .then((r) => {
         if (!r.ok) throw new Error()
         return r.json() as Promise<LeaderboardEntry[]>
       })
       .then(setRows)
       .catch(() => setError(true))
-  }, [])
+  }, [period])
 
   return (
     <div className="space-y-4">
@@ -37,6 +53,23 @@ export function RankingScreen({ currentUser, onBack }: { currentUser: User; onBa
         <span className="w-5" />
       </div>
 
+      <div className="grid grid-cols-3 gap-2">
+        {(Object.keys(PERIOD_LABEL) as Period[]).map((p) => (
+          <button
+            key={p}
+            type="button"
+            onClick={() => setPeriod(p)}
+            className="py-2 rounded-lg font-bold text-sm border"
+            style={{
+              borderColor: period === p ? 'var(--color-ember-600)' : 'var(--color-wood-600)',
+              color: period === p ? 'var(--color-ember-500)' : 'var(--color-paper-100)',
+            }}
+          >
+            {PERIOD_LABEL[p]}
+          </button>
+        ))}
+      </div>
+
       {error && (
         <p className="text-sm text-center py-4" style={{ color: '#d9695f' }}>
           No se pudo cargar el ranking.
@@ -44,7 +77,7 @@ export function RankingScreen({ currentUser, onBack }: { currentUser: User; onBa
       )}
       {!error && rows === null && <p className="text-center opacity-60 py-6">Cargando...</p>}
       {!error && rows !== null && rows.length === 0 && (
-        <p className="text-sm opacity-60 text-center py-4">Todavía no hay partidos jugados.</p>
+        <p className="text-sm opacity-60 text-center py-4">Todavía no hay partidos jugados{period !== 'all' ? ' en este período' : ''}.</p>
       )}
       {!error && rows !== null && rows.length > 0 && (
         <div className="divide-y" style={{ borderColor: 'rgba(203, 170, 106, 0.15)' }}>
