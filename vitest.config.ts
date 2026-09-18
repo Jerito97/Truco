@@ -1,9 +1,13 @@
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  // VitePWA solo hace falta acá para que exista el módulo virtual
+  // "virtual:pwa-register/react" y no rompa el resolve de UpdateToast.tsx:
+  // el test de ese componente mockea el hook, no le importa el resto.
+  plugins: [react(), tailwindcss(), VitePWA({ registerType: 'prompt' })],
   test: {
     environment: 'jsdom',
     globals: false,
