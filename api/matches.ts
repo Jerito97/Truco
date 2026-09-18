@@ -104,20 +104,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // player filtra por cualquier jugador puntual (buscador del historial) y
     // gana por sobre scope si viene: es el mismo filtro de "partidos donde
     // jugó tal id", solo que con un id distinto al de quien pregunta.
+    // against (solo tiene efecto junto con player) arma el cara a cara:
+    // partidos donde player y against jugaron en equipos contrarios.
     const playerParam = typeof req.query.player === 'string' ? req.query.player : ''
     const player = UUID_RE.test(playerParam) ? playerParam : null
+    const againstParam = typeof req.query.against === 'string' ? req.query.against : ''
+    const against = player && UUID_RE.test(againstParam) ? againstParam : null
     const scope = req.query.scope === 'all' ? 'all' : 'mine'
     const filterId = player ?? (scope === 'mine' ? userId : null)
 
-    const result = filterId
-      ? await pool.query(
-          `select * from matches
-           where $1 = any(team_a_player_ids) or $1 = any(team_b_player_ids)
-           order by played_at desc
-           limit 50`,
-          [filterId],
-        )
-      : await pool.query('select * from matches order by played_at desc limit 50')
+    let result
+    if (player && against) {
+      result = await pool.query(
+        `select * from matches
+         where ($1 = any(team_a_player_ids) and $2 = any(team_b_player_ids))
+            or ($1 = any(team_b_player_ids) and $2 = any(team_a_player_ids))
+         order by played_at desc
+         limit 50`,
+        [player, against],
+      )
+    } else if (filterId) {
+      result = await pool.query(
+        `select * from matches
+         where $1 = any(team_a_player_ids) or $1 = any(team_b_player_ids)
+         order by played_at desc
+         limit 50`,
+        [filterId],
+      )
+    } else {
+      result = await pool.query('select * from matches order by played_at desc limit 50')
+    }
     res.status(200).json(result.rows)
     return
   }
