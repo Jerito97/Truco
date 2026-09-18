@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { User } from '../types'
 import { BackIcon } from './icons'
 import { formatDate } from '../lib/formatDate'
-import { ConfirmDialog } from './Dialog'
+import { ConfirmDialog, DialogButtons, Overlay } from './Dialog'
 
 interface AdminUser {
   id: string
@@ -206,11 +206,144 @@ function UsersPanel({ currentUser }: { currentUser: User }) {
   )
 }
 
+interface MatchEditFields {
+  teamAName: string
+  teamBName: string
+  scoreA: number
+  scoreB: number
+  winner: 'A' | 'B'
+}
+
+const scoreInputStyle = {
+  borderColor: 'rgba(203, 170, 106, 0.35)',
+  backgroundColor: 'rgba(0,0,0,0.2)',
+  color: 'var(--color-paper-50)',
+}
+
+function EditMatchDialog({
+  match,
+  onSave,
+  onCancel,
+}: {
+  match: AdminMatch | null
+  onSave: (id: string, fields: MatchEditFields) => void
+  onCancel: () => void
+}) {
+  const [teamAName, setTeamAName] = useState('')
+  const [teamBName, setTeamBName] = useState('')
+  const [scoreA, setScoreA] = useState('')
+  const [scoreB, setScoreB] = useState('')
+  const [winner, setWinner] = useState<'A' | 'B'>('A')
+
+  // Se re-arma con los datos del partido cada vez que se abre uno nuevo (en
+  // vez de arrastrar lo que había quedado tipeado del partido anterior).
+  useEffect(() => {
+    if (!match) return
+    setTeamAName(match.team_a_name)
+    setTeamBName(match.team_b_name)
+    setScoreA(String(match.score_a))
+    setScoreB(String(match.score_b))
+    setWinner(match.winner)
+  }, [match])
+
+  if (!match) return null
+
+  const parsedA = Number(scoreA)
+  const parsedB = Number(scoreB)
+  const valid =
+    teamAName.trim().length > 0 &&
+    teamBName.trim().length > 0 &&
+    Number.isInteger(parsedA) &&
+    parsedA >= 0 &&
+    Number.isInteger(parsedB) &&
+    parsedB >= 0
+
+  return (
+    <Overlay>
+      <h3 className="font-poster text-xl mb-3" style={{ color: 'var(--color-paper-50)' }}>
+        Editar partido
+      </h3>
+      <div className="space-y-2.5">
+        <input
+          value={teamAName}
+          onChange={(e) => setTeamAName(e.target.value)}
+          placeholder="Nombre del equipo A"
+          maxLength={40}
+          className="w-full rounded-lg px-3 py-2 border outline-none text-sm"
+          style={scoreInputStyle}
+        />
+        <input
+          value={teamBName}
+          onChange={(e) => setTeamBName(e.target.value)}
+          placeholder="Nombre del equipo B"
+          maxLength={40}
+          className="w-full rounded-lg px-3 py-2 border outline-none text-sm"
+          style={scoreInputStyle}
+        />
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            inputMode="numeric"
+            value={scoreA}
+            onChange={(e) => setScoreA(e.target.value)}
+            className="w-full rounded-lg px-3 py-2 border outline-none text-center font-num"
+            style={scoreInputStyle}
+          />
+          <span className="opacity-50 shrink-0">-</span>
+          <input
+            type="number"
+            inputMode="numeric"
+            value={scoreB}
+            onChange={(e) => setScoreB(e.target.value)}
+            className="w-full rounded-lg px-3 py-2 border outline-none text-center font-num"
+            style={scoreInputStyle}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setWinner('A')}
+            className="py-2 rounded-lg text-xs font-bold border truncate px-1"
+            style={{
+              borderColor: winner === 'A' ? 'var(--color-ember-600)' : 'var(--color-wood-600)',
+              color: winner === 'A' ? 'var(--color-ember-500)' : 'var(--color-paper-100)',
+            }}
+          >
+            Ganó {teamAName.trim() || 'equipo A'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setWinner('B')}
+            className="py-2 rounded-lg text-xs font-bold border truncate px-1"
+            style={{
+              borderColor: winner === 'B' ? 'var(--color-ember-600)' : 'var(--color-wood-600)',
+              color: winner === 'B' ? 'var(--color-ember-500)' : 'var(--color-paper-100)',
+            }}
+          >
+            Ganó {teamBName.trim() || 'equipo B'}
+          </button>
+        </div>
+      </div>
+      <DialogButtons
+        cancelLabel="Cancelar"
+        confirmLabel="Guardar"
+        confirmDisabled={!valid}
+        onCancel={onCancel}
+        onConfirm={() =>
+          valid &&
+          onSave(match.id, { teamAName: teamAName.trim(), teamBName: teamBName.trim(), scoreA: parsedA, scoreB: parsedB, winner })
+        }
+      />
+    </Overlay>
+  )
+}
+
 function MatchesPanel({ currentUser }: { currentUser: User }) {
   const [matches, setMatches] = useState<AdminMatch[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busyId, setBusyId] = useState<string | null>(null)
   const [pendingDelete, setPendingDelete] = useState<AdminMatch | null>(null)
+  const [editingMatch, setEditingMatch] = useState<AdminMatch | null>(null)
   const [onlyDuplicates, setOnlyDuplicates] = useState(false)
 
   const load = () => {
@@ -239,6 +372,28 @@ function MatchesPanel({ currentUser }: { currentUser: User }) {
       if (!res.ok && res.status !== 204) {
         const data = await res.json().catch(() => ({}))
         setError(data.error ?? 'No se pudo borrar.')
+      } else {
+        load()
+      }
+    } catch {
+      setError('No se pudo conectar.')
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  const saveEdit = async (id: string, fields: MatchEditFields) => {
+    setEditingMatch(null)
+    setBusyId(id)
+    try {
+      const res = await fetch(`/api/admin/matches/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requesterId: currentUser.id, ...fields }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setError(data.error ?? 'No se pudo guardar.')
       } else {
         load()
       }
@@ -298,6 +453,15 @@ function MatchesPanel({ currentUser }: { currentUser: User }) {
                 </div>
                 <button
                   type="button"
+                  onClick={() => setEditingMatch(m)}
+                  disabled={busyId === m.id}
+                  className="text-xs font-bold px-2 py-1.5 rounded-md border shrink-0 disabled:opacity-30"
+                  style={{ borderColor: 'var(--color-wood-600)', color: 'var(--color-paper-100)' }}
+                >
+                  Editar
+                </button>
+                <button
+                  type="button"
                   onClick={() => setPendingDelete(m)}
                   disabled={busyId === m.id}
                   className="text-xs font-bold px-2 py-1.5 rounded-md border shrink-0 disabled:opacity-30"
@@ -310,6 +474,8 @@ function MatchesPanel({ currentUser }: { currentUser: User }) {
           </div>
         </>
       )}
+
+      <EditMatchDialog match={editingMatch} onSave={saveEdit} onCancel={() => setEditingMatch(null)} />
 
       <ConfirmDialog
         open={pendingDelete !== null}

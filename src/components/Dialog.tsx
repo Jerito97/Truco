@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 
-function Overlay({ children }: { children: ReactNode }) {
+export function Overlay({ children }: { children: ReactNode }) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center px-6"
@@ -21,7 +21,7 @@ function Overlay({ children }: { children: ReactNode }) {
   )
 }
 
-function DialogButtons({
+export function DialogButtons({
   cancelLabel,
   confirmLabel,
   danger,
