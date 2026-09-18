@@ -1,24 +1,23 @@
 import { useEffect, useState } from 'react'
-import type { User } from '../types'
+import type { FinishedMatch, User } from '../types'
 import { useMatches } from '../state/useMatches'
 import { MatchRow } from './MatchRow'
 import { SearchIcon } from './icons'
 
-function PlayerFilterBar({
-  filter,
+function PlayerSearchInput({
+  placeholder,
+  excludeId,
   onSelect,
-  onClear,
 }: {
-  filter: User | null
+  placeholder: string
+  excludeId?: string
   onSelect: (u: User) => void
-  onClear: () => void
 }) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<User[]>([])
   const [searchError, setSearchError] = useState(false)
 
   useEffect(() => {
-    if (filter) return
     setSearchError(false)
     if (!query.trim()) {
       setResults([])
@@ -31,35 +30,14 @@ function PlayerFilterBar({
           if (!r.ok) throw new Error()
           return r.json() as Promise<User[]>
         })
-        .then(setResults)
+        .then((rows) => setResults(excludeId ? rows.filter((u) => u.id !== excludeId) : rows))
         .catch(() => setSearchError(true))
     }, 250)
     return () => {
       clearTimeout(t)
       controller.abort()
     }
-  }, [query, filter])
-
-  if (filter) {
-    return (
-      <div className="flex items-center justify-center">
-        <div className="flex items-center rounded-full border pl-3" style={{ borderColor: 'var(--color-ember-600)' }}>
-          <span className="text-sm font-bold py-1.5" style={{ color: 'var(--color-ember-500)' }}>
-            Partidos de {filter.name}
-          </span>
-          <button
-            type="button"
-            onClick={onClear}
-            aria-label="Quitar filtro"
-            className="w-7 h-7 rounded-full flex items-center justify-center text-sm opacity-70 shrink-0"
-            style={{ color: 'var(--color-paper-100)' }}
-          >
-            ×
-          </button>
-        </div>
-      </div>
-    )
-  }
+  }, [query, excludeId])
 
   return (
     <div className="relative">
@@ -70,7 +48,8 @@ function PlayerFilterBar({
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Filtrar por jugador..."
+        placeholder={placeholder}
+        autoFocus
         className="w-full rounded-lg pl-9 pr-3 py-2.5 border outline-none"
         style={{
           borderColor: 'rgba(203, 170, 106, 0.35)',
@@ -113,9 +92,114 @@ function PlayerFilterBar({
   )
 }
 
+function headToHeadRecord(matches: FinishedMatch[], playerId: string) {
+  let wins = 0
+  for (const m of matches) {
+    const onA = m.team_a_player_ids.includes(playerId)
+    if ((onA && m.winner === 'A') || (!onA && m.winner === 'B')) wins++
+  }
+  return { wins, losses: matches.length - wins }
+}
+
+function PlayerFilterBar({
+  filter,
+  against,
+  matches,
+  onSelectFilter,
+  onSelectAgainst,
+  onClear,
+}: {
+  filter: User | null
+  against: User | null
+  matches: FinishedMatch[] | null
+  onSelectFilter: (u: User) => void
+  onSelectAgainst: (u: User | null) => void
+  onClear: () => void
+}) {
+  const [pickingAgainst, setPickingAgainst] = useState(false)
+
+  if (!filter) {
+    return <PlayerSearchInput placeholder="Filtrar por jugador..." onSelect={onSelectFilter} />
+  }
+
+  if (against) {
+    const record = matches ? headToHeadRecord(matches, filter.id) : null
+    return (
+      <div className="flex flex-col items-center gap-1">
+        <div className="flex items-center rounded-full border pl-3" style={{ borderColor: 'var(--color-ember-600)' }}>
+          <span className="text-sm font-bold py-1.5" style={{ color: 'var(--color-ember-500)' }}>
+            {filter.name} vs {against.name}
+          </span>
+          <button
+            type="button"
+            onClick={onClear}
+            aria-label="Quitar filtro"
+            className="w-7 h-7 rounded-full flex items-center justify-center text-sm opacity-70 shrink-0"
+            style={{ color: 'var(--color-paper-100)' }}
+          >
+            ×
+          </button>
+        </div>
+        {record && (
+          <p className="text-xs opacity-70 font-num">
+            {filter.name} {record.wins} - {record.losses} {against.name}
+          </p>
+        )}
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <div className="flex items-center rounded-full border pl-3" style={{ borderColor: 'var(--color-ember-600)' }}>
+        <span className="text-sm font-bold py-1.5" style={{ color: 'var(--color-ember-500)' }}>
+          Partidos de {filter.name}
+        </span>
+        <button
+          type="button"
+          onClick={onClear}
+          aria-label="Quitar filtro"
+          className="w-7 h-7 rounded-full flex items-center justify-center text-sm opacity-70 shrink-0"
+          style={{ color: 'var(--color-paper-100)' }}
+        >
+          ×
+        </button>
+      </div>
+
+      {pickingAgainst ? (
+        <div className="w-full">
+          <PlayerSearchInput
+            placeholder={`¿Contra quién? (vs ${filter.name})`}
+            excludeId={filter.id}
+            onSelect={(u) => {
+              onSelectAgainst(u)
+              setPickingAgainst(false)
+            }}
+          />
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setPickingAgainst(true)}
+          className="text-xs font-bold underline"
+          style={{ color: 'var(--color-paper-200)' }}
+        >
+          + Comparar contra otro jugador
+        </button>
+      )}
+    </div>
+  )
+}
+
 export function HistorialTab({ user, refreshKey }: { user: User; refreshKey: number }) {
   const [filter, setFilter] = useState<User | null>(null)
-  const { matches, error } = useMatches(user.id, refreshKey, 'all', filter?.id)
+  const [against, setAgainst] = useState<User | null>(null)
+  const { matches, error } = useMatches(user.id, refreshKey, 'all', filter?.id, against?.id)
+
+  const clearFilter = () => {
+    setFilter(null)
+    setAgainst(null)
+  }
 
   return (
     <div className="space-y-4">
@@ -123,7 +207,14 @@ export function HistorialTab({ user, refreshKey }: { user: User; refreshKey: num
         Historial
       </h2>
 
-      <PlayerFilterBar filter={filter} onSelect={setFilter} onClear={() => setFilter(null)} />
+      <PlayerFilterBar
+        filter={filter}
+        against={against}
+        matches={matches}
+        onSelectFilter={setFilter}
+        onSelectAgainst={setAgainst}
+        onClear={clearFilter}
+      />
 
       {error && (
         <div className="text-center py-10 opacity-70">
@@ -136,7 +227,11 @@ export function HistorialTab({ user, refreshKey }: { user: User; refreshKey: num
 
       {!error && matches !== null && matches.length === 0 && (
         <div className="text-center py-10 opacity-70">
-          {filter ? (
+          {against && filter ? (
+            <p className="font-poster text-lg mb-1">
+              {filter.name} y {against.name} todavía no jugaron uno contra el otro
+            </p>
+          ) : filter ? (
             <p className="font-poster text-lg mb-1">{filter.name} todavía no jugó ningún partido</p>
           ) : (
             <>
