@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 import type { User } from '../types'
 import { useMatches } from '../state/useMatches'
+import { useStreaks } from '../state/useStreaks'
 import { BackIcon, ChartIcon, ChevronRightIcon, LogoutIcon, PencilIcon, PersonIcon, ShieldIcon, TrophyIcon } from './icons'
 import { AdminScreen } from './AdminScreen'
 import { StatsScreen } from './StatsScreen'
@@ -112,6 +113,7 @@ export function ProfileTab({
   const [renameError, setRenameError] = useState<string | null>(null)
   const [renaming, setRenaming] = useState(false)
   const { matches } = useMatches(user.id, 0)
+  const streaks = useStreaks(user.id, 0)
   const played = matches?.length ?? 0
   const won =
     matches?.filter(
@@ -218,6 +220,14 @@ export function ProfileTab({
         <div className="w-px" style={{ backgroundColor: 'rgba(203, 170, 106, 0.25)' }} />
         <StatBlock value={`${pct}%`} label="Porcentaje de victorias" />
       </div>
+
+      {streaks && played > 0 && (
+        <div className="flex rounded-2xl border py-4" style={{ borderColor: 'rgba(203, 170, 106, 0.25)' }}>
+          <StatBlock value={streaks.current > 0 ? `${streaks.current} 🔥` : '0'} label="Racha actual" />
+          <div className="w-px" style={{ backgroundColor: 'rgba(203, 170, 106, 0.25)' }} />
+          <StatBlock value={String(streaks.best)} label="Mejor racha" />
+        </div>
+      )}
 
       <div className="divide-y" style={{ borderColor: 'rgba(203, 170, 106, 0.15)' }}>
         <MenuRow icon={<ChartIcon className="w-5 h-5" />} label="Estadísticas" onClick={() => setView('stats')} />
