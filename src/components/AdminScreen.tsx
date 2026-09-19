@@ -259,7 +259,7 @@ function EditMatchDialog({
     parsedB >= 0
 
   return (
-    <Overlay>
+    <Overlay onDismiss={onCancel}>
       <h3 className="font-poster text-xl mb-3" style={{ color: 'var(--color-paper-50)' }}>
         Editar partido
       </h3>

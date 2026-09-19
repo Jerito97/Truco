@@ -1,11 +1,26 @@
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 
-export function Overlay({ children }: { children: ReactNode }) {
+export function Overlay({ children, onDismiss }: { children: ReactNode; onDismiss?: () => void }) {
+  // Paridad con lo que daban gratis los confirm()/prompt() nativos que
+  // reemplaza este diálogo: Escape y tocar afuera también cancelan.
+  useEffect(() => {
+    if (!onDismiss) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onDismiss()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [onDismiss])
+
   return (
     <div
+      data-testid="dialog-backdrop"
       className="fixed inset-0 z-50 flex items-center justify-center px-6"
       style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)' }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onDismiss?.()
+      }}
     >
       <div
         className="w-full max-w-sm rounded-2xl border p-5"
@@ -83,7 +98,7 @@ export function ConfirmDialog({
 }) {
   if (!open) return null
   return (
-    <Overlay>
+    <Overlay onDismiss={onCancel}>
       <h3 className="font-poster text-xl mb-2" style={{ color: 'var(--color-paper-50)' }}>
         {title}
       </h3>
@@ -135,7 +150,7 @@ export function PromptDialog({
   }
 
   return (
-    <Overlay>
+    <Overlay onDismiss={onCancel}>
       <h3 className="font-poster text-xl mb-3" style={{ color: 'var(--color-paper-50)' }}>
         {title}
       </h3>

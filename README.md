@@ -11,7 +11,7 @@ App web para llevar el marcador de partidas de truco 3 vs 3 entre un grupo de am
 ## Pantallas
 
 - **Partido**: armado (buscar e invitar jugadores registrados, nombrar equipos, definir parejas de pica-pica), marcador en vivo, pica-pica y resumen final.
-- **Historial**: partidos jugados por el usuario logueado, con fecha, equipos, resultado y el acumulado de pica-pica si se jugó.
+- **Historial**: todos los partidos jugados por el grupo, con fecha, equipos, resultado y el acumulado de pica-pica si se jugó. Se puede filtrar por un jugador puntual, o comparar a dos jugadores cara a cara (partidos donde jugaron en equipos contrarios, con el récord de victorias entre ellos).
 - **Perfil**: nombre de la cuenta actual y botón para cambiar de usuario.
 
 Se conservan: deshacer el último punto, indicador de mano con botón para pasarla, y revancha rápida con los mismos equipos y parejas.
@@ -41,7 +41,7 @@ Con eso alcanza — al primer login o búsqueda de jugador, la app crea las tabl
 
 ## Modo administrador
 
-Desde Perfil → Modo administrador se puede renombrar o borrar cualquier usuario registrado (útil para limpiar cuentas de prueba). Para habilitarlo:
+Desde Perfil → Modo administrador se puede renombrar o borrar cualquier usuario registrado (útil para limpiar cuentas de prueba), y editar o borrar cualquier partido — incluye un detector de partidos que parecen duplicados (mismos jugadores y resultado, jugados cerca en el tiempo) para poder revisarlos y limpiarlos. Para habilitarlo:
 
 1. En Vercel → el proyecto → **Settings** → **Environment Variables**, agregá otra variable:
    - Name: `ADMIN_CODE`
@@ -55,7 +55,13 @@ Desde Perfil → Modo administrador se puede renombrar o borrar cualquier usuari
 ```bash
 npm install
 npm run dev      # entorno de desarrollo (el frontend; las rutas /api necesitan Vercel + DATABASE_URL)
-npm run build    # build de producción (tsc + vite build)
+npm run build    # build de producción (tsc -b + vite build)
+npm test         # corre los tests (Vitest)
+npm run lint     # oxlint
 ```
+
+`tsc -b` chequea tanto `src/` (la app) como `api/` (las funciones de Vercel) — hay un `tsconfig.api.json` aparte para eso, así que un error de tipos en el backend también frena el build.
+
+Los tests (`src/**/*.test.ts(x)`, Vitest + jsdom + Testing Library) cubren sobre todo la lógica que es fácil romper sin darse cuenta: el estado del partido (`useAppState`) y la cola de sincronización offline (`useSyncQueue`), que es la que evita que un partido quede duplicado en el historial.
 
 Stack: React 19 + TypeScript + Vite + Tailwind CSS v4 + funciones serverless de Vercel + Postgres (Supabase) vía `pg`.
