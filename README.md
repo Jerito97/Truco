@@ -62,6 +62,6 @@ npm run lint     # oxlint
 
 `tsc -b` chequea tanto `src/` (la app) como `api/` (las funciones de Vercel) — hay un `tsconfig.api.json` aparte para eso, así que un error de tipos en el backend también frena el build.
 
-Los tests (`src/**/*.test.ts(x)`, Vitest + jsdom + Testing Library) cubren sobre todo la lógica que es fácil romper sin darse cuenta: el estado del partido (`useAppState`) y la cola de sincronización offline (`useSyncQueue`), que es la que evita que un partido quede duplicado en el historial.
+Los tests (Vitest + jsdom + Testing Library) cubren sobre todo la lógica que es fácil romper sin darse cuenta: el estado del partido (`useAppState`) y la cola de sincronización offline (`useSyncQueue`), que es la que evita que un partido quede duplicado en el historial. Los de `src/` viven al lado de lo que testean (`*.test.ts(x)`); los que testean funciones de `api/` viven en `test/api/` en vez de adentro de `api/` — **Vercel deploya como función serverless cada archivo que encuentra en `api/`** (menos los que arrancan con `_`, como `_lib/`), así que un `.test.ts` puesto ahí cuenta contra el límite de funciones del plan y puede tirar abajo el deploy sin que el build local avise nada.
 
 Stack: React 19 + TypeScript + Vite + Tailwind CSS v4 + funciones serverless de Vercel + Postgres (Supabase) vía `pg`.

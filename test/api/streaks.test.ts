@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { computeStreaks } from './streaks.js'
+import { computeStreaks } from '../../api/streaks.js'
 
 const U = 'user-1'
 

@@ -19,5 +19,9 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["api"]
+  // "test" (no "api/**/*.test.ts"): Vercel trata cada archivo de api/ como
+  // una función serverless (menos los que arrancan con _, como _lib), así
+  // que los tests de las funciones de api/ viven en test/api/ en vez de al
+  // lado — si no, cuentan contra el límite de funciones del plan.
+  "include": ["api", "test"]
 }

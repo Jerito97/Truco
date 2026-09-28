@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { computePicaPicaRecord } from './picaPicaRecord.js'
+import { computePicaPicaRecord } from '../../api/picaPicaRecord.js'
 
 const U = 'user-1'
 
