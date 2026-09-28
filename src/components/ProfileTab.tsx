@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import type { User } from '../types'
 import { useMatches } from '../state/useMatches'
 import { useStreaks } from '../state/useStreaks'
+import { usePicaPicaRecord } from '../state/usePicaPicaRecord'
 import { BackIcon, ChartIcon, ChevronRightIcon, LogoutIcon, PencilIcon, PersonIcon, ShieldIcon, TrophyIcon } from './icons'
 import { AdminScreen } from './AdminScreen'
 import { StatsScreen } from './StatsScreen'
@@ -114,6 +115,7 @@ export function ProfileTab({
   const [renaming, setRenaming] = useState(false)
   const { matches } = useMatches(user.id, 0)
   const streaks = useStreaks(user.id, 0)
+  const picaPicaRecord = usePicaPicaRecord(user.id, 0)
   const played = matches?.length ?? 0
   const won =
     matches?.filter(
@@ -226,6 +228,16 @@ export function ProfileTab({
           <StatBlock value={streaks.current > 0 ? `${streaks.current} 🔥` : '0'} label="Racha actual" />
           <div className="w-px" style={{ backgroundColor: 'rgba(203, 170, 106, 0.25)' }} />
           <StatBlock value={String(streaks.best)} label="Mejor racha" />
+        </div>
+      )}
+
+      {picaPicaRecord && picaPicaRecord.played > 0 && (
+        <div className="flex rounded-2xl border py-4" style={{ borderColor: 'rgba(203, 170, 106, 0.25)' }}>
+          <StatBlock value={String(picaPicaRecord.won)} label="Duelos ganados" />
+          <div className="w-px" style={{ backgroundColor: 'rgba(203, 170, 106, 0.25)' }} />
+          <StatBlock value={String(picaPicaRecord.played)} label="Duelos de pica-pica" />
+          <div className="w-px" style={{ backgroundColor: 'rgba(203, 170, 106, 0.25)' }} />
+          <StatBlock value={`${Math.round((picaPicaRecord.won / picaPicaRecord.played) * 100)}%`} label="Efectividad" />
         </div>
       )}
 

@@ -18,6 +18,11 @@ export interface PicaPicaDuel {
 }
 
 export interface PicaPicaDuelResult {
+  // Los partidos guardados antes de que empezáramos a persistir esto no
+  // tienen aId/bId (solo el nombre de ese momento): el récord agregado de
+  // pica-pica cae al nombre para esos casos viejos.
+  aId?: string
+  bId?: string
   aName: string
   bName: string
   scoreA: number

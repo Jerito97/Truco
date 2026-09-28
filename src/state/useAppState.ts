@@ -232,6 +232,8 @@ export function useAppState() {
       const diff = sumA - sumB
       const roundResult = {
         duels: m.pairings.map((p, i) => ({
+          aId: p.teamAPlayerId,
+          bId: p.teamBPlayerId,
           aName: p.teamAPlayerName,
           bName: p.teamBPlayerName,
           scoreA: m.picaPicaDuels[i]?.scoreA ?? 0,
