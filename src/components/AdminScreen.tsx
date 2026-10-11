@@ -63,6 +63,67 @@ function findDuplicateIds(matches: AdminMatch[]): Set<string> {
   return duplicateIds
 }
 
+function MergeUserDialog({
+  fromUser,
+  users,
+  onMerge,
+  onCancel,
+}: {
+  fromUser: AdminUser | null
+  users: AdminUser[]
+  onMerge: (fromId: string, intoId: string) => void
+  onCancel: () => void
+}) {
+  const [intoId, setIntoId] = useState('')
+  const otherUsers = useMemo(
+    () => users.filter((u) => u.id !== fromUser?.id),
+    [users, fromUser],
+  )
+
+  useEffect(() => {
+    if (fromUser) setIntoId('')
+  }, [fromUser])
+
+  if (!fromUser) return null
+
+  const intoUser = otherUsers.find((u) => u.id === intoId)
+
+  return (
+    <Overlay onDismiss={onCancel}>
+      <h3 className="font-poster text-xl mb-2" style={{ color: 'var(--color-paper-50)' }}>
+        Fusionar usuario
+      </h3>
+      <p className="text-sm opacity-80 mb-3" style={{ color: 'var(--color-paper-100)' }}>
+        Todos los partidos de <strong>{fromUser.name}</strong> van a pasar a la cuenta que elijas, y{' '}
+        <strong>{fromUser.name}</strong> se va a borrar. No se puede deshacer.
+      </p>
+      <select
+        value={intoId}
+        onChange={(e) => setIntoId(e.target.value)}
+        className="w-full rounded-lg px-3 py-2.5 border outline-none text-sm"
+        style={scoreInputStyle}
+      >
+        <option value="" disabled>
+          Elegí la cuenta que queda
+        </option>
+        {otherUsers.map((u) => (
+          <option key={u.id} value={u.id}>
+            {u.name}
+          </option>
+        ))}
+      </select>
+      <DialogButtons
+        cancelLabel="Cancelar"
+        confirmLabel="Fusionar"
+        danger
+        confirmDisabled={!intoUser}
+        onCancel={onCancel}
+        onConfirm={() => intoUser && onMerge(fromUser.id, intoUser.id)}
+      />
+    </Overlay>
+  )
+}
+
 function UsersPanel({ currentUser }: { currentUser: User }) {
   const [users, setUsers] = useState<AdminUser[] | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -70,6 +131,7 @@ function UsersPanel({ currentUser }: { currentUser: User }) {
   const [editValue, setEditValue] = useState('')
   const [busyId, setBusyId] = useState<string | null>(null)
   const [pendingDelete, setPendingDelete] = useState<AdminUser | null>(null)
+  const [mergingUser, setMergingUser] = useState<AdminUser | null>(null)
 
   const load = () => {
     setError(null)
@@ -134,6 +196,28 @@ function UsersPanel({ currentUser }: { currentUser: User }) {
     }
   }
 
+  const merge = async (fromId: string, intoId: string) => {
+    setMergingUser(null)
+    setBusyId(fromId)
+    try {
+      const res = await fetch(`/api/admin/users/${fromId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requesterId: currentUser.id, intoUserId: intoId }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setError(data.error ?? 'No se pudo fusionar.')
+      } else {
+        load()
+      }
+    } catch {
+      setError('No se pudo conectar.')
+    } finally {
+      setBusyId(null)
+    }
+  }
+
   return (
     <div>
       {error && (
@@ -181,6 +265,15 @@ function UsersPanel({ currentUser }: { currentUser: User }) {
               )}
               <button
                 type="button"
+                onClick={() => setMergingUser(u)}
+                disabled={busyId === u.id || (users?.length ?? 0) < 2}
+                className="text-xs font-bold px-2 py-1.5 rounded-md border shrink-0 disabled:opacity-30"
+                style={{ borderColor: 'var(--color-wood-600)', color: 'var(--color-paper-100)' }}
+              >
+                Fusionar
+              </button>
+              <button
+                type="button"
                 onClick={() => setPendingDelete(u)}
                 disabled={busyId === u.id}
                 className="text-xs font-bold px-2 py-1.5 rounded-md border shrink-0 disabled:opacity-30"
@@ -192,6 +285,13 @@ function UsersPanel({ currentUser }: { currentUser: User }) {
           ))}
         </div>
       )}
+
+      <MergeUserDialog
+        fromUser={mergingUser}
+        users={users ?? []}
+        onMerge={merge}
+        onCancel={() => setMergingUser(null)}
+      />
 
       <ConfirmDialog
         open={pendingDelete !== null}

@@ -41,7 +41,7 @@ Con eso alcanza — al primer login o búsqueda de jugador, la app crea las tabl
 
 ## Modo administrador
 
-Desde Perfil → Modo administrador se puede renombrar o borrar cualquier usuario registrado (útil para limpiar cuentas de prueba), y editar o borrar cualquier partido — incluye un detector de partidos que parecen duplicados (mismos jugadores y resultado, jugados cerca en el tiempo) para poder revisarlos y limpiarlos. Para habilitarlo:
+Desde Perfil → Modo administrador se puede renombrar, fusionar o borrar cualquier usuario registrado (útil para limpiar cuentas de prueba o unificar dos cuentas de la misma persona), y editar o borrar cualquier partido — incluye un detector de partidos que parecen duplicados (mismos jugadores y resultado, jugados cerca en el tiempo) para poder revisarlos y limpiarlos. Fusionar pasa todos los partidos de una cuenta a otra (reemplazando al jugador en cada partido, incluido el detalle de pica-pica) y borra la cuenta de origen — no se puede deshacer. Para habilitarlo:
 
 1. En Vercel → el proyecto → **Settings** → **Environment Variables**, agregá otra variable:
    - Name: `ADMIN_CODE`
