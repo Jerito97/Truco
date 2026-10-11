@@ -18,6 +18,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return
   }
 
-  const result = await pool.query('select id, name, created_at, is_admin from users order by created_at desc')
+  const result = await pool.query('select id, name, created_at, is_admin from users order by name_lower')
   res.status(200).json(result.rows)
 }
