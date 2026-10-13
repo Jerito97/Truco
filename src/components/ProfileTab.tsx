@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { User } from '../types'
+import type { FinishedMatch, User } from '../types'
 import { useMatches } from '../state/useMatches'
 import { useStreaks } from '../state/useStreaks'
 import { usePicaPicaRecord } from '../state/usePicaPicaRecord'
@@ -8,6 +8,36 @@ import { BackIcon, ChartIcon, ChevronRightIcon, LogoutIcon, PencilIcon, PersonIc
 import { AdminScreen } from './AdminScreen'
 import { StatsScreen } from './StatsScreen'
 import { RankingScreen } from './RankingScreen'
+
+// Separada del componente para poder testearla sin armar un match real: para
+// cada rival (identificado por id, no por nombre, para no separar a alguien
+// que se renombró en dos entradas distintas) suma cuántas veces jugó en el
+// equipo contrario y cuántas de esas le ganó o le perdió.
+export function computeRivalStats(matches: FinishedMatch[], userId: string) {
+  const rivals = new Map<string, { name: string; wins: number; losses: number }>()
+  for (const m of matches) {
+    const onA = m.team_a_player_ids.includes(userId)
+    const won = (onA && m.winner === 'A') || (!onA && m.winner === 'B')
+    const oppIds = onA ? m.team_b_player_ids : m.team_a_player_ids
+    const oppNames = onA ? m.team_b_player_names : m.team_a_player_names
+    oppIds.forEach((id, i) => {
+      // El nombre puede haber cambiado entre partidos (renombre): nos
+      // quedamos con el primero que aparece, que es el más reciente porque
+      // useMatches trae los partidos ordenados del más nuevo al más viejo.
+      if (!rivals.has(id)) rivals.set(id, { name: oppNames[i], wins: 0, losses: 0 })
+      const r = rivals.get(id)!
+      if (won) r.wins++
+      else r.losses++
+    })
+  }
+  let best: { name: string; wins: number } | null = null
+  let worst: { name: string; losses: number } | null = null
+  for (const r of rivals.values()) {
+    if (r.wins > 0 && (!best || r.wins > best.wins)) best = { name: r.name, wins: r.wins }
+    if (r.losses > 0 && (!worst || r.losses > worst.losses)) worst = { name: r.name, losses: r.losses }
+  }
+  return { best, worst }
+}
 
 function StatBlock({ value, label }: { value: string; label: string }) {
   return (
@@ -116,6 +146,7 @@ export function ProfileTab({
   const { matches } = useMatches(user.id, 0)
   const streaks = useStreaks(user.id, 0)
   const picaPicaRecord = usePicaPicaRecord(user.id, 0)
+  const rivalStats = useMemo(() => (matches ? computeRivalStats(matches, user.id) : null), [matches, user.id])
   const played = matches?.length ?? 0
   const won =
     matches?.filter(
@@ -238,6 +269,23 @@ export function ProfileTab({
           <StatBlock value={String(picaPicaRecord.played)} label="Duelos de pica-pica" />
           <div className="w-px" style={{ backgroundColor: 'rgba(203, 170, 106, 0.25)' }} />
           <StatBlock value={`${Math.round((picaPicaRecord.won / picaPicaRecord.played) * 100)}%`} label="Efectividad" />
+        </div>
+      )}
+
+      {rivalStats && (rivalStats.best || rivalStats.worst) && (
+        <div className="rounded-2xl border p-4 space-y-3" style={{ borderColor: 'rgba(203, 170, 106, 0.25)' }}>
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-sm opacity-70">Rival al que más le ganaste</span>
+            <span className="font-bold text-sm text-right truncate" style={{ color: 'var(--color-ember-500)' }}>
+              {rivalStats.best ? `${rivalStats.best.name} · ${rivalStats.best.wins}` : '—'}
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-sm opacity-70">Rival contra el que más perdiste</span>
+            <span className="font-bold text-sm text-right truncate" style={{ color: 'var(--color-ember-500)' }}>
+              {rivalStats.worst ? `${rivalStats.worst.name} · ${rivalStats.worst.losses}` : '—'}
+            </span>
+          </div>
         </div>
       )}
 
