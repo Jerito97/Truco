@@ -113,6 +113,23 @@ export function PicaPica({
       </div>
 
       <div className="flex-1 flex flex-col justify-center min-h-0 space-y-4">
+        {/* El marcador del partido no se toca desde acá (eso pasa en
+            MatchLive): es solo para no perder de vista cómo va mientras se
+            juega el pica-pica. */}
+        <p className="text-center font-num text-sm">
+          <span className="truncate" style={{ color: 'var(--color-paper-100)' }}>
+            {match.teamAName}
+          </span>{' '}
+          <span className="font-bold text-lg" style={{ color: 'var(--color-ember-500)' }}>
+            {match.scoreA}
+          </span>
+          <span className="opacity-30 mx-1.5">-</span>
+          <span className="font-bold text-lg" style={{ color: 'var(--color-ember-500)' }}>
+            {match.scoreB}
+          </span>{' '}
+          <span style={{ color: 'var(--color-paper-100)' }}>{match.teamBName}</span>
+        </p>
+
         {/* Pica-pica solo es alcanzable con equipos de 3 (ver el gating en
             MatchLive.tsx y MatchSetup.tsx), así que siempre son 3 duelos. */}
         <p className="text-sm opacity-70 text-center">Tres duelos 1 contra 1, al mismo tiempo</p>
