@@ -47,6 +47,8 @@ export function TeamPicker({
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<User[]>([])
   const [searchError, setSearchError] = useState(false)
+  const [registering, setRegistering] = useState(false)
+  const [registerError, setRegisterError] = useState<string | null>(null)
   const { presets, savePreset, deletePreset } = useTeamPresets()
 
   // Solo mostramos presets que calzan con el tamaño de equipo actual y que no
@@ -93,6 +95,32 @@ export function TeamPicker({
       if (prev.length >= teamSize) return prev
       return [...prev, id]
     })
+  }
+
+  // Deja sumar a alguien que todavía no se registró sin que tenga que hacerlo
+  // él mismo desde su teléfono: lo crea y lo selecciona en el acto.
+  const registerNew = async () => {
+    const name = query.trim()
+    if (!name || registering) return
+    setRegistering(true)
+    setRegisterError(null)
+    try {
+      const res = await fetch('/api/users/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, confirm: true }),
+      })
+      if (!res.ok) throw new Error()
+      const data = (await res.json()) as { id: string; name: string }
+      setKnown((k) => ({ ...k, [data.id]: data.name }))
+      setQuery('')
+      setResults([])
+      toggle(data.id)
+    } catch {
+      setRegisterError('No se pudo registrar. Intentá de nuevo.')
+    } finally {
+      setRegistering(false)
+    }
   }
 
   const nameOf = (id: string) => known[id] ?? '?'
@@ -257,6 +285,26 @@ export function TeamPicker({
             <p className="text-sm opacity-60 text-center py-3">
               {query ? 'Nadie con ese nombre todavía.' : 'Escribí para buscar jugadores registrados.'}
             </p>
+          )}
+
+          {!searchError && query.trim().length > 0 && !results.some((u) => u.name.toLowerCase() === query.trim().toLowerCase()) && (
+            <>
+              <button
+                type="button"
+                onClick={registerNew}
+                disabled={registering || remaining === 0}
+                className="w-full flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-bold disabled:opacity-30"
+                style={{ borderColor: 'var(--color-ember-600)', color: 'var(--color-ember-500)' }}
+              >
+                <PlusIcon className="w-4 h-4" />
+                {registering ? 'Registrando...' : `Registrar a "${query.trim()}" como jugador nuevo`}
+              </button>
+              {registerError && (
+                <p className="text-sm text-center" style={{ color: '#d9695f' }}>
+                  {registerError}
+                </p>
+              )}
+            </>
           )}
 
           {!searchError && results.length > 0 && (
