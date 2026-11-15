@@ -13,7 +13,7 @@ App web para llevar el marcador de partidas de truco 3 vs 3 entre un grupo de am
 - **Partido**: armado (buscar e invitar jugadores registrados, o registrar en el momento a alguien que todavía no tiene cuenta, nombrar equipos, definir parejas de pica-pica), marcador en vivo, pica-pica (con el marcador del partido siempre visible) y resumen final. El Inicio también muestra los partidos que cualquier otro dispositivo del grupo está jugando en ese momento, actualizados solos a medida que van sumando puntos.
 - **Historial**: todos los partidos jugados por el grupo, con fecha, equipos, resultado y el acumulado de pica-pica si se jugó. Se puede filtrar por un jugador puntual, o comparar a dos jugadores cara a cara (partidos donde jugaron en equipos contrarios, con el récord de victorias entre ellos).
 - **Ranking general**: posiciones de todo el grupo por porcentaje de victorias (filtrable por todo/año/mes), con una tarjeta fija mostrando tu posición actual y reconocimientos (más ganador, mejor racha vigente, más activo, más efectivo) calculados sobre ese período.
-- **Perfil**: nombre de la cuenta actual, estadísticas propias (incluida la racha actual/mejor y el rival al que más le ganaste o perdiste) y botón para cambiar de usuario.
+- **Perfil**: nombre de la cuenta actual, estadísticas propias (incluida la racha actual/mejor y el rival al que más le ganaste o perdiste), botón para cambiar de usuario, y **Jugadores**: la lista de todos los registrados, para entrar al perfil de cualquiera y ver las mismas estadísticas que las propias.
 
 Se conservan: deshacer el último punto, indicador de mano con botón para pasarla, y revancha rápida con los mismos equipos y parejas.
 

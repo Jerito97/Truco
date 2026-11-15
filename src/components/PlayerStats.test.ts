@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { computeRivalStats } from './ProfileTab'
+import { computeRivalStats } from './PlayerStats'
 import type { FinishedMatch } from '../types'
 
 const U = 'user-1'
