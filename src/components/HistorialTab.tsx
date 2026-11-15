@@ -31,7 +31,13 @@ function PlayerSearchInput({
           return r.json() as Promise<User[]>
         })
         .then((rows) => setResults(excludeId ? rows.filter((u) => u.id !== excludeId) : rows))
-        .catch(() => setSearchError(true))
+        .catch((err) => {
+          // Una búsqueda vieja cancelada por una más nueva (AbortError) no es
+          // una falla real: tratarla como tal tapaba resultados buenos solo
+          // por haber escrito rápido.
+          if (err instanceof DOMException && err.name === 'AbortError') return
+          setSearchError(true)
+        })
     }, 250)
     return () => {
       clearTimeout(t)

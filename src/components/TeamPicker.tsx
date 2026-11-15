@@ -80,7 +80,14 @@ export function TeamPicker({
             return next
           })
         })
-        .catch(() => setSearchError(true))
+        .catch((err) => {
+          // Una búsqueda vieja que se cancela porque ya hay una más nueva en
+          // camino (AbortError) no es una falla real: si la tratáramos como
+          // tal, a veces se mostraría "no se pudo buscar" tapando resultados
+          // que venían bien, solo por haber escrito rápido.
+          if (err instanceof DOMException && err.name === 'AbortError') return
+          setSearchError(true)
+        })
     }, 250)
     return () => {
       clearTimeout(t)
@@ -283,7 +290,7 @@ export function TeamPicker({
 
           {!searchError && results.length === 0 && (
             <p className="text-sm opacity-60 text-center py-3">
-              {query ? 'Nadie con ese nombre todavía.' : 'Escribí para buscar jugadores registrados.'}
+              {query ? 'Nadie con ese nombre todavía.' : 'Todavía no hay nadie registrado.'}
             </p>
           )}
 

@@ -32,16 +32,6 @@ body,
 
 body {
   background-color: var(--color-wood-950);
-  background-image:
-    radial-gradient(ellipse at 50% -10%, rgba(201, 162, 39, 0.1), transparent 55%),
-    repeating-linear-gradient(
-      100deg,
-      rgba(0, 0, 0, 0.14) 0px,
-      rgba(0, 0, 0, 0.14) 1px,
-      transparent 1px,
-      transparent 70px
-    ),
-    linear-gradient(180deg, var(--color-wood-900), var(--color-wood-950));
   color: var(--color-paper-100);
   font-family: var(--font-num);
 }
