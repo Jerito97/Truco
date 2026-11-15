@@ -173,3 +173,22 @@ export function ShieldIcon(props: SVGProps<SVGSVGElement>) {
     </Icon>
   )
 }
+
+export function EyeIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12Z" />
+      <circle cx={12} cy={12} r={2.5} />
+    </Icon>
+  )
+}
+
+export function EyeOffIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M2 12s3.5-6.5 10-6.5c1.6 0 3 .3 4.2.8M22 12s-1 1.9-2.9 3.6M9.9 9.9a2.5 2.5 0 0 0 3.5 3.5" />
+      <path d="M6.1 6.1C3.6 7.8 2 12 2 12s3.5 6.5 10 6.5c1.9 0 3.5-.5 4.8-1.2" />
+      <line x1={3} y1={3} x2={21} y2={21} />
+    </Icon>
+  )
+}
