@@ -54,6 +54,26 @@ async function createSchema(): Promise<void> {
     'create unique index if not exists matches_client_id_idx on matches (client_id) where client_id is not null',
   )
 
+  // Partido que se está jugando ahora mismo en algún dispositivo: se
+  // actualiza solo (sin que quien anota toque nada aparte de sumar o restar
+  // puntos) para que el resto del grupo lo vea "en vivo" desde el Inicio. No
+  // tiene relación con la tabla matches (esa solo recibe partidos
+  // terminados): esta fila se borra apenas el partido termina o se descarta,
+  // o sola a las 12hs sin cambios si el dispositivo lo abandonó a mitad de
+  // partido sin avisar (ver el filtro en el GET ?live=1).
+  await pool.query(`
+    create table if not exists live_matches (
+      id text primary key,
+      team_a_name text not null,
+      team_b_name text not null,
+      team_a_player_names text[] not null,
+      team_b_player_names text[] not null,
+      score_a int not null,
+      score_b int not null,
+      updated_at timestamptz not null default now()
+    )
+  `)
+
   // La app nunca usa la API REST de Supabase (solo se conecta por Postgres
   // directo con DATABASE_URL), pero activamos RLS igual para que las tablas
   // no queden expuestas por esa vía. Al no definir policies, esa API no
@@ -61,6 +81,7 @@ async function createSchema(): Promise<void> {
   // porque usa el rol dueño de la base, que no está sujeto a RLS.
   await pool.query('alter table users enable row level security')
   await pool.query('alter table matches enable row level security')
+  await pool.query('alter table live_matches enable row level security')
 }
 
 export function ensureSchema(): Promise<void> {

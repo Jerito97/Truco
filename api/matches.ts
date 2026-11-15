@@ -92,7 +92,76 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return
   }
 
+  if (req.method === 'PUT') {
+    // Upsert del marcador de un partido en vivo: lo llama el dispositivo que
+    // está jugando, solo, cada vez que cambia el resultado (ver
+    // useLiveMatchSync) — nadie aprieta un botón aparte para esto.
+    const b = req.body ?? {}
+    const { id, teamAName, teamBName, teamAPlayerNames, teamBPlayerNames, scoreA, scoreB } = b
+
+    const valid =
+      typeof id === 'string' &&
+      id.length > 0 &&
+      id.length <= 100 &&
+      typeof teamAName === 'string' &&
+      typeof teamBName === 'string' &&
+      Array.isArray(teamAPlayerNames) &&
+      teamAPlayerNames.every((n: unknown) => typeof n === 'string') &&
+      Array.isArray(teamBPlayerNames) &&
+      teamBPlayerNames.every((n: unknown) => typeof n === 'string') &&
+      typeof scoreA === 'number' &&
+      typeof scoreB === 'number'
+
+    if (!valid) {
+      res.status(400).json({ error: 'Datos de partido en vivo inválidos' })
+      return
+    }
+
+    await pool.query(
+      `insert into live_matches (id, team_a_name, team_b_name, team_a_player_names, team_b_player_names, score_a, score_b, updated_at)
+       values ($1,$2,$3,$4,$5,$6,$7, now())
+       on conflict (id) do update set
+         team_a_name = excluded.team_a_name,
+         team_b_name = excluded.team_b_name,
+         team_a_player_names = excluded.team_a_player_names,
+         team_b_player_names = excluded.team_b_player_names,
+         score_a = excluded.score_a,
+         score_b = excluded.score_b,
+         updated_at = now()`,
+      [id, teamAName, teamBName, teamAPlayerNames, teamBPlayerNames, scoreA, scoreB],
+    )
+    res.status(200).json({ ok: true })
+    return
+  }
+
+  if (req.method === 'DELETE') {
+    // Avisa que un partido dejó de estar en vivo (terminó o se descartó).
+    const id = typeof req.query.id === 'string' ? req.query.id : ''
+    if (!id) {
+      res.status(400).json({ error: 'Falta id' })
+      return
+    }
+    await pool.query('delete from live_matches where id = $1', [id])
+    res.status(204).end()
+    return
+  }
+
   if (req.method === 'GET') {
+    if (req.query.live === '1') {
+      // Limpieza oportunista: un partido abandonado sin terminar (se cerró
+      // la app a mitad de partida) no debería quedar "en vivo" para
+      // siempre, así que lo que no se actualiza en 12hs se descarta acá
+      // mismo en vez de necesitar un cron aparte.
+      await pool.query("delete from live_matches where updated_at < now() - interval '12 hours'")
+      const liveResult = await pool.query(
+        `select id, team_a_name, team_b_name, team_a_player_names, team_b_player_names, score_a, score_b, updated_at
+         from live_matches
+         order by updated_at desc`,
+      )
+      res.status(200).json(liveResult.rows)
+      return
+    }
+
     const userId = typeof req.query.userId === 'string' ? req.query.userId : ''
     if (!userId || !UUID_RE.test(userId)) {
       res.status(400).json({ error: 'Falta userId' })

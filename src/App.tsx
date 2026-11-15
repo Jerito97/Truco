@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useAppState } from './state/useAppState'
 import { useSession } from './state/useSession'
 import { useOnlineStatus } from './state/useOnlineStatus'
+import { useLiveMatchSync } from './state/useLiveMatchSync'
 import { TabBar, type Tab } from './components/TabBar'
 import { PartidoTab } from './components/PartidoTab'
 import { HistorialTab } from './components/HistorialTab'
@@ -25,6 +26,7 @@ function App() {
   const { user, loading, error, pendingName, register, confirmPending, cancelPending, logout, unlockAdmin, renameSelf } =
     useSession()
   const state = useAppState()
+  useLiveMatchSync(state.activeMatch)
   const online = useOnlineStatus()
   const [historialRefreshKey, setHistorialRefreshKey] = useState(0)
 

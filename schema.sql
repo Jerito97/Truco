@@ -36,7 +36,19 @@ create index if not exists matches_team_a_idx on matches using gin (team_a_playe
 create index if not exists matches_team_b_idx on matches using gin (team_b_player_ids);
 create unique index if not exists matches_client_id_idx on matches (client_id) where client_id is not null;
 
+create table if not exists live_matches (
+  id text primary key,
+  team_a_name text not null,
+  team_b_name text not null,
+  team_a_player_names text[] not null,
+  team_b_player_names text[] not null,
+  score_a int not null,
+  score_b int not null,
+  updated_at timestamptz not null default now()
+);
+
 -- La app se conecta por Postgres directo (no usa la API REST de Supabase),
 -- pero activamos RLS para que las tablas no queden expuestas por esa vía.
 alter table users enable row level security;
 alter table matches enable row level security;
+alter table live_matches enable row level security;
