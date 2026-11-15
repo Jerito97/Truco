@@ -27,18 +27,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // descartadas y la búsqueda no devuelva menos resultados de los que hay.
   // (Sin ESCAPE explícito: la barra invertida ya es el escape por default
   // de LIKE en Postgres, así que escapeLike() ya alcanza con eso.)
+  // Sin texto para buscar no hay límite: es el modo "mostrame a todos" para
+  // elegir de una lista en vez de tener que escribir el nombre, así que
+  // cortarla en 15 dejaría afuera a cualquier grupo un poco grande.
   try {
     const result = q
       ? await pool.query(
           `select id, name from users
            where name_lower like $1 and not (id = any($2::uuid[]))
-           order by name limit 15`,
+           order by name_lower limit 15`,
           ['%' + escapeLike(q.toLowerCase()) + '%', excludeIds],
         )
       : await pool.query(
           `select id, name from users
            where not (id = any($1::uuid[]))
-           order by name limit 15`,
+           order by name_lower`,
           [excludeIds],
         )
 
