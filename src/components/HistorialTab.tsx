@@ -200,27 +200,50 @@ function PlayerFilterBar({
 export function HistorialTab({ user, refreshKey }: { user: User; refreshKey: number }) {
   const [filter, setFilter] = useState<User | null>(null)
   const [against, setAgainst] = useState<User | null>(null)
+  // Arranca sin mostrar el buscador (y sin el teclado saltando solo): hay que
+  // tocar la lupa de arriba para pedirlo.
+  const [searchOpen, setSearchOpen] = useState(false)
   const { matches, error } = useMatches(user.id, refreshKey, 'all', filter?.id, against?.id)
 
   const clearFilter = () => {
     setFilter(null)
     setAgainst(null)
+    setSearchOpen(false)
   }
 
   return (
     <div className="space-y-4">
-      <h2 className="font-poster text-2xl text-center" style={{ color: 'var(--color-paper-50)' }}>
-        Historial
-      </h2>
+      <div className="flex items-center justify-between">
+        <span className="w-5" />
+        <h2 className="font-poster text-2xl" style={{ color: 'var(--color-paper-50)' }}>
+          Historial
+        </h2>
+        {filter ? (
+          <span className="w-5" />
+        ) : (
+          <button
+            type="button"
+            onClick={() => setSearchOpen((v) => !v)}
+            aria-label={searchOpen ? 'Cerrar búsqueda' : 'Buscar jugador'}
+          >
+            <SearchIcon
+              className="w-5 h-5"
+              style={{ color: searchOpen ? 'var(--color-ember-500)' : 'var(--color-paper-100)' }}
+            />
+          </button>
+        )}
+      </div>
 
-      <PlayerFilterBar
-        filter={filter}
-        against={against}
-        matches={matches}
-        onSelectFilter={setFilter}
-        onSelectAgainst={setAgainst}
-        onClear={clearFilter}
-      />
+      {(searchOpen || filter) && (
+        <PlayerFilterBar
+          filter={filter}
+          against={against}
+          matches={matches}
+          onSelectFilter={setFilter}
+          onSelectAgainst={setAgainst}
+          onClear={clearFilter}
+        />
+      )}
 
       {error && (
         <div className="text-center py-10 opacity-70">
