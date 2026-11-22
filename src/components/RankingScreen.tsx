@@ -38,40 +38,6 @@ function sortRows(rows: LeaderboardEntry[], mode: SortMode): LeaderboardEntry[] 
   return sorted
 }
 
-// Partidos jugados mínimos para entrar en "El más efectivo": con pocos
-// partidos cualquiera puede estar en 100%, así que ese reconocimiento no
-// dice nada todavía.
-const MIN_PLAYED_FOR_EFFECTIVE = 5
-
-function computeAchievements(rows: LeaderboardEntry[]) {
-  if (rows.length === 0) return null
-  const mostWins = rows.reduce((a, b) => (b.won > a.won ? b : a))
-  const mostActive = rows.reduce((a, b) => (b.played > a.played ? b : a))
-  const eligible = rows.filter((r) => r.played >= MIN_PLAYED_FOR_EFFECTIVE)
-  const mostEffective =
-    eligible.length > 0 ? eligible.reduce((a, b) => (b.won / b.played > a.won / a.played ? b : a)) : null
-  const streakHolder = rows.reduce((a, b) => (b.streak > a.streak ? b : a))
-  return {
-    mostWins: mostWins.won > 0 ? mostWins : null,
-    mostActive,
-    mostEffective,
-    streakHolder: streakHolder.streak > 0 ? streakHolder : null,
-  }
-}
-
-function AchievementCard({ icon, title, name, detail }: { icon: string; title: string; name: string; detail: string }) {
-  return (
-    <div className="rounded-xl border p-3 text-center" style={{ borderColor: 'rgba(203, 170, 106, 0.25)' }}>
-      <div className="text-xl mb-1">{icon}</div>
-      <div className="text-[11px] opacity-60">{title}</div>
-      <div className="font-bold text-sm mt-0.5 truncate" style={{ color: 'var(--color-ember-500)' }}>
-        {name}
-      </div>
-      <div className="text-[11px] opacity-50">{detail}</div>
-    </div>
-  )
-}
-
 export function RankingScreen({ currentUser, onBack }: { currentUser: User; onBack: () => void }) {
   const [sortMode, setSortMode] = useState<SortMode>('performance')
   const [rows, setRows] = useState<LeaderboardEntry[] | null>(null)
@@ -89,7 +55,6 @@ export function RankingScreen({ currentUser, onBack }: { currentUser: User; onBa
       .catch(() => setError(true))
   }, [])
 
-  const achievements = useMemo(() => (rows ? computeAchievements(rows) : null), [rows])
   const sortedRows = useMemo(() => (rows ? sortRows(rows, sortMode) : null), [rows, sortMode])
   const myIndex = sortedRows?.findIndex((r) => r.id === currentUser.id) ?? -1
 
@@ -150,41 +115,6 @@ export function RankingScreen({ currentUser, onBack }: { currentUser: User; onBa
             {Math.round((sortedRows[myIndex].won / sortedRows[myIndex].played) * 100)}%
           </span>
         </button>
-      )}
-
-      {achievements && (
-        <div className="grid grid-cols-2 gap-2">
-          {achievements.mostWins && (
-            <AchievementCard
-              icon="👑"
-              title="El más ganador"
-              name={achievements.mostWins.name}
-              detail={`${achievements.mostWins.won} victorias`}
-            />
-          )}
-          {achievements.streakHolder && (
-            <AchievementCard
-              icon="🔥"
-              title="El imparable"
-              name={achievements.streakHolder.name}
-              detail={`${achievements.streakHolder.streak} en racha`}
-            />
-          )}
-          <AchievementCard
-            icon="🏃"
-            title="El más activo"
-            name={achievements.mostActive.name}
-            detail={`${achievements.mostActive.played} partidas`}
-          />
-          {achievements.mostEffective && (
-            <AchievementCard
-              icon="🎯"
-              title="El más efectivo"
-              name={achievements.mostEffective.name}
-              detail={`${Math.round((achievements.mostEffective.won / achievements.mostEffective.played) * 100)}% (mín. ${MIN_PLAYED_FOR_EFFECTIVE})`}
-            />
-          )}
-        </div>
       )}
 
       {!error && sortedRows !== null && sortedRows.length > 0 && (
