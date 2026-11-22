@@ -12,15 +12,30 @@ interface LeaderboardEntry {
 
 const MEDALS = ['🥇', '🥈', '🥉']
 
-type Period = 'all' | 'year' | 'month'
+type SortMode = 'performance' | 'wins' | 'active' | 'streak'
 
-const PERIOD_LABEL: Record<Period, string> = { all: 'Todo', year: 'Este año', month: 'Este mes' }
+const SORT_LABEL: Record<SortMode, string> = {
+  performance: 'Rendimiento',
+  wins: 'Más victorias',
+  active: 'Más activo',
+  streak: 'Mejor racha',
+}
 
-function sinceFor(period: Period): string | null {
-  const now = new Date()
-  if (period === 'year') return new Date(now.getFullYear(), 0, 1).toISOString()
-  if (period === 'month') return new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
-  return null
+// Desempate siempre igual (más partidos, después nombre) para que el orden
+// no "salte" sin sentido entre jugadores empatados en el criterio principal.
+function sortRows(rows: LeaderboardEntry[], mode: SortMode): LeaderboardEntry[] {
+  const byTiebreak = (a: LeaderboardEntry, b: LeaderboardEntry) => b.played - a.played || a.name.localeCompare(b.name)
+  const sorted = [...rows]
+  if (mode === 'wins') {
+    sorted.sort((a, b) => b.won - a.won || byTiebreak(a, b))
+  } else if (mode === 'active') {
+    sorted.sort((a, b) => b.played - a.played || b.won - a.won || a.name.localeCompare(b.name))
+  } else if (mode === 'streak') {
+    sorted.sort((a, b) => b.streak - a.streak || byTiebreak(a, b))
+  } else {
+    sorted.sort((a, b) => b.won / b.played - a.won / a.played || byTiebreak(a, b))
+  }
+  return sorted
 }
 
 // Partidos jugados mínimos para entrar en "El más efectivo": con pocos
@@ -58,26 +73,25 @@ function AchievementCard({ icon, title, name, detail }: { icon: string; title: s
 }
 
 export function RankingScreen({ currentUser, onBack }: { currentUser: User; onBack: () => void }) {
-  const [period, setPeriod] = useState<Period>('all')
+  const [sortMode, setSortMode] = useState<SortMode>('performance')
   const [rows, setRows] = useState<LeaderboardEntry[] | null>(null)
   const [error, setError] = useState(false)
 
   useEffect(() => {
     setRows(null)
     setError(false)
-    const since = sinceFor(period)
-    const query = since ? `?since=${encodeURIComponent(since)}` : ''
-    fetch(`/api/leaderboard${query}`)
+    fetch('/api/leaderboard')
       .then((r) => {
         if (!r.ok) throw new Error()
         return r.json() as Promise<LeaderboardEntry[]>
       })
       .then(setRows)
       .catch(() => setError(true))
-  }, [period])
+  }, [])
 
   const achievements = useMemo(() => (rows ? computeAchievements(rows) : null), [rows])
-  const myIndex = rows?.findIndex((r) => r.id === currentUser.id) ?? -1
+  const sortedRows = useMemo(() => (rows ? sortRows(rows, sortMode) : null), [rows, sortMode])
+  const myIndex = sortedRows?.findIndex((r) => r.id === currentUser.id) ?? -1
 
   const goToMyRow = () => {
     document.getElementById(`rank-row-${currentUser.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -95,19 +109,19 @@ export function RankingScreen({ currentUser, onBack }: { currentUser: User; onBa
         <span className="w-5" />
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
-        {(Object.keys(PERIOD_LABEL) as Period[]).map((p) => (
+      <div className="grid grid-cols-2 gap-2">
+        {(Object.keys(SORT_LABEL) as SortMode[]).map((m) => (
           <button
-            key={p}
+            key={m}
             type="button"
-            onClick={() => setPeriod(p)}
+            onClick={() => setSortMode(m)}
             className="py-2 rounded-lg font-bold text-sm border"
             style={{
-              borderColor: period === p ? 'var(--color-ember-600)' : 'var(--color-wood-600)',
-              color: period === p ? 'var(--color-ember-500)' : 'var(--color-paper-100)',
+              borderColor: sortMode === m ? 'var(--color-ember-600)' : 'var(--color-wood-600)',
+              color: sortMode === m ? 'var(--color-ember-500)' : 'var(--color-paper-100)',
             }}
           >
-            {PERIOD_LABEL[p]}
+            {SORT_LABEL[m]}
           </button>
         ))}
       </div>
@@ -117,12 +131,12 @@ export function RankingScreen({ currentUser, onBack }: { currentUser: User; onBa
           No se pudo cargar el ranking.
         </p>
       )}
-      {!error && rows === null && <p className="text-center opacity-60 py-6">Cargando...</p>}
-      {!error && rows !== null && rows.length === 0 && (
-        <p className="text-sm opacity-60 text-center py-4">Todavía no hay partidos jugados{period !== 'all' ? ' en este período' : ''}.</p>
+      {!error && sortedRows === null && <p className="text-center opacity-60 py-6">Cargando...</p>}
+      {!error && sortedRows !== null && sortedRows.length === 0 && (
+        <p className="text-sm opacity-60 text-center py-4">Todavía no hay partidos jugados.</p>
       )}
 
-      {myIndex !== -1 && rows && (
+      {myIndex !== -1 && sortedRows && (
         <button
           type="button"
           onClick={goToMyRow}
@@ -133,7 +147,7 @@ export function RankingScreen({ currentUser, onBack }: { currentUser: User; onBa
             Tu posición: #{myIndex + 1}
           </span>
           <span className="font-num text-sm font-bold" style={{ color: 'var(--color-ember-500)' }}>
-            {Math.round((rows[myIndex].won / rows[myIndex].played) * 100)}%
+            {Math.round((sortedRows[myIndex].won / sortedRows[myIndex].played) * 100)}%
           </span>
         </button>
       )}
@@ -173,11 +187,21 @@ export function RankingScreen({ currentUser, onBack }: { currentUser: User; onBa
         </div>
       )}
 
-      {!error && rows !== null && rows.length > 0 && (
+      {!error && sortedRows !== null && sortedRows.length > 0 && (
         <div className="divide-y" style={{ borderColor: 'rgba(203, 170, 106, 0.15)' }}>
-          {rows.map((r, i) => {
+          {sortedRows.map((r, i) => {
             const pct = Math.round((r.won / r.played) * 100)
             const isMe = r.id === currentUser.id
+            const highlight =
+              sortMode === 'wins'
+                ? String(r.won)
+                : sortMode === 'active'
+                  ? String(r.played)
+                  : sortMode === 'streak'
+                    ? r.streak > 0
+                      ? `${r.streak} 🔥`
+                      : '0'
+                    : `${pct}%`
             return (
               <div key={r.id} id={`rank-row-${r.id}`} className="flex items-center gap-3 py-3">
                 <span className="text-sm w-6 text-center shrink-0 opacity-70">{MEDALS[i] ?? i + 1}</span>
@@ -192,10 +216,10 @@ export function RankingScreen({ currentUser, onBack }: { currentUser: User; onBa
                   {r.won}V - {r.played - r.won}D
                 </span>
                 <span
-                  className="font-num text-sm font-bold w-12 text-right shrink-0"
+                  className="font-num text-sm font-bold w-14 text-right shrink-0"
                   style={{ color: 'var(--color-ember-500)' }}
                 >
-                  {pct}%
+                  {highlight}
                 </span>
               </div>
             )
