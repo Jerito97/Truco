@@ -8,7 +8,11 @@ function joinNames(names: string[]): string {
 }
 
 export function MatchRow({ match, onSelect }: { match: FinishedMatch; onSelect: (match: FinishedMatch) => void }) {
-  const aWins = match.winner === 'A'
+  // Por puntaje, no por match.winner: ese campo puede quedar desactualizado
+  // si el partido se editó después desde Admin (cambiás el puntaje pero no
+  // tocás el botón de ganador), y ahí el ojo del usuario manda: gana el que
+  // tiene más puntos en pantalla.
+  const aWins = match.score_a >= match.score_b
   // El que ganó va siempre arriba (grande y dorado) y el que perdió abajo
   // (chico y apagado), sea cual sea el equipo A o B — no el equipo A fijo
   // arriba y el B abajo, que dejaba a un ganador con letra chica.

@@ -7,7 +7,9 @@ import { MatchResultCard } from './MatchResultCard'
 
 export function MatchDetailScreen({ match, onBack }: { match: FinishedMatch; onBack: () => void }) {
   const [sharing, setSharing] = useState(false)
-  const aWins = match.winner === 'A'
+  // Por puntaje, no por match.winner (ver MatchRow.tsx): el puntaje en
+  // pantalla es la verdad que el usuario está mirando.
+  const aWins = match.score_a >= match.score_b
   const winnerName = aWins ? match.team_a_name : match.team_b_name
 
   const handleShare = async () => {
