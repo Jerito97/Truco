@@ -1,5 +1,16 @@
-import type { ActiveMatch } from '../types'
+import type { PicaPicaRoundResult } from '../types'
 import { aggregatePicaPicaRounds } from './picaPica'
+
+// Solo lo que hace falta para dibujar la imagen: así sirve tanto para el
+// partido activo (resumen al terminar) como para uno ya guardado en el
+// Historial, sin acoplarse a ActiveMatch.
+interface ShareableMatch {
+  teamAName: string
+  teamBName: string
+  scoreA: number
+  scoreB: number
+  picaPicaRoundsHistory: PicaPicaRoundResult[]
+}
 
 // Dibujado a mano en canvas (en vez de renderizar el DOM a imagen) para no
 // sumar una librería aparte: son pocos elementos y las fuentes (Georgia,
@@ -13,7 +24,7 @@ const EMBER_500 = '#c9a227'
 
 const SIZE = 1080
 
-export function generateShareImageBlob(match: ActiveMatch): Promise<Blob | null> {
+export function generateShareImageBlob(match: ShareableMatch): Promise<Blob | null> {
   const canvas = document.createElement('canvas')
   canvas.width = SIZE
   canvas.height = SIZE

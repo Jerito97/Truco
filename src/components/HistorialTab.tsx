@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { FinishedMatch, User } from '../types'
 import { useMatches } from '../state/useMatches'
 import { MatchRow } from './MatchRow'
+import { MatchDetailScreen } from './MatchDetailScreen'
 import { SearchIcon } from './icons'
 
 function PlayerSearchInput({
@@ -203,12 +204,17 @@ export function HistorialTab({ user, refreshKey }: { user: User; refreshKey: num
   // Arranca sin mostrar el buscador (y sin el teclado saltando solo): hay que
   // tocar la lupa de arriba para pedirlo.
   const [searchOpen, setSearchOpen] = useState(false)
+  const [viewingMatch, setViewingMatch] = useState<FinishedMatch | null>(null)
   const { matches, error } = useMatches(user.id, refreshKey, 'all', filter?.id, against?.id)
 
   const clearFilter = () => {
     setFilter(null)
     setAgainst(null)
     setSearchOpen(false)
+  }
+
+  if (viewingMatch) {
+    return <MatchDetailScreen match={viewingMatch} onBack={() => setViewingMatch(null)} />
   }
 
   return (
@@ -274,7 +280,7 @@ export function HistorialTab({ user, refreshKey }: { user: User; refreshKey: num
       {!error && matches !== null && matches.length > 0 && (
         <div className="divide-y" style={{ borderColor: 'rgba(203, 170, 106, 0.2)' }}>
           {matches.map((m) => (
-            <MatchRow key={m.id} match={m} expandable />
+            <MatchRow key={m.id} match={m} onSelect={setViewingMatch} />
           ))}
         </div>
       )}
