@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import type { ActiveMatch } from '../types'
 import { BackIcon, EyeIcon, EyeOffIcon } from './icons'
+import { useElapsedSeconds } from '../state/useElapsedSeconds'
+import { formatDuration } from '../lib/formatDuration'
 
 function MiniButton({
   onClick,
@@ -40,8 +42,6 @@ function DuelCard({
   bScore,
   onAddB,
   onSubB,
-  revealed,
-  onToggleReveal,
 }: {
   aName: string
   aScore: number
@@ -51,8 +51,6 @@ function DuelCard({
   bScore: number
   onAddB: () => void
   onSubB: () => void
-  revealed: boolean
-  onToggleReveal: () => void
 }) {
   return (
     <div
@@ -66,23 +64,12 @@ function DuelCard({
         <div className="flex items-center justify-center gap-2">
           <MiniButton onClick={onSubA} variant="sub" label={`Restar a ${aName}`} disabled={aScore <= 0} />
           <span className="font-num text-xl font-bold w-6 text-center" style={{ color: 'var(--color-paper-50)' }}>
-            {revealed ? aScore : '•'}
+            {aScore}
           </span>
           <MiniButton onClick={onAddA} variant="add" label={`Sumar a ${aName}`} />
         </div>
       </div>
-      <button
-        type="button"
-        onClick={onToggleReveal}
-        aria-label={revealed ? 'Ocultar este duelo' : 'Ver este duelo'}
-        className="shrink-0 px-1 py-1 opacity-70"
-      >
-        {revealed ? (
-          <EyeIcon className="w-4 h-4" style={{ color: 'var(--color-ember-500)' }} />
-        ) : (
-          <EyeOffIcon className="w-4 h-4" style={{ color: 'var(--color-paper-100)' }} />
-        )}
-      </button>
+      <span className="opacity-30 text-xs px-1 shrink-0">vs</span>
       <div className="flex-1 text-center min-w-0">
         <p className="text-xs mb-1.5 truncate" style={{ color: 'var(--color-paper-100)' }}>
           {bName}
@@ -90,7 +77,7 @@ function DuelCard({
         <div className="flex items-center justify-center gap-2">
           <MiniButton onClick={onSubB} variant="sub" label={`Restar a ${bName}`} disabled={bScore <= 0} />
           <span className="font-num text-xl font-bold w-6 text-center" style={{ color: 'var(--color-paper-50)' }}>
-            {revealed ? bScore : '•'}
+            {bScore}
           </span>
           <MiniButton onClick={onAddB} variant="add" label={`Sumar a ${bName}`} />
         </div>
@@ -115,14 +102,12 @@ export function PicaPica({
   const sumA = match.picaPicaDuels.reduce((acc, d) => acc + d.scoreA, 0)
   const sumB = match.picaPicaDuels.reduce((acc, d) => acc + d.scoreB, 0)
   const diff = sumA - sumB
+  const elapsed = useElapsedSeconds(match.startedAt)
 
-  // Arranca todo tapado (así no se sabe cómo va ningún duelo hasta que lo
-  // pidas vos): por diseño vive solo acá, no en el estado del partido, para
-  // no persistirlo ni sincronizarlo con nada.
-  const [revealed, setRevealed] = useState<boolean[]>(() => match.pairings.map(() => false))
-  const toggleReveal = (i: number) => {
-    setRevealed((prev) => prev.map((v, idx) => (idx === i ? !v : v)))
-  }
+  // Lo único que se tapa es el acumulado total (cuánto suma hasta ahora al
+  // marcador del partido): cada duelo en sí se ve siempre, para que cada
+  // pareja pueda seguir su propio 1 contra 1 con normalidad.
+  const [totalRevealed, setTotalRevealed] = useState(false)
 
   return (
     <div className="screen-fill flex flex-col">
@@ -135,6 +120,7 @@ export function PicaPica({
         </h2>
         <span className="w-5" />
       </div>
+      <p className="text-center font-num text-xs opacity-50 -mt-1">{formatDuration(elapsed)}</p>
 
       <div className="flex-1 flex flex-col justify-center min-h-0 space-y-4">
         {/* El marcador del partido no se toca desde acá (eso pasa en
@@ -170,17 +156,31 @@ export function PicaPica({
               bScore={match.picaPicaDuels[i]?.scoreB ?? 0}
               onAddB={() => onAdd(i, 'B')}
               onSubB={() => onSub(i, 'B')}
-              revealed={revealed[i] ?? false}
-              onToggleReveal={() => toggleReveal(i)}
             />
           ))}
         </div>
 
-        <div className="text-center font-num text-sm opacity-80">
-          {diff === 0 && 'Diferencia: 0 (no suma a nadie todavía)'}
-          {diff > 0 && `Diferencia: +${diff} para ${match.teamAName}`}
-          {diff < 0 && `Diferencia: +${-diff} para ${match.teamBName}`}
-        </div>
+        <button
+          type="button"
+          onClick={() => setTotalRevealed((v) => !v)}
+          className="flex items-center justify-center gap-2 mx-auto text-sm opacity-80"
+        >
+          {totalRevealed ? (
+            <>
+              <EyeIcon className="w-4 h-4 shrink-0" style={{ color: 'var(--color-ember-500)' }} />
+              <span className="font-num">
+                {diff === 0 && 'Diferencia: 0 (no suma a nadie todavía)'}
+                {diff > 0 && `Diferencia: +${diff} para ${match.teamAName}`}
+                {diff < 0 && `Diferencia: +${-diff} para ${match.teamBName}`}
+              </span>
+            </>
+          ) : (
+            <>
+              <EyeOffIcon className="w-4 h-4 shrink-0" style={{ color: 'var(--color-paper-100)' }} />
+              <span>Ver cómo va el total</span>
+            </>
+          )}
+        </button>
 
         <button
           type="button"

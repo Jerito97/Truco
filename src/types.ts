@@ -74,6 +74,8 @@ export interface FinishedMatch {
   pica_pica_total_a: number
   pica_pica_total_b: number
   pica_pica_rounds: PicaPicaRoundResult[]
+  // Los partidos guardados antes de este campo no lo tienen.
+  duration_seconds: number | null
 }
 
 export interface AppState {

@@ -3,6 +3,7 @@ import type { FinishedMatch } from '../types'
 import { ChevronRightIcon } from './icons'
 import { aggregatePicaPicaRounds } from '../lib/picaPica'
 import { formatDate } from '../lib/formatDate'
+import { formatDuration } from '../lib/formatDuration'
 
 function joinNames(names: string[]): string {
   if (names.length <= 1) return names.join('')
@@ -35,6 +36,7 @@ export function MatchRow({ match, expandable }: { match: FinishedMatch; expandab
           </p>
           <p className="text-xs opacity-50 mt-0.5">
             {formatDate(match.played_at)} · Finalizado
+            {match.duration_seconds != null && ` · ${formatDuration(match.duration_seconds)}`}
             {match.pica_pica_played && ' · pica-pica'}
           </p>
         </div>

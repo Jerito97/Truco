@@ -47,6 +47,9 @@ async function createSchema(): Promise<void> {
     "alter table matches add column if not exists pica_pica_rounds jsonb not null default '[]'::jsonb",
   )
   await pool.query('alter table matches add column if not exists client_id text')
+  // Nulo para los partidos guardados antes de este campo (no hay forma de
+  // reconstruirlo después del hecho).
+  await pool.query('alter table matches add column if not exists duration_seconds int')
   // Partido ya guardado que se reintenta (reinicio de la app antes de vaciar
   // la cola local, doble POST, etc.): el client_id identifica ese partido
   // desde el dispositivo, así el insert de abajo lo ignora en vez de duplicarlo.
