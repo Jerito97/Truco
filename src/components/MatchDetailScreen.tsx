@@ -73,6 +73,7 @@ export function MatchDetailScreen({ match, onBack }: { match: FinishedMatch; onB
         picaPicaTotalB={match.pica_pica_total_b}
         picaPicaRounds={match.pica_pica_rounds}
         durationSeconds={match.duration_seconds}
+        scoreEvents={match.score_events}
       />
 
       <button

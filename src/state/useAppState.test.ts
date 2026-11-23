@@ -79,6 +79,57 @@ describe('useAppState', () => {
     expect(result.current.activeMatch?.scoreA).toBe(TARGET_SCORE) // no cambia: ya terminó
   })
 
+  describe('scoreEvents (para el gráfico de progresión)', () => {
+    it('addPoint registra un evento por cada punto, del equipo que corresponde', () => {
+      const { result } = renderHook(() => useAppState())
+      act(() => result.current.startMatch(setup))
+      act(() => result.current.addPoint('A'))
+      act(() => result.current.addPoint('B'))
+
+      const events = result.current.activeMatch?.scoreEvents
+      expect(events).toHaveLength(2)
+      expect(events?.[0]).toMatchObject({ team: 'A', delta: 1 })
+      expect(events?.[1]).toMatchObject({ team: 'B', delta: 1 })
+    })
+
+    it('subtractPoint deshace el último evento de ese equipo, no el de otro', () => {
+      const { result } = renderHook(() => useAppState())
+      act(() => result.current.startMatch(setup))
+      act(() => result.current.addPoint('A'))
+      act(() => result.current.addPoint('B'))
+      act(() => result.current.subtractPoint('A'))
+
+      const events = result.current.activeMatch?.scoreEvents
+      expect(events).toHaveLength(1)
+      expect(events?.[0]).toMatchObject({ team: 'B', delta: 1 })
+    })
+
+    it('closePicaPica agrega un solo evento con la diferencia completa, al equipo que la ganó', () => {
+      const { result } = renderHook(() => useAppState())
+      act(() => result.current.startMatch(setup))
+      act(() => result.current.enterPicaPica())
+      act(() => result.current.addPicaPicaPoint(0, 'A'))
+      act(() => result.current.addPicaPicaPoint(0, 'A'))
+      act(() => result.current.addPicaPicaPoint(1, 'B'))
+      act(() => result.current.closePicaPica()) // sumA=2, sumB=1, diff=+1 para A
+
+      const events = result.current.activeMatch?.scoreEvents
+      expect(events).toHaveLength(1)
+      expect(events?.[0]).toMatchObject({ team: 'A', delta: 1 })
+    })
+
+    it('closePicaPica no agrega ningún evento si empataron', () => {
+      const { result } = renderHook(() => useAppState())
+      act(() => result.current.startMatch(setup))
+      act(() => result.current.enterPicaPica())
+      act(() => result.current.addPicaPicaPoint(0, 'A'))
+      act(() => result.current.addPicaPicaPoint(1, 'B'))
+      act(() => result.current.closePicaPica()) // sumA=1, sumB=1, diff=0
+
+      expect(result.current.activeMatch?.scoreEvents).toHaveLength(0)
+    })
+  })
+
   it('rematch arma un partido nuevo (id distinto, 0 a 0) e intercambia la mano', () => {
     const { result } = renderHook(() => useAppState())
     act(() => result.current.startMatch(setup))

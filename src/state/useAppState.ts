@@ -1,8 +1,27 @@
 import { useCallback, useLayoutEffect, useEffect, useState } from 'react'
 import { makeId } from '../lib/id'
-import type { ActiveMatch, AppState, Pairing } from '../types'
+import type { ActiveMatch, AppState, Pairing, ScoreEvent } from '../types'
 import { TARGET_SCORE } from '../types'
 import { useSyncQueue } from './useSyncQueue'
+
+function elapsedSeconds(startedAt: string): number {
+  return Math.max(0, Math.round((Date.now() - new Date(startedAt).getTime()) / 1000))
+}
+
+// Deshace el último punto sumado a mano a ese equipo: baja en 1 el delta del
+// evento más reciente (o lo saca entero si era de 1), nunca el de otro
+// equipo ni uno más viejo. Mantiene el invariante de que sumar los deltas de
+// un equipo en scoreEvents da exactamente su score actual.
+function undoLastPointFor(events: ScoreEvent[], team: 'A' | 'B'): ScoreEvent[] {
+  for (let i = events.length - 1; i >= 0; i--) {
+    if (events[i].team !== team) continue
+    if (events[i].delta > 1) {
+      return events.map((e, idx) => (idx === i ? { ...e, delta: e.delta - 1 } : e))
+    }
+    return events.filter((_, idx) => idx !== i)
+  }
+  return events
+}
 
 function buildFreshMatch(base: {
   teamAName: string
@@ -26,6 +45,7 @@ function buildFreshMatch(base: {
     picaPicaTotalB: 0,
     picaPicaRounds: 0,
     picaPicaRoundsHistory: [],
+    scoreEvents: [],
     startedAt: new Date().toISOString(),
   }
 }
@@ -91,6 +111,7 @@ export function useAppState() {
       picaPicaTotalB: m.picaPicaTotalB,
       picaPicaRounds: m.picaPicaRoundsHistory,
       durationSeconds,
+      scoreEvents: m.scoreEvents,
     })
   }, [state.activeMatch, enqueue])
 
@@ -157,6 +178,7 @@ export function useAppState() {
         ...m,
         scoreA: team === 'A' ? m.scoreA + 1 : m.scoreA,
         scoreB: team === 'B' ? m.scoreB + 1 : m.scoreB,
+        scoreEvents: [...m.scoreEvents, { team, atSeconds: elapsedSeconds(m.startedAt), delta: 1 }],
       }
       return { ...s, activeMatch: finishIfNeeded(updated) }
     })
@@ -172,6 +194,7 @@ export function useAppState() {
         ...m,
         scoreA: team === 'A' ? m.scoreA - 1 : m.scoreA,
         scoreB: team === 'B' ? m.scoreB - 1 : m.scoreB,
+        scoreEvents: undoLastPointFor(m.scoreEvents, team),
       }
       return { ...s, activeMatch: updated }
     })
@@ -234,6 +257,10 @@ export function useAppState() {
       const sumA = m.picaPicaDuels.reduce((acc, d) => acc + d.scoreA, 0)
       const sumB = m.picaPicaDuels.reduce((acc, d) => acc + d.scoreB, 0)
       const diff = sumA - sumB
+      const winnerTeam: 'A' | 'B' | null = diff > 0 ? 'A' : diff < 0 ? 'B' : null
+      const scoreEvents = winnerTeam
+        ? [...m.scoreEvents, { team: winnerTeam, atSeconds: elapsedSeconds(m.startedAt), delta: Math.abs(diff) }]
+        : m.scoreEvents
       const roundResult = {
         duels: m.pairings.map((p, i) => ({
           aId: p.teamAPlayerId,
@@ -254,6 +281,7 @@ export function useAppState() {
         picaPicaTotalB: m.picaPicaTotalB + sumB,
         picaPicaRounds: m.picaPicaRounds + 1,
         picaPicaRoundsHistory: [...m.picaPicaRoundsHistory, roundResult],
+        scoreEvents,
       }
       return { ...s, activeMatch: finishIfNeeded(updated) }
     })

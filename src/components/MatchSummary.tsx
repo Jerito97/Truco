@@ -63,6 +63,7 @@ export function MatchSummary({
         picaPicaTotalB={match.picaPicaTotalB}
         picaPicaRounds={match.picaPicaRoundsHistory}
         durationSeconds={durationSeconds}
+        scoreEvents={match.scoreEvents}
       />
 
       <p className="text-center text-xs opacity-60 -mt-2">

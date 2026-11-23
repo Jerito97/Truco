@@ -22,6 +22,7 @@ function match(overrides: Partial<FinishedMatch>): FinishedMatch {
     pica_pica_total_b: 0,
     pica_pica_rounds: [],
     duration_seconds: null,
+    score_events: [],
     ...overrides,
   }
 }

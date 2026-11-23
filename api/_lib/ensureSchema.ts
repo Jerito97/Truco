@@ -50,6 +50,12 @@ async function createSchema(): Promise<void> {
   // Nulo para los partidos guardados antes de este campo (no hay forma de
   // reconstruirlo después del hecho).
   await pool.query('alter table matches add column if not exists duration_seconds int')
+  // Lista vacía en los partidos guardados antes de este campo: cada toque de
+  // "+1"/la diferencia del pica-pica, con el segundo del partido en que pasó,
+  // para poder dibujar la progresión del marcador en el tiempo.
+  await pool.query(
+    "alter table matches add column if not exists score_events jsonb not null default '[]'::jsonb",
+  )
   // Partido ya guardado que se reintenta (reinicio de la app antes de vaciar
   // la cola local, doble POST, etc.): el client_id identifica ese partido
   // desde el dispositivo, así el insert de abajo lo ignora en vez de duplicarlo.
