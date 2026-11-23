@@ -25,6 +25,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       picaPicaTotalB,
       picaPicaRounds,
       durationSeconds,
+      scoreEvents,
     } = b
 
     const teamSize = Array.isArray(teamAPlayerIds) ? teamAPlayerIds.length : 0
@@ -64,8 +65,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         team_a_player_names, team_b_player_names,
         score_a, score_b, winner,
         pica_pica_played, pica_pica_total_a, pica_pica_total_b, pica_pica_rounds,
-        duration_seconds
-      ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14::jsonb,$15)
+        duration_seconds, score_events
+      ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14::jsonb,$15,$16::jsonb)
       on conflict (client_id) where client_id is not null
         do update set client_id = excluded.client_id
       returning id, played_at`,
@@ -85,6 +86,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         picaPicaTotalB || 0,
         JSON.stringify(Array.isArray(picaPicaRounds) ? picaPicaRounds : []),
         typeof durationSeconds === 'number' ? durationSeconds : null,
+        JSON.stringify(Array.isArray(scoreEvents) ? scoreEvents : []),
       ],
     )
 

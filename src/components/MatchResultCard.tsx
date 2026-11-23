@@ -1,7 +1,8 @@
-import type { PicaPicaRoundResult } from '../types'
+import type { PicaPicaRoundResult, ScoreEvent } from '../types'
 import { ClockIcon, TrophyIcon } from './icons'
 import { aggregatePicaPicaRounds } from '../lib/picaPica'
 import { formatDuration } from '../lib/formatDuration'
+import { MatchProgressionChart } from './MatchProgressionChart'
 
 // La tarjeta de resultado de un partido terminado: la usan tanto el resumen
 // al cerrar un partido en vivo (MatchSummary) como el detalle de un partido
@@ -20,6 +21,7 @@ export function MatchResultCard({
   picaPicaTotalB,
   picaPicaRounds,
   durationSeconds,
+  scoreEvents,
 }: {
   eyebrow: string
   teamAName: string
@@ -32,6 +34,7 @@ export function MatchResultCard({
   picaPicaTotalB: number
   picaPicaRounds: PicaPicaRoundResult[]
   durationSeconds: number | null
+  scoreEvents: ScoreEvent[]
 }) {
   const winnerName = aWins ? teamAName : teamBName
   const picaPicaTotals = aggregatePicaPicaRounds(picaPicaRounds)
@@ -113,6 +116,13 @@ export function MatchResultCard({
           </div>
         )}
       </div>
+
+      <MatchProgressionChart
+        teamAName={teamAName}
+        teamBName={teamBName}
+        scoreEvents={scoreEvents}
+        durationSeconds={durationSeconds}
+      />
 
       {picaPicaTotals.length > 0 && (
         <div className="rounded-2xl p-4 border" style={{ borderColor: 'rgba(203, 170, 106, 0.25)' }}>

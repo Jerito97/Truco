@@ -35,6 +35,16 @@ export interface PicaPicaRoundResult {
 
 export type MatchStatus = 'playing' | 'finished'
 
+export interface ScoreEvent {
+  team: 'A' | 'B'
+  // Segundos desde que arrancó el partido, no una fecha absoluta: así no
+  // depende del reloj del dispositivo y queda consistente con duration_seconds.
+  atSeconds: number
+  // Casi siempre 1 (un "+1" tocado a mano), salvo la diferencia que suma de
+  // una sola vez el pica-pica al cerrar la ronda.
+  delta: number
+}
+
 export interface ActiveMatch {
   id: string
   teamAName: string
@@ -54,6 +64,7 @@ export interface ActiveMatch {
   picaPicaTotalB: number
   picaPicaRounds: number
   picaPicaRoundsHistory: PicaPicaRoundResult[]
+  scoreEvents: ScoreEvent[]
   startedAt: string
   finishedAt?: string
 }
@@ -76,6 +87,9 @@ export interface FinishedMatch {
   pica_pica_rounds: PicaPicaRoundResult[]
   // Los partidos guardados antes de este campo no lo tienen.
   duration_seconds: number | null
+  // Lista vacía en los partidos guardados antes de este campo (no hay forma
+  // de reconstruirla después del hecho).
+  score_events: ScoreEvent[]
 }
 
 export interface AppState {

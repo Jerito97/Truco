@@ -22,6 +22,10 @@
 
   --color-matchhead-500: #a9840f;
   --color-matchhead-600: #8a6c0d;
+
+  /* Segundo color para distinguir al otro equipo en el gráfico de
+     progresión (Nosotros ya usa el dorado/ascua de siempre). */
+  --color-sky-500: #3987e5;
 }
 
 html,
