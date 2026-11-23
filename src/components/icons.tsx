@@ -192,3 +192,34 @@ export function EyeOffIcon(props: SVGProps<SVGSVGElement>) {
     </Icon>
   )
 }
+
+export function SwordsIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M5 5l14 14M19 5 5 19" />
+      <path d="M5 5l2.6.6M19 5l-2.6.6M5 19l2.6-.6M19 19l-2.6-.6" />
+    </Icon>
+  )
+}
+
+export function CalendarIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <rect x={4} y={5} width={16} height={15} rx={2} />
+      <line x1={4} y1={10} x2={20} y2={10} />
+      <line x1={8} y1={3} x2={8} y2={7} />
+      <line x1={16} y1={3} x2={16} y2={7} />
+    </Icon>
+  )
+}
+
+export function RefreshIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M4 12a8 8 0 0 1 14.5-4.6" />
+      <path d="M20 12a8 8 0 0 1-14.5 4.6" />
+      <path d="M18.5 3v4.6h-4.6" />
+      <path d="M5.5 21v-4.6h4.6" />
+    </Icon>
+  )
+}
