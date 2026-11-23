@@ -193,15 +193,6 @@ export function EyeOffIcon(props: SVGProps<SVGSVGElement>) {
   )
 }
 
-export function SwordsIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <Icon {...props}>
-      <path d="M5 5l14 14M19 5 5 19" />
-      <path d="M5 5l2.6.6M19 5l-2.6.6M5 19l2.6-.6M19 19l-2.6-.6" />
-    </Icon>
-  )
-}
-
 export function CalendarIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <Icon {...props}>
