@@ -9,6 +9,11 @@ function joinNames(names: string[]): string {
 
 export function MatchRow({ match, onSelect }: { match: FinishedMatch; onSelect: (match: FinishedMatch) => void }) {
   const aWins = match.winner === 'A'
+  // El que ganó va siempre arriba (grande y dorado) y el que perdió abajo
+  // (chico y apagado), sea cual sea el equipo A o B — no el equipo A fijo
+  // arriba y el B abajo, que dejaba a un ganador con letra chica.
+  const winnerNames = aWins ? match.team_a_player_names : match.team_b_player_names
+  const loserNames = aWins ? match.team_b_player_names : match.team_a_player_names
 
   return (
     <button
@@ -18,17 +23,11 @@ export function MatchRow({ match, onSelect }: { match: FinishedMatch; onSelect: 
       style={{ borderColor: 'rgba(203, 170, 106, 0.2)' }}
     >
       <div className="flex-1 min-w-0">
-        <p
-          className="truncate text-base"
-          style={{ color: aWins ? 'var(--color-ember-500)' : 'var(--color-paper-100)', fontWeight: aWins ? 700 : 500 }}
-        >
-          {joinNames(match.team_a_player_names)}
+        <p className="truncate text-base font-bold" style={{ color: 'var(--color-ember-500)' }}>
+          {joinNames(winnerNames)}
         </p>
-        <p
-          className="truncate text-sm mt-0.5"
-          style={{ color: !aWins ? 'var(--color-ember-500)' : 'var(--color-paper-100)', fontWeight: !aWins ? 700 : 400, opacity: !aWins ? 1 : 0.7 }}
-        >
-          {joinNames(match.team_b_player_names)}
+        <p className="truncate text-sm mt-0.5 opacity-70" style={{ color: 'var(--color-paper-100)' }}>
+          {joinNames(loserNames)}
         </p>
         <p className="flex items-center gap-1 text-xs opacity-50 mt-1.5">
           <CalendarIcon className="w-3 h-3" />
