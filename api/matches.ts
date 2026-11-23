@@ -24,6 +24,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       picaPicaTotalA,
       picaPicaTotalB,
       picaPicaRounds,
+      durationSeconds,
     } = b
 
     const teamSize = Array.isArray(teamAPlayerIds) ? teamAPlayerIds.length : 0
@@ -47,7 +48,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       typeof scoreA === 'number' &&
       typeof scoreB === 'number' &&
       (winner === 'A' || winner === 'B') &&
-      (clientId === undefined || (typeof clientId === 'string' && clientId.length > 0 && clientId.length <= 100))
+      (clientId === undefined || (typeof clientId === 'string' && clientId.length > 0 && clientId.length <= 100)) &&
+      (durationSeconds === undefined || (typeof durationSeconds === 'number' && durationSeconds >= 0))
 
     if (!valid) {
       res.status(400).json({ error: 'Datos de partido inválidos' })
@@ -61,8 +63,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         team_a_player_ids, team_b_player_ids,
         team_a_player_names, team_b_player_names,
         score_a, score_b, winner,
-        pica_pica_played, pica_pica_total_a, pica_pica_total_b, pica_pica_rounds
-      ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14::jsonb)
+        pica_pica_played, pica_pica_total_a, pica_pica_total_b, pica_pica_rounds,
+        duration_seconds
+      ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14::jsonb,$15)
       on conflict (client_id) where client_id is not null
         do update set client_id = excluded.client_id
       returning id, played_at`,
@@ -81,6 +84,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         picaPicaTotalA || 0,
         picaPicaTotalB || 0,
         JSON.stringify(Array.isArray(picaPicaRounds) ? picaPicaRounds : []),
+        typeof durationSeconds === 'number' ? durationSeconds : null,
       ],
     )
 

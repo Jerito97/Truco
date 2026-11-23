@@ -3,6 +3,7 @@ import type { ActiveMatch } from '../types'
 import { ShareIcon, TrophyIcon } from './icons'
 import { aggregatePicaPicaRounds } from '../lib/picaPica'
 import { generateShareImageBlob } from '../lib/shareImage'
+import { formatDuration } from '../lib/formatDuration'
 
 export function MatchSummary({
   match,
@@ -18,6 +19,9 @@ export function MatchSummary({
   const [sharing, setSharing] = useState(false)
   const winnerName = match.scoreA >= match.scoreB ? match.teamAName : match.teamBName
   const picaPicaTotals = aggregatePicaPicaRounds(match.picaPicaRoundsHistory)
+  const durationSeconds = match.finishedAt
+    ? Math.round((new Date(match.finishedAt).getTime() - new Date(match.startedAt).getTime()) / 1000)
+    : null
 
   const handleShare = async () => {
     if (sharing) return
@@ -78,6 +82,10 @@ export function MatchSummary({
           <p className="mt-3 font-num text-sm opacity-70">
             Pica-pica: {match.picaPicaTotalA} a {match.picaPicaTotalB}
           </p>
+        )}
+
+        {durationSeconds !== null && (
+          <p className="mt-1 font-num text-sm opacity-70">Duró {formatDuration(durationSeconds)}</p>
         )}
 
         <p className="mt-3 text-xs opacity-60">

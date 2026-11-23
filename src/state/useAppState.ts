@@ -73,6 +73,9 @@ export function useAppState() {
     const m = state.activeMatch
     if (!m || m.status !== 'finished') return
     const winner = m.scoreA >= TARGET_SCORE ? 'A' : 'B'
+    const durationSeconds = m.finishedAt
+      ? Math.max(0, Math.round((new Date(m.finishedAt).getTime() - new Date(m.startedAt).getTime()) / 1000))
+      : undefined
     enqueue(m.id, {
       teamAName: m.teamAName,
       teamBName: m.teamBName,
@@ -87,6 +90,7 @@ export function useAppState() {
       picaPicaTotalA: m.picaPicaTotalA,
       picaPicaTotalB: m.picaPicaTotalB,
       picaPicaRounds: m.picaPicaRoundsHistory,
+      durationSeconds,
     })
   }, [state.activeMatch, enqueue])
 

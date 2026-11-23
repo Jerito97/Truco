@@ -5,7 +5,8 @@ App web para llevar el marcador de partidas de truco 3 vs 3 entre un grupo de am
 ## Reglas que respeta
 
 - Partido a 30 puntos, sin opción de configurarlo.
-- **Pica-pica**: desde el partido activo se puede abrir, en cualquier momento, una pantalla con 3 duelos 1 contra 1 simultáneos (una pareja por equipo). Cada duelo arranca tapado y se destapa individualmente tocando su ojito, para que no se sepa cómo van los otros dos hasta que alguien lo pida. Al cerrar la ronda, la diferencia de puntos se suma automáticamente al equipo que corresponda. Se puede entrar más de una vez por partido; solo se guarda el acumulado total de pica-pica del partido, no el detalle ronda por ronda.
+- **Pica-pica**: desde el partido activo se puede abrir, en cualquier momento, una pantalla con 3 duelos 1 contra 1 simultáneos (una pareja por equipo), siempre visibles. Lo que sí queda tapado por defecto es cuánto suma el acumulado total hasta ese momento, con un ojito para destaparlo cuando se quiera. Al cerrar la ronda, la diferencia de puntos se suma automáticamente al equipo que corresponda. Se puede entrar más de una vez por partido; solo se guarda el acumulado total de pica-pica del partido, no el detalle ronda por ronda.
+- **Cronómetro**: desde que arranca el partido se lleva la cuenta del tiempo jugado (visible en el Anotador y en el pica-pica), y la duración final queda guardada junto al partido, visible en el resumen y en el Historial.
 - Al llegar un equipo a 30, se muestra un resumen con el resultado final.
 
 ## Pantallas

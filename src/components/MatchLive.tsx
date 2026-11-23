@@ -2,6 +2,8 @@ import type { ActiveMatch } from '../types'
 import { Scoreboard } from './Scoreboard'
 import { ManoBadge } from './ManoBadge'
 import { BackIcon } from './icons'
+import { useElapsedSeconds } from '../state/useElapsedSeconds'
+import { formatDuration } from '../lib/formatDuration'
 
 export function MatchLive({
   match,
@@ -16,6 +18,8 @@ export function MatchLive({
   onEnterPicaPica: () => void
   onBack: () => void
 }) {
+  const elapsed = useElapsedSeconds(match.startedAt)
+
   return (
     <div className="screen-fill flex flex-col">
       <div className="flex items-center justify-between">
@@ -27,6 +31,7 @@ export function MatchLive({
         </h2>
         <span className="w-5" />
       </div>
+      <p className="text-center font-num text-xs opacity-50 -mt-1">{formatDuration(elapsed)}</p>
 
       <div className="flex-1 min-h-0 flex flex-col">
         <Scoreboard
