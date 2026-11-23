@@ -1,21 +1,14 @@
 import { useState } from 'react'
 import type { FinishedMatch } from '../types'
-import { BackIcon, ShareIcon, TrophyIcon } from './icons'
-import { aggregatePicaPicaRounds } from '../lib/picaPica'
+import { BackIcon, ShareIcon } from './icons'
 import { generateShareImageBlob } from '../lib/shareImage'
 import { formatDate } from '../lib/formatDate'
-import { formatDuration } from '../lib/formatDuration'
-
-function joinNames(names: string[]): string {
-  if (names.length <= 1) return names.join('')
-  return `${names.slice(0, -1).join(', ')} y ${names[names.length - 1]}`
-}
+import { MatchResultCard } from './MatchResultCard'
 
 export function MatchDetailScreen({ match, onBack }: { match: FinishedMatch; onBack: () => void }) {
   const [sharing, setSharing] = useState(false)
   const aWins = match.winner === 'A'
   const winnerName = aWins ? match.team_a_name : match.team_b_name
-  const picaPicaTotals = aggregatePicaPicaRounds(match.pica_pica_rounds)
 
   const handleShare = async () => {
     if (sharing) return
@@ -66,74 +59,19 @@ export function MatchDetailScreen({ match, onBack }: { match: FinishedMatch; onB
         <span className="w-5" />
       </div>
 
-      <div className="rounded-2xl p-6 text-center border" style={{ borderColor: 'rgba(203, 170, 106, 0.3)' }}>
-        <TrophyIcon className="w-10 h-10 mx-auto mb-3" style={{ color: 'var(--color-ember-500)' }} />
-        <p className="uppercase tracking-widest text-xs opacity-60 mb-1">{formatDate(match.played_at)}</p>
-        <h2 className="font-poster text-3xl mb-4" style={{ color: 'var(--color-ember-500)' }}>
-          ¡Ganó {winnerName}!
-        </h2>
-
-        <div className="grid grid-cols-2 gap-4 mb-2">
-          <div>
-            <div className="font-poster text-lg truncate" style={{ color: 'var(--color-paper-100)' }}>
-              {joinNames(match.team_a_player_names)}
-            </div>
-            <div className="font-num text-5xl font-bold" style={{ color: 'var(--color-paper-50)' }}>
-              {match.score_a}
-            </div>
-          </div>
-          <div>
-            <div className="font-poster text-lg truncate" style={{ color: 'var(--color-paper-100)' }}>
-              {joinNames(match.team_b_player_names)}
-            </div>
-            <div className="font-num text-5xl font-bold" style={{ color: 'var(--color-paper-50)' }}>
-              {match.score_b}
-            </div>
-          </div>
-        </div>
-
-        {match.pica_pica_played && (
-          <p className="mt-3 font-num text-sm opacity-70">
-            Pica-pica: {match.pica_pica_total_a} a {match.pica_pica_total_b}
-          </p>
-        )}
-        {match.duration_seconds != null && (
-          <p className="mt-1 font-num text-sm opacity-70">Duró {formatDuration(match.duration_seconds)}</p>
-        )}
-      </div>
-
-      {picaPicaTotals.length > 0 && (
-        <div className="rounded-2xl p-4 border" style={{ borderColor: 'rgba(203, 170, 106, 0.25)' }}>
-          <h3 className="font-poster text-lg mb-2 text-center" style={{ color: 'var(--color-ember-500)' }}>
-            Mano a mano
-          </h3>
-          <div className="space-y-1">
-            {picaPicaTotals.map((d, j) => {
-              const aWon = d.scoreA > d.scoreB
-              const bWon = d.scoreB > d.scoreA
-              return (
-                <div key={j} className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 text-sm">
-                  <span
-                    className="truncate text-right"
-                    style={{ color: aWon ? 'var(--color-ember-500)' : 'var(--color-paper-100)', fontWeight: aWon ? 700 : 400 }}
-                  >
-                    {d.aName}
-                  </span>
-                  <span className="font-num shrink-0 opacity-70">
-                    {d.scoreA} - {d.scoreB}
-                  </span>
-                  <span
-                    className="truncate text-left"
-                    style={{ color: bWon ? 'var(--color-ember-500)' : 'var(--color-paper-100)', fontWeight: bWon ? 700 : 400 }}
-                  >
-                    {d.bName}
-                  </span>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
+      <MatchResultCard
+        eyebrow={formatDate(match.played_at)}
+        teamAName={match.team_a_name}
+        teamBName={match.team_b_name}
+        scoreA={match.score_a}
+        scoreB={match.score_b}
+        aWins={aWins}
+        picaPicaPlayed={match.pica_pica_played}
+        picaPicaTotalA={match.pica_pica_total_a}
+        picaPicaTotalB={match.pica_pica_total_b}
+        picaPicaRounds={match.pica_pica_rounds}
+        durationSeconds={match.duration_seconds}
+      />
 
       <button
         type="button"
