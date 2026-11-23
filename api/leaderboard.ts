@@ -10,10 +10,12 @@ interface StreakMatchRow {
 }
 
 // Separada del handler para poder testearla sin una base de datos. Arma la
-// racha actual de cada jugador a partir de TODOS los partidos del período
-// (no solo los de la tabla principal), agrupándolos por jugador una sola vez
-// en vez de filtrar la lista completa por cada uno.
-export function computeCurrentStreaks(matchRows: StreakMatchRow[], playerIds: string[]): Map<string, number> {
+// mejor racha histórica de cada jugador a partir de TODOS los partidos del
+// período (no solo los de la tabla principal), agrupándolos por jugador una
+// sola vez en vez de filtrar la lista completa por cada uno. Es la mejor
+// racha, no la vigente: para el ranking interesa comparar el techo de cada
+// uno, no quién viene ganando justo ahora (eso ya se ve en su perfil).
+export function computeBestStreaks(matchRows: StreakMatchRow[], playerIds: string[]): Map<string, number> {
   const matchesByPlayer = new Map<string, StreakMatchRow[]>()
   for (const m of matchRows) {
     for (const pid of [...m.team_a_player_ids, ...m.team_b_player_ids]) {
@@ -24,7 +26,7 @@ export function computeCurrentStreaks(matchRows: StreakMatchRow[], playerIds: st
   }
   const streaks = new Map<string, number>()
   for (const id of playerIds) {
-    streaks.set(id, computeStreaks(matchesByPlayer.get(id) ?? [], id).current)
+    streaks.set(id, computeStreaks(matchesByPlayer.get(id) ?? [], id).best)
   }
   return streaks
 }
@@ -78,7 +80,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
      order by played_at asc`,
     [since],
   )
-  const streaks = computeCurrentStreaks(
+  const streaks = computeBestStreaks(
     matchRowsResult.rows,
     result.rows.map((r) => r.id),
   )
