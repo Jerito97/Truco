@@ -1,7 +1,6 @@
 import type { FinishedMatch } from '../types'
 import { ChevronRightIcon } from './icons'
 import { formatDate } from '../lib/formatDate'
-import { formatDuration } from '../lib/formatDuration'
 
 function joinNames(names: string[]): string {
   if (names.length <= 1) return names.join('')
@@ -23,11 +22,7 @@ export function MatchRow({ match, onSelect }: { match: FinishedMatch; onSelect: 
             {joinNames(match.team_b_player_names)}
           </span>
         </p>
-        <p className="text-xs opacity-50 mt-0.5">
-          {formatDate(match.played_at)} · Finalizado
-          {match.duration_seconds != null && ` · ${formatDuration(match.duration_seconds)}`}
-          {match.pica_pica_played && ' · pica-pica'}
-        </p>
+        <p className="text-xs opacity-50 mt-0.5">{formatDate(match.played_at)}</p>
       </div>
       <span className="font-num font-bold shrink-0" style={{ color: 'var(--color-ember-500)' }}>
         {match.score_a} - {match.score_b}
