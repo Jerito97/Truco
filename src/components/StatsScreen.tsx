@@ -1,7 +1,8 @@
+import { useState } from 'react'
 import type { FinishedMatch, User } from '../types'
 import { BackIcon } from './icons'
 
-interface PairStat {
+export interface PairStat {
   name: string
   played: number
   won: number
@@ -30,17 +31,45 @@ function computePairStats(matches: FinishedMatch[], userId: string, relation: 't
       map.set(id, entry)
     })
   }
-  return Array.from(map.values()).sort((a, b) => b.played - a.played)
+  return Array.from(map.values())
 }
 
-function PairStatsList({ stats, emptyText }: { stats: PairStat[] | null; emptyText: string }) {
+export type SortMode = 'jugados' | 'rendimiento' | 'victorias'
+
+const SORT_LABEL: Record<SortMode, string> = {
+  jugados: 'Más jugados',
+  rendimiento: 'Mejor rendimiento',
+  victorias: 'Más victorias',
+}
+
+// Mismo desempate siempre (más partidos, después nombre), para que el orden
+// no "salte" sin sentido entre dos empatados en el criterio principal — igual
+// que en el Ranking general.
+export function sortPairStats(stats: PairStat[], mode: SortMode): PairStat[] {
+  const byTiebreak = (a: PairStat, b: PairStat) => b.played - a.played || a.name.localeCompare(b.name)
+  const sorted = [...stats]
+  if (mode === 'victorias') {
+    sorted.sort((a, b) => b.won - a.won || byTiebreak(a, b))
+  } else if (mode === 'rendimiento') {
+    sorted.sort((a, b) => b.won / b.played - a.won / a.played || byTiebreak(a, b))
+  } else {
+    sorted.sort(byTiebreak)
+  }
+  return sorted
+}
+
+function PairStatsList({ stats, mode, emptyText }: { stats: PairStat[] | null; mode: SortMode; emptyText: string }) {
   if (stats === null) return <p className="text-center opacity-60 py-6">Cargando...</p>
   if (stats.length === 0) return <p className="text-sm opacity-60 py-4">{emptyText}</p>
+
+  const sorted = sortPairStats(stats, mode)
+
   return (
     <div className="divide-y" style={{ borderColor: 'rgba(203, 170, 106, 0.15)' }}>
-      {stats.map((o) => {
+      {sorted.map((o) => {
         const lost = o.played - o.won
         const pct = Math.round((o.won / o.played) * 100)
+        const highlight = mode === 'victorias' ? String(o.won) : mode === 'jugados' ? String(o.played) : `${pct}%`
         return (
           <div key={o.name} className="flex items-center justify-between py-3">
             <span className="truncate" style={{ color: 'var(--color-paper-100)' }}>
@@ -50,8 +79,8 @@ function PairStatsList({ stats, emptyText }: { stats: PairStat[] | null; emptyTe
               <span className="font-num text-sm opacity-70">
                 {o.won}V - {lost}D
               </span>
-              <span className="font-num text-sm font-bold w-11 text-right" style={{ color: 'var(--color-ember-500)' }}>
-                {pct}%
+              <span className="font-num text-sm font-bold w-12 text-right" style={{ color: 'var(--color-ember-500)' }}>
+                {highlight}
               </span>
             </div>
           </div>
@@ -70,6 +99,7 @@ export function StatsScreen({
   matches: FinishedMatch[] | null
   onBack: () => void
 }) {
+  const [sortMode, setSortMode] = useState<SortMode>('jugados')
   const teammates = matches ? computePairStats(matches, user.id, 'teammate') : null
   const opponents = matches ? computePairStats(matches, user.id, 'opponent') : null
 
@@ -85,18 +115,39 @@ export function StatsScreen({
         <span className="w-5" />
       </div>
 
+      <div className="grid grid-cols-3 gap-2">
+        {(Object.keys(SORT_LABEL) as SortMode[]).map((m) => (
+          <button
+            key={m}
+            type="button"
+            onClick={() => setSortMode(m)}
+            className="py-2 rounded-lg font-bold text-xs border"
+            style={{
+              borderColor: sortMode === m ? 'var(--color-ember-600)' : 'var(--color-wood-600)',
+              color: sortMode === m ? 'var(--color-ember-500)' : 'var(--color-paper-100)',
+            }}
+          >
+            {SORT_LABEL[m]}
+          </button>
+        ))}
+      </div>
+
       <div className="space-y-3">
         <h3 className="font-poster text-lg" style={{ color: 'var(--color-ember-500)' }}>
           Con cada compañero
         </h3>
-        <PairStatsList stats={teammates} emptyText="Todavía no jugaste en equipo con nadie registrado." />
+        <PairStatsList
+          stats={teammates}
+          mode={sortMode}
+          emptyText="Todavía no jugaste en equipo con nadie registrado."
+        />
       </div>
 
       <div className="space-y-3">
         <h3 className="font-poster text-lg" style={{ color: 'var(--color-ember-500)' }}>
           Contra cada jugador
         </h3>
-        <PairStatsList stats={opponents} emptyText="Todavía no jugaste contra nadie registrado." />
+        <PairStatsList stats={opponents} mode={sortMode} emptyText="Todavía no jugaste contra nadie registrado." />
       </div>
     </div>
   )
