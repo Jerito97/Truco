@@ -1,52 +1,26 @@
-import { useState } from 'react'
 import type { FinishedMatch } from '../types'
-import { BackIcon, ShareIcon } from './icons'
-import { generateShareImageBlob } from '../lib/shareImage'
+import { BackIcon } from './icons'
 import { formatDate } from '../lib/formatDate'
 import { MatchResultCard } from './MatchResultCard'
+import { ShareResultButton } from './ShareResultButton'
+import type { ShareableMatch } from '../lib/shareImage'
 
 export function MatchDetailScreen({ match, onBack }: { match: FinishedMatch; onBack: () => void }) {
-  const [sharing, setSharing] = useState(false)
   // Por puntaje, no por match.winner (ver MatchRow.tsx): el puntaje en
   // pantalla es la verdad que el usuario está mirando.
   const aWins = match.score_a >= match.score_b
   const winnerName = aWins ? match.team_a_name : match.team_b_name
 
-  const handleShare = async () => {
-    if (sharing) return
-    setSharing(true)
-    try {
-      const blob = await generateShareImageBlob({
-        teamAName: match.team_a_name,
-        teamBName: match.team_b_name,
-        scoreA: match.score_a,
-        scoreB: match.score_b,
-        picaPicaRoundsHistory: match.pica_pica_rounds,
-      })
-      if (!blob) return
-      const file = new File([blob], 'osobuco-resultado.png', { type: 'image/png' })
-      const shareData = {
-        files: [file],
-        title: 'Osobuco',
-        text: `¡Ganó ${winnerName}! ${match.score_a} - ${match.score_b}`,
-      }
-      if (navigator.canShare?.(shareData)) {
-        await navigator.share(shareData)
-      } else {
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = 'osobuco-resultado.png'
-        document.body.appendChild(a)
-        a.click()
-        a.remove()
-        setTimeout(() => URL.revokeObjectURL(url), 10000)
-      }
-    } catch {
-      // El usuario cancela el share sheet o el navegador no lo soporta: no hay nada que mostrar.
-    } finally {
-      setSharing(false)
-    }
+  const shareableMatch: ShareableMatch = {
+    teamAName: match.team_a_name,
+    teamBName: match.team_b_name,
+    teamAPlayerNames: match.team_a_player_names,
+    teamBPlayerNames: match.team_b_player_names,
+    scoreA: match.score_a,
+    scoreB: match.score_b,
+    playedAt: match.played_at,
+    scoreEvents: match.score_events,
+    durationSeconds: match.duration_seconds,
   }
 
   return (
@@ -76,16 +50,11 @@ export function MatchDetailScreen({ match, onBack }: { match: FinishedMatch; onB
         scoreEvents={match.score_events}
       />
 
-      <button
-        type="button"
-        onClick={handleShare}
-        disabled={sharing}
-        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold border disabled:opacity-50"
-        style={{ borderColor: 'var(--color-wood-600)', color: 'var(--color-paper-100)' }}
-      >
-        <ShareIcon className="w-4 h-4" />
-        Compartir resultado
-      </button>
+      <ShareResultButton
+        match={shareableMatch}
+        shareText={`¡Ganó ${winnerName}! ${match.score_a} - ${match.score_b}`}
+        tone="muted"
+      />
     </div>
   )
 }

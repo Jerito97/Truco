@@ -1,8 +1,8 @@
-import { useState } from 'react'
 import type { ActiveMatch } from '../types'
-import { RefreshIcon, ShareIcon } from './icons'
-import { generateShareImageBlob } from '../lib/shareImage'
+import { RefreshIcon } from './icons'
 import { MatchResultCard } from './MatchResultCard'
+import { ShareResultButton } from './ShareResultButton'
+import type { ShareableMatch } from '../lib/shareImage'
 
 export function MatchSummary({
   match,
@@ -15,38 +15,22 @@ export function MatchSummary({
   onRematch: () => void
   onNewMatch: () => void
 }) {
-  const [sharing, setSharing] = useState(false)
   const aWins = match.scoreA >= match.scoreB
   const winnerName = aWins ? match.teamAName : match.teamBName
   const durationSeconds = match.finishedAt
     ? Math.round((new Date(match.finishedAt).getTime() - new Date(match.startedAt).getTime()) / 1000)
     : null
 
-  const handleShare = async () => {
-    if (sharing) return
-    setSharing(true)
-    try {
-      const blob = await generateShareImageBlob(match)
-      if (!blob) return
-      const file = new File([blob], 'osobuco-resultado.png', { type: 'image/png' })
-      const shareData = { files: [file], title: 'Osobuco', text: `¡Ganó ${winnerName}! ${match.scoreA} - ${match.scoreB}` }
-      if (navigator.canShare?.(shareData)) {
-        await navigator.share(shareData)
-      } else {
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = 'osobuco-resultado.png'
-        document.body.appendChild(a)
-        a.click()
-        a.remove()
-        setTimeout(() => URL.revokeObjectURL(url), 10000)
-      }
-    } catch {
-      // El usuario cancela el share sheet o el navegador no lo soporta: no hay nada que mostrar.
-    } finally {
-      setSharing(false)
-    }
+  const shareableMatch: ShareableMatch = {
+    teamAName: match.teamAName,
+    teamBName: match.teamBName,
+    teamAPlayerNames: match.teamAPlayerNames,
+    teamBPlayerNames: match.teamBPlayerNames,
+    scoreA: match.scoreA,
+    scoreB: match.scoreB,
+    playedAt: match.finishedAt ?? new Date().toISOString(),
+    scoreEvents: match.scoreEvents,
+    durationSeconds,
   }
 
   return (
@@ -80,16 +64,11 @@ export function MatchSummary({
           <RefreshIcon className="w-5 h-5" />
           Revancha
         </button>
-        <button
-          type="button"
-          onClick={handleShare}
-          disabled={sharing}
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold border disabled:opacity-50"
-          style={{ borderColor: 'var(--color-ember-600)', color: 'var(--color-ember-500)' }}
-        >
-          <ShareIcon className="w-4 h-4" />
-          Compartir resultado
-        </button>
+        <ShareResultButton
+          match={shareableMatch}
+          shareText={`¡Ganó ${winnerName}! ${match.scoreA} - ${match.scoreB}`}
+          tone="ember"
+        />
         <button
           type="button"
           onClick={onNewMatch}
