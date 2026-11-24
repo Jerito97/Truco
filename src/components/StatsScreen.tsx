@@ -34,6 +34,13 @@ function computePairStats(matches: FinishedMatch[], userId: string, relation: 't
   return Array.from(map.values())
 }
 
+type SectionMode = 'companeros' | 'rivales'
+
+const SECTION_LABEL: Record<SectionMode, string> = {
+  companeros: 'Compañeros',
+  rivales: 'Rivales',
+}
+
 export type SortMode = 'jugados' | 'rendimiento' | 'victorias'
 
 const SORT_LABEL: Record<SortMode, string> = {
@@ -99,6 +106,7 @@ export function StatsScreen({
   matches: FinishedMatch[] | null
   onBack: () => void
 }) {
+  const [section, setSection] = useState<SectionMode>('companeros')
   const [sortMode, setSortMode] = useState<SortMode>('jugados')
   const teammates = matches ? computePairStats(matches, user.id, 'teammate') : null
   const opponents = matches ? computePairStats(matches, user.id, 'opponent') : null
@@ -113,6 +121,23 @@ export function StatsScreen({
           Estadísticas
         </h2>
         <span className="w-5" />
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        {(Object.keys(SECTION_LABEL) as SectionMode[]).map((s) => (
+          <button
+            key={s}
+            type="button"
+            onClick={() => setSection(s)}
+            className="py-2.5 rounded-lg font-bold text-sm border"
+            style={{
+              borderColor: section === s ? 'var(--color-ember-600)' : 'var(--color-wood-600)',
+              color: section === s ? 'var(--color-ember-500)' : 'var(--color-paper-100)',
+            }}
+          >
+            {SECTION_LABEL[s]}
+          </button>
+        ))}
       </div>
 
       <div className="grid grid-cols-3 gap-2">
@@ -132,23 +157,25 @@ export function StatsScreen({
         ))}
       </div>
 
-      <div className="space-y-3">
-        <h3 className="font-poster text-lg" style={{ color: 'var(--color-ember-500)' }}>
-          Con cada compañero
-        </h3>
-        <PairStatsList
-          stats={teammates}
-          mode={sortMode}
-          emptyText="Todavía no jugaste en equipo con nadie registrado."
-        />
-      </div>
-
-      <div className="space-y-3">
-        <h3 className="font-poster text-lg" style={{ color: 'var(--color-ember-500)' }}>
-          Contra cada jugador
-        </h3>
-        <PairStatsList stats={opponents} mode={sortMode} emptyText="Todavía no jugaste contra nadie registrado." />
-      </div>
+      {section === 'companeros' ? (
+        <div className="space-y-3">
+          <h3 className="font-poster text-lg" style={{ color: 'var(--color-ember-500)' }}>
+            Con cada compañero
+          </h3>
+          <PairStatsList
+            stats={teammates}
+            mode={sortMode}
+            emptyText="Todavía no jugaste en equipo con nadie registrado."
+          />
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <h3 className="font-poster text-lg" style={{ color: 'var(--color-ember-500)' }}>
+            Contra cada jugador
+          </h3>
+          <PairStatsList stats={opponents} mode={sortMode} emptyText="Todavía no jugaste contra nadie registrado." />
+        </div>
+      )}
     </div>
   )
 }
