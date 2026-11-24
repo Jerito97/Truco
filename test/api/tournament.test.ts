@@ -9,8 +9,9 @@ import {
   getRoundRobinChampion,
   isEliminationComplete,
   isRoundRobinComplete,
+  shuffle,
   suggestFormat,
-} from './tournament'
+} from '../../api/_lib/tournament.js'
 
 describe('suggestFormat', () => {
   it('3 equipos: todos contra todos', () => {
@@ -22,6 +23,32 @@ describe('suggestFormat', () => {
     expect(suggestFormat(4)).toBe('eliminacion')
     expect(suggestFormat(5)).toBe('eliminacion')
     expect(suggestFormat(8)).toBe('eliminacion')
+  })
+})
+
+describe('shuffle', () => {
+  it('devuelve los mismos elementos, en el mismo conjunto (ni pierde ni repite)', () => {
+    const items = [1, 2, 3, 4, 5, 6, 7, 8]
+    const shuffled = shuffle(items)
+    expect([...shuffled].sort((a, b) => a - b)).toEqual(items)
+  })
+
+  it('no muta el array original', () => {
+    const items = [1, 2, 3, 4, 5]
+    const copy = [...items]
+    shuffle(items)
+    expect(items).toEqual(copy)
+  })
+
+  it('de verdad reordena (no siempre devuelve el mismo orden)', () => {
+    const items = [1, 2, 3, 4, 5, 6, 7, 8]
+    // Con tantos elementos, la chance de que 50 sorteos den exactamente el
+    // mismo orden que el original es prácticamente nula: si pasa, es porque
+    // shuffle no está barajando de verdad.
+    const anyReordered = Array.from({ length: 50 }, () => shuffle(items)).some(
+      (s) => s.some((v, i) => v !== items[i]),
+    )
+    expect(anyReordered).toBe(true)
   })
 })
 

@@ -1,4 +1,4 @@
-import type { TournamentBoard } from './lib/tournament'
+import type { TournamentBoard } from '../api/_lib/tournament'
 
 export interface User {
   id: string
