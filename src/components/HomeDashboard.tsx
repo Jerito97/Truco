@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { ActiveMatch } from '../types'
-import { ChevronRightIcon, PeopleIcon, PlusIcon } from './icons'
+import { ChevronRightIcon, PeopleIcon, PlusIcon, TrophyIcon } from './icons'
 import { ConfirmDialog } from './Dialog'
 import { useLiveMatches } from '../state/useLiveMatches'
 
@@ -9,11 +9,13 @@ export function HomeDashboard({
   onNewMatch,
   onResumeMatch,
   onDiscardAndNew,
+  onOpenTournaments,
 }: {
   activeMatch: ActiveMatch | null
   onNewMatch: () => void
   onResumeMatch: () => void
   onDiscardAndNew?: () => void
+  onOpenTournaments?: () => void
 }) {
   const [confirmingDiscard, setConfirmingDiscard] = useState(false)
   const liveMatches = useLiveMatches()
@@ -62,6 +64,24 @@ export function HomeDashboard({
                 Nuevo partido
               </p>
               <p className="text-sm opacity-60 truncate">Empezar de cero (borra el partido en curso).</p>
+            </div>
+            <ChevronRightIcon className="w-5 h-5 shrink-0 opacity-50" style={{ color: 'var(--color-paper-100)' }} />
+          </button>
+        )}
+
+        {onOpenTournaments && (
+          <button
+            type="button"
+            onClick={onOpenTournaments}
+            className="w-full flex items-center gap-4 rounded-2xl px-4 py-4 text-left border"
+            style={{ borderColor: 'var(--color-wood-600)' }}
+          >
+            <TrophyIcon className="w-7 h-7 shrink-0" style={{ color: 'var(--color-paper-100)' }} />
+            <div className="flex-1 min-w-0">
+              <p className="font-poster text-lg" style={{ color: 'var(--color-paper-50)' }}>
+                Torneos
+              </p>
+              <p className="text-sm opacity-60 truncate">Armar un torneo o ver uno en curso.</p>
             </div>
             <ChevronRightIcon className="w-5 h-5 shrink-0 opacity-50" style={{ color: 'var(--color-paper-100)' }} />
           </button>

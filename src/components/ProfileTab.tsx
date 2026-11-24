@@ -93,11 +93,13 @@ export function ProfileTab({
   onLogout,
   onUnlockAdmin,
   onRenameSelf,
+  onOpenTournaments,
 }: {
   user: User
   onLogout: () => void
   onUnlockAdmin: (code: string) => Promise<string | null>
   onRenameSelf: (name: string) => Promise<string | null>
+  onOpenTournaments?: () => void
 }) {
   const [view, setView] = useState<'profile' | 'unlock' | 'admin' | 'stats' | 'ranking' | 'players'>('profile')
   const [editingName, setEditingName] = useState(false)
@@ -222,6 +224,9 @@ export function ProfileTab({
       <div className="divide-y" style={{ borderColor: 'rgba(203, 170, 106, 0.15)' }}>
         <MenuRow icon={<ChartIcon className="w-5 h-5" />} label="Estadísticas" onClick={() => setView('stats')} />
         <MenuRow icon={<TrophyIcon className="w-5 h-5" />} label="Ranking general" onClick={() => setView('ranking')} />
+        {onOpenTournaments && (
+          <MenuRow icon={<TrophyIcon className="w-5 h-5" />} label="Torneos" onClick={onOpenTournaments} />
+        )}
         <MenuRow icon={<PeopleIcon className="w-5 h-5" />} label="Jugadores" onClick={() => setView('players')} />
         <MenuRow
           icon={<ShieldIcon className="w-5 h-5" />}

@@ -48,8 +48,24 @@ create table if not exists live_matches (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists tournaments (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  format text not null check (format in ('eliminacion', 'todos_contra_todos')),
+  teams jsonb not null,
+  board jsonb not null,
+  status text not null default 'en_curso' check (status in ('en_curso', 'finalizado')),
+  champion_team_index int,
+  created_by uuid not null references users(id),
+  created_at timestamptz not null default now(),
+  finished_at timestamptz
+);
+
+create index if not exists tournaments_status_idx on tournaments (status);
+
 -- La app se conecta por Postgres directo (no usa la API REST de Supabase),
 -- pero activamos RLS para que las tablas no queden expuestas por esa vía.
 alter table users enable row level security;
 alter table matches enable row level security;
 alter table live_matches enable row level security;
+alter table tournaments enable row level security;
