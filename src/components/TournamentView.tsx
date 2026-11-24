@@ -1,4 +1,4 @@
-import type { Pairing, Tournament, TournamentContext } from '../types'
+import type { Pairing, Tournament, TournamentContext, User } from '../types'
 import type { Bracket, BracketFixture, RoundRobinBoard, RoundRobinFixture } from '../../api/_lib/tournament'
 import { computeStandings } from '../../api/_lib/tournament'
 import { BackIcon, TrophyIcon } from './icons'
@@ -35,11 +35,13 @@ function FixtureRow({
   teamAName,
   teamBName,
   state,
+  canPlay,
   onPlay,
 }: {
   teamAName: string | null
   teamBName: string | null
   state: 'tbd' | 'bye' | 'pending' | { winner: 'A' | 'B' }
+  canPlay: boolean
   onPlay: () => void
 }) {
   if (state === 'tbd') {
@@ -59,6 +61,22 @@ function FixtureRow({
     )
   }
   if (state === 'pending') {
+    // Solo puede tocar "Jugar" (y arrancar el partido en su propio
+    // celular) alguien que forma parte de uno de los dos equipos de este
+    // cruce puntual — así varios cruces del torneo se juegan en simultáneo,
+    // cada uno en el celular de sus jugadores, sin pisarse entre sí.
+    if (!canPlay) {
+      return (
+        <div className="w-full flex items-center justify-between rounded-xl border px-4 py-3" style={{ borderColor: 'rgba(203, 170, 106, 0.2)' }}>
+          <span className="text-sm truncate opacity-70" style={{ color: 'var(--color-paper-100)' }}>
+            {teamAName} <span className="opacity-40">vs</span> {teamBName}
+          </span>
+          <span className="text-xs shrink-0 ml-2 opacity-50" style={{ color: 'var(--color-paper-100)' }}>
+            Lo juegan ellos
+          </span>
+        </div>
+      )
+    }
     return (
       <button
         type="button"
@@ -93,10 +111,12 @@ function FixtureRow({
 
 export function TournamentView({
   tournamentId,
+  currentUser,
   onBack,
   onPlayFixture,
 }: {
   tournamentId: string
+  currentUser: User
   onBack: () => void
   onPlayFixture: (setup: MatchSetupPayload, context: TournamentContext) => void
 }) {
@@ -125,6 +145,9 @@ export function TournamentView({
 
   const { teams } = tournament
   const teamName = (i: number | null) => (i == null ? null : teams[i]?.name)
+  const isParticipant = (i: number | null) => (i == null ? false : (teams[i]?.playerIds.includes(currentUser.id) ?? false))
+  const canPlayFixture = (teamAIndex: number | null, teamBIndex: number | null) =>
+    isParticipant(teamAIndex) || isParticipant(teamBIndex)
 
   const playFixture = (teamAIndex: number, teamBIndex: number, roundIndex: number | null, fixtureIndex: number) => {
     const a = teams[teamAIndex]
@@ -178,9 +201,19 @@ export function TournamentView({
       )}
 
       {tournament.format === 'eliminacion' ? (
-        <EliminationView board={tournament.board as Bracket} teamName={teamName} onPlay={playFixture} />
+        <EliminationView
+          board={tournament.board as Bracket}
+          teamName={teamName}
+          canPlayFixture={canPlayFixture}
+          onPlay={playFixture}
+        />
       ) : (
-        <RoundRobinView board={tournament.board as RoundRobinBoard} teams={teams} onPlay={playFixture} />
+        <RoundRobinView
+          board={tournament.board as RoundRobinBoard}
+          teams={teams}
+          canPlayFixture={canPlayFixture}
+          onPlay={playFixture}
+        />
       )}
     </div>
   )
@@ -197,10 +230,12 @@ function fixtureState(f: BracketFixture): 'tbd' | 'bye' | 'pending' | { winner: 
 function EliminationView({
   board,
   teamName,
+  canPlayFixture,
   onPlay,
 }: {
   board: Bracket
   teamName: (i: number | null) => string | null
+  canPlayFixture: (teamAIndex: number | null, teamBIndex: number | null) => boolean
   onPlay: (teamAIndex: number, teamBIndex: number, roundIndex: number | null, fixtureIndex: number) => void
 }) {
   return (
@@ -217,6 +252,7 @@ function EliminationView({
                 teamAName={teamName(f.teamA)}
                 teamBName={teamName(f.teamB)}
                 state={fixtureState(f)}
+                canPlay={canPlayFixture(f.teamA, f.teamB)}
                 onPlay={() => f.teamA != null && f.teamB != null && onPlay(f.teamA, f.teamB, ri, fi)}
               />
             ))}
@@ -235,10 +271,12 @@ function roundRobinFixtureState(f: RoundRobinFixture): 'pending' | { winner: 'A'
 function RoundRobinView({
   board,
   teams,
+  canPlayFixture,
   onPlay,
 }: {
   board: RoundRobinBoard
   teams: Tournament['teams']
+  canPlayFixture: (teamAIndex: number | null, teamBIndex: number | null) => boolean
   onPlay: (teamAIndex: number, teamBIndex: number, roundIndex: null, fixtureIndex: number) => void
 }) {
   const standings = computeStandings(board, teams.length)
@@ -276,6 +314,7 @@ function RoundRobinView({
               teamAName={teams[f.teamA].name}
               teamBName={teams[f.teamB].name}
               state={roundRobinFixtureState(f)}
+              canPlay={canPlayFixture(f.teamA, f.teamB)}
               onPlay={() => onPlay(f.teamA, f.teamB, null, fi)}
             />
           ))}

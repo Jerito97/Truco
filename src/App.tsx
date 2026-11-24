@@ -95,6 +95,7 @@ function App() {
           ) : (
             <TournamentView
               tournamentId={tournamentRoute.id}
+              currentUser={user}
               onBack={() => setTournamentRoute({ screen: 'list' })}
               onPlayFixture={playTournamentFixture}
             />
