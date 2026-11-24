@@ -1,6 +1,6 @@
 import type { Pairing, Tournament, TournamentContext } from '../types'
-import type { Bracket, BracketFixture, RoundRobinBoard, RoundRobinFixture } from '../lib/tournament'
-import { computeStandings } from '../lib/tournament'
+import type { Bracket, BracketFixture, RoundRobinBoard, RoundRobinFixture } from '../../api/_lib/tournament'
+import { computeStandings } from '../../api/_lib/tournament'
 import { BackIcon, TrophyIcon } from './icons'
 import { useScrollToTop } from '../state/useScrollToTop'
 import { useTournament } from '../state/useTournament'

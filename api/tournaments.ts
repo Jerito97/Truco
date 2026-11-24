@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { getPool } from './_lib/db.js'
 import { ensureSchema } from './_lib/ensureSchema.js'
 import { UUID_RE } from './_lib/validation.js'
-import { buildBracket, buildRoundRobin } from '../src/lib/tournament.js'
+import { buildBracket, buildRoundRobin, shuffle } from './_lib/tournament.js'
 
 const MAX_TEAMS = 8
 
@@ -49,13 +49,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return
     }
 
-    const board = format === 'eliminacion' ? buildBracket(teams.length) : buildRoundRobin(teams.length)
+    // El sorteo de la eliminación directa tiene que ser al azar (quién juega
+    // contra quién, y a quién le toca bye), no en el orden en que se
+    // cargaron los equipos: se baraja antes de armar el bracket y se guarda
+    // ya barajado, para que los índices del bracket y de `teams` coincidan.
+    const orderedTeams = format === 'eliminacion' ? shuffle(teams) : teams
+    const board = format === 'eliminacion' ? buildBracket(orderedTeams.length) : buildRoundRobin(orderedTeams.length)
 
     const result = await pool.query(
       `insert into tournaments (name, format, teams, board, created_by)
        values ($1, $2, $3::jsonb, $4::jsonb, $5)
        returning *`,
-      [name.trim(), format, JSON.stringify(teams), JSON.stringify(board), createdBy],
+      [name.trim(), format, JSON.stringify(orderedTeams), JSON.stringify(board), createdBy],
     )
     res.status(201).json(result.rows[0])
     return

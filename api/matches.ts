@@ -11,7 +11,7 @@ import {
   isRoundRobinComplete,
   type Bracket,
   type RoundRobinBoard,
-} from '../src/lib/tournament.js'
+} from './_lib/tournament.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   await ensureSchema()

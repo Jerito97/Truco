@@ -39,6 +39,18 @@ export function suggestFormat(teamCount: number): TournamentFormat {
   return teamCount === 3 ? 'todos_contra_todos' : 'eliminacion'
 }
 
+// Sorteo: quién juega contra quién (y a quién le toca bye) en una
+// eliminación directa no puede depender del orden en que se cargaron los
+// equipos. Fisher-Yates, sin mutar el array que recibe.
+export function shuffle<T>(items: T[]): T[] {
+  const arr = [...items]
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[arr[i], arr[j]] = [arr[j], arr[i]]
+  }
+  return arr
+}
+
 function nextPowerOfTwo(n: number): number {
   let p = 1
   while (p < n) p *= 2

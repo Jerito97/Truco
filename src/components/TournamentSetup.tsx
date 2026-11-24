@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { Tournament, TournamentFormat, User } from '../types'
-import { suggestFormat } from '../lib/tournament'
+import { suggestFormat } from '../../api/_lib/tournament'
 import { BackIcon, ChevronRightIcon, PeopleIcon, PlusIcon } from './icons'
 import { TeamPicker } from './TeamPicker'
 
