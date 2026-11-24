@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { User } from '../types'
 import { BackIcon } from './icons'
+import { useScrollToTop } from '../state/useScrollToTop'
 
 interface LeaderboardEntry {
   id: string
@@ -39,6 +40,7 @@ function sortRows(rows: LeaderboardEntry[], mode: SortMode): LeaderboardEntry[] 
 }
 
 export function RankingScreen({ currentUser, onBack }: { currentUser: User; onBack: () => void }) {
+  useScrollToTop()
   const [sortMode, setSortMode] = useState<SortMode>('performance')
   const [rows, setRows] = useState<LeaderboardEntry[] | null>(null)
   const [error, setError] = useState(false)

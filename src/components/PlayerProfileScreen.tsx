@@ -5,8 +5,10 @@ import { useStreaks } from '../state/useStreaks'
 import { usePicaPicaRecord } from '../state/usePicaPicaRecord'
 import { computeRivalStats, PlayerStatBlocks } from './PlayerStats'
 import { BackIcon, PersonIcon } from './icons'
+import { useScrollToTop } from '../state/useScrollToTop'
 
 export function PlayerProfileScreen({ player, onBack }: { player: User; onBack: () => void }) {
+  useScrollToTop()
   const { matches } = useMatches(player.id, 0)
   const streaks = useStreaks(player.id, 0)
   const picaPicaRecord = usePicaPicaRecord(player.id, 0)

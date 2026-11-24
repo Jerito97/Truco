@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { User } from '../types'
 import { BackIcon, ChevronRightIcon } from './icons'
 import { PlayerProfileScreen } from './PlayerProfileScreen'
+import { useScrollToTop } from '../state/useScrollToTop'
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean)
@@ -11,6 +12,7 @@ function initials(name: string): string {
 }
 
 export function PlayersScreen({ currentUser, onBack }: { currentUser: User; onBack: () => void }) {
+  useScrollToTop()
   const [players, setPlayers] = useState<User[] | null>(null)
   const [error, setError] = useState(false)
   const [selected, setSelected] = useState<User | null>(null)

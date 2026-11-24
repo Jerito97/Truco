@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { FinishedMatch, User } from '../types'
 import { BackIcon } from './icons'
+import { useScrollToTop } from '../state/useScrollToTop'
 
 export interface PairStat {
   name: string
@@ -106,6 +107,7 @@ export function StatsScreen({
   matches: FinishedMatch[] | null
   onBack: () => void
 }) {
+  useScrollToTop()
   const [section, setSection] = useState<SectionMode>('companeros')
   const [sortMode, setSortMode] = useState<SortMode>('jugados')
   const teammates = matches ? computePairStats(matches, user.id, 'teammate') : null

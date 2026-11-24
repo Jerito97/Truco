@@ -4,8 +4,10 @@ import { formatDate } from '../lib/formatDate'
 import { MatchResultCard } from './MatchResultCard'
 import { ShareResultButton } from './ShareResultButton'
 import type { ShareableMatch } from '../lib/shareImage'
+import { useScrollToTop } from '../state/useScrollToTop'
 
 export function MatchDetailScreen({ match, onBack }: { match: FinishedMatch; onBack: () => void }) {
+  useScrollToTop()
   // Por puntaje, no por match.winner (ver MatchRow.tsx): el puntaje en
   // pantalla es la verdad que el usuario está mirando.
   const aWins = match.score_a >= match.score_b

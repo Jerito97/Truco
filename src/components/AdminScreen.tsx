@@ -3,6 +3,7 @@ import type { User } from '../types'
 import { BackIcon } from './icons'
 import { formatDate } from '../lib/formatDate'
 import { ConfirmDialog, DialogButtons, Overlay } from './Dialog'
+import { useScrollToTop } from '../state/useScrollToTop'
 
 interface AdminUser {
   id: string
@@ -595,6 +596,7 @@ function MatchesPanel({ currentUser }: { currentUser: User }) {
 }
 
 export function AdminScreen({ currentUser, onBack }: { currentUser: User; onBack: () => void }) {
+  useScrollToTop()
   const [section, setSection] = useState<'users' | 'matches'>('users')
 
   return (
