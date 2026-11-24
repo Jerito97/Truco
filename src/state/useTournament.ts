@@ -12,7 +12,7 @@ export function useTournament(id: string | null, refreshKey: number) {
     let cancelled = false
     setTournament(null)
     setError(false)
-    fetch(`/api/tournaments?id=${encodeURIComponent(id)}`)
+    fetch(`/api/matches?tournamentId=${encodeURIComponent(id)}`)
       .then((r) => {
         if (!r.ok) throw new Error()
         return r.json() as Promise<Tournament>
