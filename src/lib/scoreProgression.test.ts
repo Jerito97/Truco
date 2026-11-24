@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildProgressionSeries, evalProgressionAt } from './scoreProgression'
+import { buildProgressionSeries, buildTimeTicks, evalProgressionAt } from './scoreProgression'
 import type { ScoreEvent } from '../types'
 
 describe('buildProgressionSeries', () => {
@@ -52,5 +52,23 @@ describe('evalProgressionAt', () => {
 
   it('se mantiene en el último valor después del último punto', () => {
     expect(evalProgressionAt(points, 100)).toBe(6)
+  })
+})
+
+describe('buildTimeTicks', () => {
+  it('una marca cada 10 minutos (sin repetir la del final)', () => {
+    expect(buildTimeTicks(2400)).toEqual([0, 600, 1200, 1800])
+  })
+
+  it('saltea la marca regular que quedaría pegada a la marca final (mm:ss)', () => {
+    // Dura 28:33: la marca de "20 min" (1200s) está a menos de 300s del
+    // final (1713-1200=513 > 300, así que esa sí entra; probamos un caso
+    // más ajustado).
+    expect(buildTimeTicks(1430)).toEqual([0, 600]) // 1200 quedaría a 230s del final (1430): se saltea
+  })
+
+  it('con más de una hora de partido, pide más aire antes de la marca final (h:mm:ss es más ancho)', () => {
+    const ticks = buildTimeTicks(4142) // 1:09:02
+    expect(ticks).toEqual([0, 600, 1200, 1800, 2400, 3000]) // 3600 (60m) se saltea: muy cerca del final
   })
 })

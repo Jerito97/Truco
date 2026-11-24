@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import type { ScoreEvent } from '../types'
 import { TARGET_SCORE } from '../types'
-import { buildProgressionSeries, evalProgressionAt, type ProgressionPoint } from '../lib/scoreProgression'
+import { buildProgressionSeries, buildTimeTicks, evalProgressionAt, type ProgressionPoint } from '../lib/scoreProgression'
 import { formatDuration } from '../lib/formatDuration'
 
 const VIEW_W = 300
@@ -57,16 +57,7 @@ export function MatchProgressionChart({
   const pointsA = buildProgressionSeries(scoreEvents, 'A', duration)
   const pointsB = buildProgressionSeries(scoreEvents, 'B', duration)
 
-  // La marca final (en formato h:mm:ss pasada la hora) es más ancha que una
-  // de "Xm": si el partido duró más de una hora, hace falta más aire para
-  // que no se pisen.
-  const finalLabelLength = formatDuration(duration).length
-  const skipThreshold = finalLabelLength > 5 ? 900 : 300
-  const xTicks: number[] = []
-  for (let t = 0; t <= duration; t += 600) {
-    if (t !== 0 && duration - t < skipThreshold) continue // no pisar la marca final
-    xTicks.push(t)
-  }
+  const xTicks = buildTimeTicks(duration)
 
   function handlePointer(clientX: number) {
     const rect = svgRef.current?.getBoundingClientRect()

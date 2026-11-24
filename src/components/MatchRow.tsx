@@ -1,11 +1,7 @@
 import type { FinishedMatch } from '../types'
 import { CalendarIcon, ChevronRightIcon } from './icons'
 import { formatDate } from '../lib/formatDate'
-
-function joinNames(names: string[]): string {
-  if (names.length <= 1) return names.join('')
-  return `${names.slice(0, -1).join(', ')} y ${names[names.length - 1]}`
-}
+import { joinNames } from '../lib/joinNames'
 
 export function MatchRow({ match, onSelect }: { match: FinishedMatch; onSelect: (match: FinishedMatch) => void }) {
   // Por puntaje, no por match.winner: ese campo puede quedar desactualizado

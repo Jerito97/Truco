@@ -1,4 +1,5 @@
 import type { ScoreEvent } from '../types'
+import { formatDuration } from './formatDuration'
 
 export interface ProgressionPoint {
   t: number
@@ -38,4 +39,19 @@ export function evalProgressionAt(points: ProgressionPoint[], t: number): number
     }
   }
   return points[points.length - 1].v
+}
+
+// Marcas del eje de tiempo cada 10 minutos, salteando la que quedaría
+// pisada por la marca final (más ancha si pasó la hora, formato h:mm:ss).
+// Compartido por el gráfico en vivo y por la imagen para compartir, para que
+// las dos dibujen el mismo eje.
+export function buildTimeTicks(durationSeconds: number): number[] {
+  const finalLabelLength = formatDuration(durationSeconds).length
+  const skipThreshold = finalLabelLength > 5 ? 900 : 300
+  const ticks: number[] = []
+  for (let t = 0; t <= durationSeconds; t += 600) {
+    if (t !== 0 && durationSeconds - t < skipThreshold) continue
+    ticks.push(t)
+  }
+  return ticks
 }
