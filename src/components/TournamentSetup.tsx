@@ -76,10 +76,11 @@ export function TournamentSetup({
     setCreating(true)
     setCreateError(null)
     try {
-      const res = await fetch('/api/tournaments', {
+      const res = await fetch('/api/matches', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          resource: 'tournament',
           name: name.trim(),
           format,
           teams: teams.map((t) => ({ name: t.name.trim(), playerIds: t.ids, playerNames: t.ids.map(nameOf) })),

@@ -10,7 +10,7 @@ export function useTournaments(refreshKey: number) {
     let cancelled = false
     setTournaments(null)
     setError(false)
-    fetch('/api/tournaments')
+    fetch('/api/matches?tournaments=1')
       .then((r) => {
         if (!r.ok) throw new Error()
         return r.json() as Promise<Tournament[]>
