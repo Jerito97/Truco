@@ -1,6 +1,6 @@
 import { useCallback, useLayoutEffect, useEffect, useState } from 'react'
 import { makeId } from '../lib/id'
-import type { ActiveMatch, AppState, Pairing, ScoreEvent } from '../types'
+import type { ActiveMatch, AppState, Pairing, ScoreEvent, TournamentContext } from '../types'
 import { TARGET_SCORE } from '../types'
 import { useSyncQueue } from './useSyncQueue'
 
@@ -32,6 +32,7 @@ function buildFreshMatch(base: {
   teamBPlayerNames: string[]
   pairings: Pairing[]
   manoTeam: 'A' | 'B'
+  tournamentContext?: TournamentContext
 }): ActiveMatch {
   return {
     ...base,
@@ -96,6 +97,14 @@ export function useAppState() {
     const durationSeconds = m.finishedAt
       ? Math.max(0, Math.round((new Date(m.finishedAt).getTime() - new Date(m.startedAt).getTime()) / 1000))
       : undefined
+    const tournamentFields = m.tournamentContext
+      ? {
+          tournamentId: m.tournamentContext.tournamentId,
+          tournamentRound: m.tournamentContext.roundIndex,
+          tournamentIndex: m.tournamentContext.fixtureIndex,
+          tournamentWinnerIndex: winner === 'A' ? m.tournamentContext.teamAIndex : m.tournamentContext.teamBIndex,
+        }
+      : {}
     enqueue(m.id, {
       teamAName: m.teamAName,
       teamBName: m.teamBName,
@@ -112,6 +121,7 @@ export function useAppState() {
       picaPicaRounds: m.picaPicaRoundsHistory,
       durationSeconds,
       scoreEvents: m.scoreEvents,
+      ...tournamentFields,
     })
   }, [state.activeMatch, enqueue])
 
@@ -128,6 +138,7 @@ export function useAppState() {
       teamAPlayerNames: string[]
       teamBPlayerNames: string[]
       pairings: Pairing[]
+      tournamentContext?: TournamentContext
     }) => {
       setState((s) => ({
         ...s,
@@ -140,6 +151,7 @@ export function useAppState() {
           teamBPlayerNames: setup.teamBPlayerNames,
           pairings: setup.pairings,
           manoTeam: 'A',
+          tournamentContext: setup.tournamentContext,
         }),
       }))
     },

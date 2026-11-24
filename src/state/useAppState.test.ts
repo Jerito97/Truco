@@ -248,4 +248,44 @@ describe('useAppState', () => {
       expect(result.current.isSyncPending).toBe(true)
     })
   })
+
+  describe('tournamentContext (cruce de un torneo)', () => {
+    it('manda los 4 campos de torneo al guardar, con el índice de equipo del ganador', async () => {
+      const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 201 }))
+      vi.stubGlobal('fetch', fetchMock)
+      const { result } = renderHook(() => useAppState())
+      act(() =>
+        result.current.startMatch({
+          ...setup,
+          tournamentContext: { tournamentId: 't1', roundIndex: 1, fixtureIndex: 0, teamAIndex: 2, teamBIndex: 5 },
+        }),
+      )
+      for (let i = 0; i < TARGET_SCORE; i++) act(() => result.current.addPoint('B')) // gana el equipo B (teamBIndex: 5)
+
+      await waitFor(() => expect(fetchMock).toHaveBeenCalled())
+      const call = fetchMock.mock.calls.find((c) => String(c[0]).includes('/api/matches'))
+      if (!call) throw new Error('no se llamó a /api/matches')
+      const body = JSON.parse((call[1] as RequestInit).body as string)
+      expect(body).toMatchObject({
+        tournamentId: 't1',
+        tournamentRound: 1,
+        tournamentIndex: 0,
+        tournamentWinnerIndex: 5,
+      })
+    })
+
+    it('un partido sin tournamentContext no manda esos campos', async () => {
+      const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 201 }))
+      vi.stubGlobal('fetch', fetchMock)
+      const { result } = renderHook(() => useAppState())
+      act(() => result.current.startMatch(setup))
+      for (let i = 0; i < TARGET_SCORE; i++) act(() => result.current.addPoint('A'))
+
+      await waitFor(() => expect(fetchMock).toHaveBeenCalled())
+      const call = fetchMock.mock.calls.find((c) => String(c[0]).includes('/api/matches'))
+      if (!call) throw new Error('no se llamó a /api/matches')
+      const body = JSON.parse((call[1] as RequestInit).body as string)
+      expect(body.tournamentId).toBeUndefined()
+    })
+  })
 })

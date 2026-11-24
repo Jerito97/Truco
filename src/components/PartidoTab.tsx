@@ -22,6 +22,8 @@ export function PartidoTab({
   onPicaPicaCancel,
   onRematch,
   onNewMatch,
+  onBackToTournament,
+  onOpenTournaments,
 }: {
   currentUser: User
   activeMatch: ActiveMatch | null
@@ -44,6 +46,8 @@ export function PartidoTab({
   onPicaPicaCancel: () => void
   onRematch: () => void
   onNewMatch: () => void
+  onBackToTournament?: (tournamentId: string) => void
+  onOpenTournaments?: () => void
 }) {
   const [view, setView] = useState<View>(activeMatch && activeMatch.status === 'playing' ? 'anotador' : 'dashboard')
 
@@ -52,7 +56,12 @@ export function PartidoTab({
       return <MatchSetup currentUser={currentUser} onStart={onStart} onBack={() => setView('dashboard')} />
     }
     return (
-      <HomeDashboard activeMatch={null} onNewMatch={() => setView('setup')} onResumeMatch={() => setView('setup')} />
+      <HomeDashboard
+        activeMatch={null}
+        onNewMatch={() => setView('setup')}
+        onResumeMatch={() => setView('setup')}
+        onOpenTournaments={onOpenTournaments}
+      />
     )
   }
 
@@ -81,6 +90,7 @@ export function PartidoTab({
           onNewMatch()
           setView('dashboard')
         }}
+        onBackToTournament={onBackToTournament}
       />
     )
   }
@@ -95,6 +105,7 @@ export function PartidoTab({
           onNewMatch()
           setView('setup')
         }}
+        onOpenTournaments={onOpenTournaments}
       />
     )
   }

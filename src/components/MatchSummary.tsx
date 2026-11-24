@@ -9,12 +9,15 @@ export function MatchSummary({
   isSyncPending,
   onRematch,
   onNewMatch,
+  onBackToTournament,
 }: {
   match: ActiveMatch
   isSyncPending: boolean
   onRematch: () => void
   onNewMatch: () => void
+  onBackToTournament?: (tournamentId: string) => void
 }) {
+  const tournamentId = match.tournamentContext?.tournamentId
   const aWins = match.scoreA >= match.scoreB
   const winnerName = aWins ? match.teamAName : match.teamBName
   const durationSeconds = match.finishedAt
@@ -55,28 +58,41 @@ export function MatchSummary({
       </p>
 
       <div className="grid grid-cols-1 gap-3">
-        <button
-          type="button"
-          onClick={onRematch}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-poster text-xl tracking-wide"
-          style={{ backgroundColor: 'var(--color-ember-600)', color: 'var(--color-wood-950)' }}
-        >
-          <RefreshIcon className="w-5 h-5" />
-          Revancha
-        </button>
+        {!tournamentId && (
+          <button
+            type="button"
+            onClick={onRematch}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-poster text-xl tracking-wide"
+            style={{ backgroundColor: 'var(--color-ember-600)', color: 'var(--color-wood-950)' }}
+          >
+            <RefreshIcon className="w-5 h-5" />
+            Revancha
+          </button>
+        )}
         <ShareResultButton
           match={shareableMatch}
           shareText={`¡Ganó ${winnerName}! ${match.scoreA} - ${match.scoreB}`}
           tone="ember"
         />
-        <button
-          type="button"
-          onClick={onNewMatch}
-          className="w-full py-2.5 rounded-xl font-bold border"
-          style={{ borderColor: 'var(--color-wood-600)', color: 'var(--color-paper-100)' }}
-        >
-          Armar otro partido
-        </button>
+        {tournamentId ? (
+          <button
+            type="button"
+            onClick={() => onBackToTournament?.(tournamentId)}
+            className="w-full py-2.5 rounded-xl font-bold border"
+            style={{ borderColor: 'var(--color-ember-600)', color: 'var(--color-ember-500)' }}
+          >
+            Volver al torneo
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={onNewMatch}
+            className="w-full py-2.5 rounded-xl font-bold border"
+            style={{ borderColor: 'var(--color-wood-600)', color: 'var(--color-paper-100)' }}
+          >
+            Armar otro partido
+          </button>
+        )}
       </div>
     </div>
   )

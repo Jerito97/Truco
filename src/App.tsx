@@ -9,6 +9,12 @@ import { HistorialTab } from './components/HistorialTab'
 import { ProfileTab } from './components/ProfileTab'
 import { LoginGate } from './components/LoginGate'
 import { UpdateToast } from './components/UpdateToast'
+import { TournamentsListScreen } from './components/TournamentsListScreen'
+import { TournamentSetup } from './components/TournamentSetup'
+import { TournamentView, type MatchSetupPayload } from './components/TournamentView'
+import type { Tournament, TournamentContext } from './types'
+
+type TournamentRoute = { screen: 'list' } | { screen: 'setup' } | { screen: 'view'; id: string }
 
 function OfflineBanner() {
   return (
@@ -29,6 +35,7 @@ function App() {
   useLiveMatchSync(state.activeMatch)
   const online = useOnlineStatus()
   const [historialRefreshKey, setHistorialRefreshKey] = useState(0)
+  const [tournamentRoute, setTournamentRoute] = useState<TournamentRoute | null>(null)
 
   const wasFinished = useRef(false)
   useEffect(() => {
@@ -56,35 +63,84 @@ function App() {
     )
   }
 
+  const playTournamentFixture = (setup: MatchSetupPayload, context: TournamentContext) => {
+    state.startMatch({ ...setup, tournamentContext: context })
+    setTab('inicio')
+    setTournamentRoute(null)
+  }
+
+  const backToTournament = (tournamentId: string) => {
+    state.clearMatch()
+    setTournamentRoute({ screen: 'view', id: tournamentId })
+  }
+
   return (
     <div className="min-h-full pb-24">
       <UpdateToast />
       {!online && <OfflineBanner />}
       <main className="max-w-md mx-auto px-4 pt-6">
-        {tab === 'inicio' && (
-          <PartidoTab
-            currentUser={user}
-            activeMatch={state.activeMatch}
-            isSyncPending={state.isSyncPending}
-            onStart={state.startMatch}
-            onAdd={state.addPoint}
-            onSub={state.subtractPoint}
-            onEnterPicaPica={state.enterPicaPica}
-            onPicaPicaAdd={state.addPicaPicaPoint}
-            onPicaPicaSub={state.subtractPicaPicaPoint}
-            onPicaPicaClose={state.closePicaPica}
-            onPicaPicaCancel={state.cancelPicaPica}
-            onRematch={state.rematch}
-            onNewMatch={state.clearMatch}
-          />
-        )}
-        {tab === 'historial' && <HistorialTab user={user} refreshKey={historialRefreshKey} />}
-        {tab === 'perfil' && (
-          <ProfileTab user={user} onLogout={logout} onUnlockAdmin={unlockAdmin} onRenameSelf={renameSelf} />
+        {tournamentRoute ? (
+          tournamentRoute.screen === 'list' ? (
+            <TournamentsListScreen
+              onBack={() => setTournamentRoute(null)}
+              onCreateNew={() => setTournamentRoute({ screen: 'setup' })}
+              onOpen={(t: Tournament) => setTournamentRoute({ screen: 'view', id: t.id })}
+            />
+          ) : tournamentRoute.screen === 'setup' ? (
+            <TournamentSetup
+              currentUser={user}
+              onBack={() => setTournamentRoute({ screen: 'list' })}
+              onCreated={(t) => setTournamentRoute({ screen: 'view', id: t.id })}
+            />
+          ) : (
+            <TournamentView
+              tournamentId={tournamentRoute.id}
+              onBack={() => setTournamentRoute({ screen: 'list' })}
+              onPlayFixture={playTournamentFixture}
+            />
+          )
+        ) : (
+          <>
+            {tab === 'inicio' && (
+              <PartidoTab
+                currentUser={user}
+                activeMatch={state.activeMatch}
+                isSyncPending={state.isSyncPending}
+                onStart={state.startMatch}
+                onAdd={state.addPoint}
+                onSub={state.subtractPoint}
+                onEnterPicaPica={state.enterPicaPica}
+                onPicaPicaAdd={state.addPicaPicaPoint}
+                onPicaPicaSub={state.subtractPicaPicaPoint}
+                onPicaPicaClose={state.closePicaPica}
+                onPicaPicaCancel={state.cancelPicaPica}
+                onRematch={state.rematch}
+                onNewMatch={state.clearMatch}
+                onBackToTournament={backToTournament}
+                onOpenTournaments={() => setTournamentRoute({ screen: 'list' })}
+              />
+            )}
+            {tab === 'historial' && <HistorialTab user={user} refreshKey={historialRefreshKey} />}
+            {tab === 'perfil' && (
+              <ProfileTab
+                user={user}
+                onLogout={logout}
+                onUnlockAdmin={unlockAdmin}
+                onRenameSelf={renameSelf}
+                onOpenTournaments={() => setTournamentRoute({ screen: 'list' })}
+              />
+            )}
+          </>
         )}
       </main>
 
-      <TabBar active={tab} onChange={setTab} />
+      <TabBar
+        active={tab}
+        onChange={(t) => {
+          setTab(t)
+          setTournamentRoute(null)
+        }}
+      />
     </div>
   )
 }

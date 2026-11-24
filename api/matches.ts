@@ -2,6 +2,16 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { getPool } from './_lib/db.js'
 import { ensureSchema } from './_lib/ensureSchema.js'
 import { UUID_RE } from './_lib/validation.js'
+import {
+  applyEliminationResult,
+  applyRoundRobinResult,
+  getEliminationChampion,
+  getRoundRobinChampion,
+  isEliminationComplete,
+  isRoundRobinComplete,
+  type Bracket,
+  type RoundRobinBoard,
+} from '../src/lib/tournament.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   await ensureSchema()
@@ -26,7 +36,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       picaPicaRounds,
       durationSeconds,
       scoreEvents,
+      tournamentId,
+      tournamentRound,
+      tournamentIndex,
+      tournamentWinnerIndex,
     } = b
+
+    // Los 4 campos de torneo van siempre juntos (o ninguno): este partido es
+    // un cruce de un torneo, o no lo es.
+    const hasTournamentContext = tournamentId !== undefined
+    const tournamentContextValid =
+      !hasTournamentContext ||
+      (typeof tournamentId === 'string' &&
+        UUID_RE.test(tournamentId) &&
+        (tournamentRound === null || typeof tournamentRound === 'number') &&
+        typeof tournamentIndex === 'number' &&
+        typeof tournamentWinnerIndex === 'number')
 
     const teamSize = Array.isArray(teamAPlayerIds) ? teamAPlayerIds.length : 0
 
@@ -50,7 +75,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       typeof scoreB === 'number' &&
       (winner === 'A' || winner === 'B') &&
       (clientId === undefined || (typeof clientId === 'string' && clientId.length > 0 && clientId.length <= 100)) &&
-      (durationSeconds === undefined || (typeof durationSeconds === 'number' && durationSeconds >= 0))
+      (durationSeconds === undefined || (typeof durationSeconds === 'number' && durationSeconds >= 0)) &&
+      tournamentContextValid
 
     if (!valid) {
       res.status(400).json({ error: 'Datos de partido inválidos' })
@@ -89,6 +115,38 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         JSON.stringify(Array.isArray(scoreEvents) ? scoreEvents : []),
       ],
     )
+
+    // Si este partido era un cruce de un torneo, hacemos avanzar su bracket
+    // (o su tabla de todos-contra-todos) con el resultado. No corre dentro
+    // de una transacción con el insert de arriba: en el peor caso (se cae
+    // justo acá en el medio) el partido queda guardado pero el torneo no
+    // avanza solo, y hay que tocar "Jugar" de nuevo para ese cruce.
+    if (hasTournamentContext) {
+      const tRes = await pool.query('select * from tournaments where id = $1', [tournamentId])
+      const trow = tRes.rows[0]
+      if (trow && trow.status === 'en_curso') {
+        const matchId = result.rows[0].id
+        let board
+        let complete: boolean
+        let champion: number | null
+        if (trow.format === 'eliminacion') {
+          board = applyEliminationResult(trow.board as Bracket, tournamentRound, tournamentIndex, matchId, tournamentWinnerIndex)
+          complete = isEliminationComplete(board)
+          champion = complete ? getEliminationChampion(board) : null
+        } else {
+          board = applyRoundRobinResult(trow.board as RoundRobinBoard, tournamentIndex, matchId, tournamentWinnerIndex)
+          complete = isRoundRobinComplete(board)
+          // Puede dar null igual estando completo (empate en el primer puesto).
+          champion = complete ? getRoundRobinChampion(board, (trow.teams as unknown[]).length) : null
+        }
+        await pool.query(
+          `update tournaments
+           set board = $1::jsonb, status = $2, champion_team_index = $3, finished_at = $4
+           where id = $5`,
+          [JSON.stringify(board), complete ? 'finalizado' : 'en_curso', champion, complete ? new Date().toISOString() : null, tournamentId],
+        )
+      }
+    }
 
     // Reintento de un partido que ya se había guardado (conflicto por
     // client_id): el "do update" no cambia nada de verdad, pero nos deja

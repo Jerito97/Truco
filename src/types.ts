@@ -1,3 +1,5 @@
+import type { TournamentBoard } from './lib/tournament'
+
 export interface User {
   id: string
   name: string
@@ -67,6 +69,8 @@ export interface ActiveMatch {
   scoreEvents: ScoreEvent[]
   startedAt: string
   finishedAt?: string
+  // Presente solo si este partido es un cruce de un torneo.
+  tournamentContext?: TournamentContext
 }
 
 export interface FinishedMatch {
@@ -90,6 +94,41 @@ export interface FinishedMatch {
   // Lista vacía en los partidos guardados antes de este campo (no hay forma
   // de reconstruirla después del hecho).
   score_events: ScoreEvent[]
+}
+
+// A qué cruce de qué torneo pertenece un partido (si pertenece a alguno):
+// roundIndex es null para todos-contra-todos (lista plana de cruces, sin
+// rondas), y el número de ronda para eliminación directa.
+export interface TournamentContext {
+  tournamentId: string
+  roundIndex: number | null
+  fixtureIndex: number
+  // Índice (en tournament.teams) de cada lado de este cruce, para poder
+  // calcular qué índice de equipo ganó una vez que termina el partido.
+  teamAIndex: number
+  teamBIndex: number
+}
+
+export interface TournamentTeam {
+  name: string
+  playerIds: string[]
+  playerNames: string[]
+}
+
+export type TournamentFormat = 'eliminacion' | 'todos_contra_todos'
+export type TournamentStatus = 'en_curso' | 'finalizado'
+
+export interface Tournament {
+  id: string
+  name: string
+  format: TournamentFormat
+  teams: TournamentTeam[]
+  board: TournamentBoard
+  status: TournamentStatus
+  champion_team_index: number | null
+  created_by: string
+  created_at: string
+  finished_at: string | null
 }
 
 export interface AppState {
