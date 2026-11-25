@@ -27,6 +27,27 @@ export function computeStreaks(
   return { current: running, best }
 }
 
+const TIER_WINDOW = 10
+const TIER_MIN_GAMES = 5
+
+// El tier (1 el mejor, 3 el peor) se calcula como el handicap de golf: no es
+// el rendimiento de toda la vida, sino de los últimos TIER_WINDOW partidos
+// (los que tenga, si todavía no llegó a esa cantidad), para que se note
+// cuando alguien viene en racha o en bajón. Con menos de TIER_MIN_GAMES
+// partidos jugados no alcanza la muestra para asignar ningún tier.
+export function computeTier(rows: { winner: 'A' | 'B'; team_a_player_ids: string[] }[], userId: string): 1 | 2 | 3 | null {
+  const recent = rows.slice(-TIER_WINDOW)
+  if (recent.length < TIER_MIN_GAMES) return null
+  const wins = recent.filter((row) => {
+    const onA = row.team_a_player_ids.includes(userId)
+    return (onA && row.winner === 'A') || (!onA && row.winner === 'B')
+  }).length
+  const winRate = wins / recent.length
+  if (winRate >= 0.6) return 1
+  if (winRate >= 0.4) return 2
+  return 3
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {
     res.status(405).json({ error: 'Method not allowed' })
@@ -54,5 +75,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   )
 
   const { current, best } = computeStreaks(result.rows, userId)
-  res.status(200).json({ current, best })
+  const tier = computeTier(result.rows, userId)
+  res.status(200).json({ current, best, tier })
 }
