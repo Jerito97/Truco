@@ -4,9 +4,9 @@ import { BackIcon } from './icons'
 // Encabezado ornamental para las pantallas de nivel superior que no tienen
 // botón de "volver" (se llega a ellas desde la barra de abajo, no
 // navegando): un kicker chico, el título, y un adorno de línea-rombo-línea
-// debajo, con un resplandor dorado muy sutil arriba de todo para que el
-// título no quede flotando sin ancla visual. También sirve para pantallas
-// navegadas con "volver" (onBack) que quieran el mismo tratamiento de título.
+// debajo, para que el título no quede flotando sin ancla visual. También
+// sirve para pantallas navegadas con "volver" (onBack) que quieran el mismo
+// tratamiento de título.
 export function ScreenHeader({
   title,
   kicker = 'OSOBUCO',
@@ -21,12 +21,7 @@ export function ScreenHeader({
   onBack?: () => void
 }) {
   return (
-    <div
-      className="relative -mx-4 px-4 pt-2 pb-1 text-center"
-      style={{
-        backgroundImage: 'radial-gradient(ellipse 70% 100% at 50% 0%, rgba(203, 170, 106, 0.16), transparent 72%)',
-      }}
-    >
+    <div className="relative -mx-4 px-4 pt-2 pb-1 text-center">
       <div className="relative">
         {onBack && (
           <button
