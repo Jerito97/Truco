@@ -3,7 +3,7 @@ import type { User } from '../types'
 import { useMatches } from '../state/useMatches'
 import { useStreaks } from '../state/useStreaks'
 import { usePicaPicaRecord } from '../state/usePicaPicaRecord'
-import { computeRivalStats, listPicaPicaDuels, PlayerStatBlocks } from './PlayerStats'
+import { computeRivalStats, PlayerStatBlocks } from './PlayerStats'
 import { BackIcon, PersonIcon } from './icons'
 import { useScrollToTop } from '../state/useScrollToTop'
 
@@ -13,7 +13,6 @@ export function PlayerProfileScreen({ player, onBack }: { player: User; onBack: 
   const streaks = useStreaks(player.id, 0)
   const picaPicaRecord = usePicaPicaRecord(player.id, 0)
   const rivalStats = useMemo(() => (matches ? computeRivalStats(matches, player.id) : null), [matches, player.id])
-  const picaPicaDuels = useMemo(() => (matches ? listPicaPicaDuels(matches, player.id) : null), [matches, player.id])
   const played = matches?.length ?? 0
   const won =
     matches?.filter(
@@ -53,7 +52,6 @@ export function PlayerProfileScreen({ player, onBack }: { player: User; onBack: 
           won={won}
           streaks={streaks}
           picaPicaRecord={picaPicaRecord}
-          picaPicaDuels={picaPicaDuels}
           rivalStats={rivalStats}
           pronoun="other"
         />

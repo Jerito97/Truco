@@ -10,7 +10,7 @@ import { StatsScreen } from './StatsScreen'
 import { RankingScreen } from './RankingScreen'
 import { PlayersScreen } from './PlayersScreen'
 import { MyMatchesScreen } from './MyMatchesScreen'
-import { computeRivalStats, listPicaPicaDuels, PlayerStatBlocks } from './PlayerStats'
+import { computeRivalStats, PlayerStatBlocks } from './PlayerStats'
 
 function MenuRow({ icon, label, danger, onClick }: { icon: ReactNode; label: string; danger?: boolean; onClick?: () => void }) {
   return (
@@ -111,7 +111,6 @@ export function ProfileTab({
   const streaks = useStreaks(user.id, 0)
   const picaPicaRecord = usePicaPicaRecord(user.id, 0)
   const rivalStats = useMemo(() => (matches ? computeRivalStats(matches, user.id) : null), [matches, user.id])
-  const picaPicaDuels = useMemo(() => (matches ? listPicaPicaDuels(matches, user.id) : null), [matches, user.id])
   const played = matches?.length ?? 0
   const won =
     matches?.filter(
@@ -223,7 +222,6 @@ export function ProfileTab({
         won={won}
         streaks={streaks}
         picaPicaRecord={picaPicaRecord}
-        picaPicaDuels={picaPicaDuels}
         rivalStats={rivalStats}
         pronoun="self"
       />
