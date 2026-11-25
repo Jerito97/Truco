@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import type { Pairing, User } from '../types'
-import { BackIcon, ChevronRightIcon, PeopleIcon } from './icons'
+import { ChevronRightIcon, PeopleIcon } from './icons'
 import { TeamPicker } from './TeamPicker'
+import { ScreenHeader } from './ScreenHeader'
 
 const TEAM_SIZE_OPTIONS = [1, 2, 3] as const
 
@@ -156,15 +157,7 @@ export function MatchSetup({
 
   return (
     <div className="screen-fill flex flex-col">
-      <div className="flex items-center justify-between">
-        <button type="button" onClick={onBack} aria-label="Volver">
-          <BackIcon className="w-5 h-5" style={{ color: 'var(--color-paper-100)' }} />
-        </button>
-        <h2 className="font-poster text-2xl" style={{ color: 'var(--color-paper-50)' }}>
-          Armar partido
-        </h2>
-        <span className="w-5" />
-      </div>
+      <ScreenHeader title="Armar partido" onBack={onBack} />
 
       <div className="flex-1 flex flex-col justify-center gap-4 min-h-0">
         <div className="grid grid-cols-3 gap-2">

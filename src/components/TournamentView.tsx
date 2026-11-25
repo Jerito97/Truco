@@ -1,9 +1,10 @@
 import type { Pairing, Tournament, TournamentContext, User } from '../types'
 import type { Bracket, BracketFixture, RoundRobinBoard, RoundRobinFixture } from '../../api/_lib/tournament'
 import { computeStandings } from '../../api/_lib/tournament'
-import { BackIcon, TrophyIcon } from './icons'
+import { TrophyIcon } from './icons'
 import { useScrollToTop } from '../state/useScrollToTop'
 import { useTournament } from '../state/useTournament'
+import { ScreenHeader } from './ScreenHeader'
 
 export interface MatchSetupPayload {
   teamAName: string
@@ -126,12 +127,7 @@ export function TournamentView({
   if (error) {
     return (
       <div className="space-y-5">
-        <div className="flex items-center justify-between">
-          <button type="button" onClick={onBack} aria-label="Volver">
-            <BackIcon className="w-5 h-5" style={{ color: 'var(--color-paper-100)' }} />
-          </button>
-          <span className="w-5" />
-        </div>
+        <ScreenHeader title="Torneo" onBack={onBack} />
         <p className="text-sm text-center py-6" style={{ color: '#d9695f' }}>
           No se pudo cargar el torneo.
         </p>
@@ -170,15 +166,7 @@ export function TournamentView({
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <button type="button" onClick={onBack} aria-label="Volver">
-          <BackIcon className="w-5 h-5" style={{ color: 'var(--color-paper-100)' }} />
-        </button>
-        <h2 className="font-poster text-2xl truncate px-2" style={{ color: 'var(--color-paper-50)' }}>
-          {tournament.name}
-        </h2>
-        <span className="w-5" />
-      </div>
+      <ScreenHeader title={tournament.name} onBack={onBack} />
 
       {tournament.status === 'finalizado' && (
         <div

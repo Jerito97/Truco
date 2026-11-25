@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import type { Tournament, TournamentFormat, User } from '../types'
 import { suggestFormat } from '../../api/_lib/tournament'
-import { BackIcon, ChevronRightIcon, PeopleIcon, PlusIcon } from './icons'
+import { ChevronRightIcon, PeopleIcon, PlusIcon } from './icons'
 import { TeamPicker } from './TeamPicker'
+import { ScreenHeader } from './ScreenHeader'
 
 const TEAM_SIZE_OPTIONS = [1, 2, 3] as const
 const MIN_TEAMS = 2
@@ -118,15 +119,7 @@ export function TournamentSetup({
 
   return (
     <div className="space-y-5 pb-6">
-      <div className="flex items-center justify-between">
-        <button type="button" onClick={onBack} aria-label="Volver">
-          <BackIcon className="w-5 h-5" style={{ color: 'var(--color-paper-100)' }} />
-        </button>
-        <h2 className="font-poster text-2xl" style={{ color: 'var(--color-paper-50)' }}>
-          Armar torneo
-        </h2>
-        <span className="w-5" />
-      </div>
+      <ScreenHeader title="Armar torneo" onBack={onBack} />
 
       <input
         value={name}

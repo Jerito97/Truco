@@ -41,7 +41,7 @@ export function ScreenHeader({
             {kicker}
           </p>
         )}
-        <h2 className="font-poster text-2xl mt-1" style={{ color: 'var(--color-paper-50)' }}>
+        <h2 className="font-poster text-2xl mt-1 truncate px-6" style={{ color: 'var(--color-paper-50)' }}>
           {title}
         </h2>
         {action && <div className="absolute right-0 top-1/2 -translate-y-1/2">{action}</div>}

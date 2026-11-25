@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { useKakChat } from '../state/useKakChat'
 import { useScrollToTop } from '../state/useScrollToTop'
-import { BackIcon, ChatIcon } from './icons'
+import { ChatIcon } from './icons'
 import { TABBAR_HEIGHT } from './TabBar'
+import { ScreenHeader } from './ScreenHeader'
 
 function Bubble({ role, content }: { role: 'user' | 'kak'; content: string }) {
   const isUser = role === 'user'
@@ -40,15 +41,7 @@ export function KakChat({ onBack }: { onBack: () => void }) {
 
   return (
     <div className="space-y-5" style={{ paddingBottom: `calc(${TABBAR_HEIGHT}px + 76px)` }}>
-      <div className="flex items-center justify-between">
-        <button type="button" onClick={onBack} aria-label="Volver">
-          <BackIcon className="w-5 h-5" style={{ color: 'var(--color-paper-100)' }} />
-        </button>
-        <h2 className="font-poster text-2xl" style={{ color: 'var(--color-paper-50)' }}>
-          Kak
-        </h2>
-        <span className="w-5" />
-      </div>
+      <ScreenHeader title="Kak" onBack={onBack} />
 
       <div className="space-y-3">
         {messages.length === 0 && (

@@ -1,10 +1,10 @@
 import type { FinishedMatch } from '../types'
-import { BackIcon } from './icons'
 import { formatDate } from '../lib/formatDate'
 import { MatchResultCard } from './MatchResultCard'
 import { ShareResultButton } from './ShareResultButton'
 import type { ShareableMatch } from '../lib/shareImage'
 import { useScrollToTop } from '../state/useScrollToTop'
+import { ScreenHeader } from './ScreenHeader'
 
 export function MatchDetailScreen({ match, onBack }: { match: FinishedMatch; onBack: () => void }) {
   useScrollToTop()
@@ -27,15 +27,7 @@ export function MatchDetailScreen({ match, onBack }: { match: FinishedMatch; onB
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <button type="button" onClick={onBack} aria-label="Volver">
-          <BackIcon className="w-5 h-5" style={{ color: 'var(--color-paper-100)' }} />
-        </button>
-        <h2 className="font-poster text-2xl" style={{ color: 'var(--color-paper-50)' }}>
-          Partido
-        </h2>
-        <span className="w-5" />
-      </div>
+      <ScreenHeader title="Partido" onBack={onBack} />
 
       <MatchResultCard
         eyebrow={formatDate(match.played_at)}

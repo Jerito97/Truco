@@ -3,8 +3,9 @@ import type { User } from '../types'
 import { useMatches } from '../state/useMatches'
 import { useStreaks } from '../state/useStreaks'
 import { computePicaPicaMatchRecord, computeRivalStats, listPicaPicaDuels, PlayerStatBlocks } from './PlayerStats'
-import { BackIcon, PersonIcon } from './icons'
+import { PersonIcon } from './icons'
 import { useScrollToTop } from '../state/useScrollToTop'
+import { ScreenHeader } from './ScreenHeader'
 
 export function PlayerProfileScreen({ player, onBack }: { player: User; onBack: () => void }) {
   useScrollToTop()
@@ -26,15 +27,7 @@ export function PlayerProfileScreen({ player, onBack }: { player: User; onBack: 
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <button type="button" onClick={onBack} aria-label="Volver">
-          <BackIcon className="w-5 h-5" style={{ color: 'var(--color-paper-100)' }} />
-        </button>
-        <h2 className="font-poster text-2xl truncate px-2" style={{ color: 'var(--color-paper-50)' }}>
-          {player.name}
-        </h2>
-        <span className="w-5" />
-      </div>
+      <ScreenHeader title={player.name} onBack={onBack} />
 
       <div className="text-center">
         <div

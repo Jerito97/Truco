@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import type { ActiveMatch } from '../types'
-import { BackIcon, EyeIcon, EyeOffIcon } from './icons'
+import { EyeIcon, EyeOffIcon } from './icons'
 import { useElapsedSeconds } from '../state/useElapsedSeconds'
 import { formatDuration } from '../lib/formatDuration'
 import { aggregatePicaPicaRounds } from '../lib/picaPica'
+import { ScreenHeader } from './ScreenHeader'
 
 function MiniButton({
   onClick,
@@ -148,16 +149,7 @@ export function PicaPica({
 
   return (
     <div className="screen-fill flex flex-col">
-      <div className="flex items-center justify-between">
-        <button type="button" onClick={onBack} aria-label="Volver">
-          <BackIcon className="w-5 h-5" style={{ color: 'var(--color-paper-100)' }} />
-        </button>
-        <h2 className="font-poster text-2xl" style={{ color: 'var(--color-paper-50)' }}>
-          Pica-pica
-        </h2>
-        <span className="w-5" />
-      </div>
-      <p className="text-center font-num text-xs opacity-50 -mt-1">{formatDuration(elapsed)}</p>
+      <ScreenHeader title="Pica-pica" onBack={onBack} subtitle={formatDuration(elapsed)} />
 
       <div className="flex-1 flex flex-col justify-center min-h-0 space-y-4">
         {/* El marcador del partido no se toca desde acá (eso pasa en

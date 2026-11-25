@@ -4,8 +4,8 @@ import { useMatches } from '../state/useMatches'
 import { groupMatchesByDay } from '../lib/groupMatchesByDay'
 import { MatchRow } from './MatchRow'
 import { MatchDetailScreen } from './MatchDetailScreen'
-import { BackIcon } from './icons'
 import { useScrollToTop } from '../state/useScrollToTop'
+import { ScreenHeader } from './ScreenHeader'
 
 // Lo mismo que el Historial, pero ya filtrado a los partidos propios: para
 // no tener que ir a Historial y buscarse a uno mismo solo para repasar sus
@@ -21,15 +21,7 @@ export function MyMatchesScreen({ user, onBack }: { user: User; onBack: () => vo
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <button type="button" onClick={onBack} aria-label="Volver">
-          <BackIcon className="w-5 h-5" style={{ color: 'var(--color-paper-100)' }} />
-        </button>
-        <h2 className="font-poster text-2xl" style={{ color: 'var(--color-paper-50)' }}>
-          Mis partidos
-        </h2>
-        <span className="w-5" />
-      </div>
+      <ScreenHeader title="Mis partidos" onBack={onBack} />
 
       {error && (
         <div className="text-center py-10 opacity-70">
