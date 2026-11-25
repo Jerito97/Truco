@@ -14,7 +14,7 @@ const TABS: { id: Tab; label: string; Icon: ComponentType<SVGProps<SVGSVGElement
 // vez de dejarlo flotar con el contenido para que cualquier otra pantalla que
 // necesite pegarse justo arriba (ver TeamPicker) tenga un único valor del que
 // depender en vez de un número copiado a mano.
-export const TABBAR_HEIGHT = 62
+export const TABBAR_HEIGHT = 70
 
 export function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
   return (
@@ -27,7 +27,7 @@ export function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) =
         boxShadow: '0 -8px 20px rgba(0,0,0,0.35)',
       }}
     >
-      <div className="max-w-md mx-auto grid grid-cols-4 px-2 py-2.5">
+      <div className="max-w-md mx-auto grid grid-cols-4 px-2 py-3">
         {TABS.map((t) => {
           const isActive = active === t.id
           const color = isActive ? 'var(--color-ember-500)' : 'var(--color-paper-200)'
@@ -43,8 +43,8 @@ export function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) =
                 backgroundColor: isActive ? 'rgba(203, 170, 106, 0.12)' : 'transparent',
               }}
             >
-              <t.Icon className="w-5 h-5" />
-              <span className={`text-[11px] ${isActive ? 'font-bold' : 'font-medium'}`}>{t.label}</span>
+              <t.Icon className="w-6 h-6" />
+              <span className={`text-xs ${isActive ? 'font-bold' : 'font-medium'}`}>{t.label}</span>
             </button>
           )
         })}
