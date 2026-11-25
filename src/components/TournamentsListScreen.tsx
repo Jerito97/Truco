@@ -1,8 +1,9 @@
 import type { Tournament } from '../types'
 import { useTournaments } from '../state/useTournaments'
-import { BackIcon, ChevronRightIcon, PlusIcon, TrophyIcon } from './icons'
+import { ChevronRightIcon, PlusIcon, TrophyIcon } from './icons'
 import { formatDate } from '../lib/formatDate'
 import { useScrollToTop } from '../state/useScrollToTop'
+import { ScreenHeader } from './ScreenHeader'
 
 function TournamentRow({ tournament, onSelect }: { tournament: Tournament; onSelect: (t: Tournament) => void }) {
   const subtitle =
@@ -50,15 +51,7 @@ export function TournamentsListScreen({
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <button type="button" onClick={onBack} aria-label="Volver">
-          <BackIcon className="w-5 h-5" style={{ color: 'var(--color-paper-100)' }} />
-        </button>
-        <h2 className="font-poster text-2xl" style={{ color: 'var(--color-paper-50)' }}>
-          Torneos
-        </h2>
-        <span className="w-5" />
-      </div>
+      <ScreenHeader title="Torneos" onBack={onBack} />
 
       <button
         type="button"

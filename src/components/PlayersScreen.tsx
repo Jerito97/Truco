@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import type { User } from '../types'
-import { BackIcon, ChevronRightIcon } from './icons'
+import { ChevronRightIcon } from './icons'
 import { PlayerProfileScreen } from './PlayerProfileScreen'
 import { TierTag } from './PlayerStats'
 import { useScrollToTop } from '../state/useScrollToTop'
+import { ScreenHeader } from './ScreenHeader'
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean)
@@ -34,15 +35,7 @@ export function PlayersScreen({ currentUser, onBack }: { currentUser: User; onBa
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <button type="button" onClick={onBack} aria-label="Volver">
-          <BackIcon className="w-5 h-5" style={{ color: 'var(--color-paper-100)' }} />
-        </button>
-        <h2 className="font-poster text-2xl" style={{ color: 'var(--color-paper-50)' }}>
-          Jugadores
-        </h2>
-        <span className="w-5" />
-      </div>
+      <ScreenHeader title="Jugadores" onBack={onBack} />
 
       {error && (
         <p className="text-sm text-center py-4" style={{ color: '#d9695f' }}>

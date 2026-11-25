@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { FinishedMatch, User } from '../types'
-import { BackIcon } from './icons'
 import { useScrollToTop } from '../state/useScrollToTop'
+import { ScreenHeader } from './ScreenHeader'
 
 export interface PairStat {
   name: string
@@ -115,15 +115,7 @@ export function StatsScreen({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <button type="button" onClick={onBack} aria-label="Volver">
-          <BackIcon className="w-5 h-5" style={{ color: 'var(--color-paper-100)' }} />
-        </button>
-        <h2 className="font-poster text-2xl" style={{ color: 'var(--color-paper-50)' }}>
-          Estadísticas
-        </h2>
-        <span className="w-5" />
-      </div>
+      <ScreenHeader title="Estadísticas" onBack={onBack} />
 
       <div className="grid grid-cols-2 gap-2">
         {(Object.keys(SECTION_LABEL) as SectionMode[]).map((s) => (

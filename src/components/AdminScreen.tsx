@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { User } from '../types'
-import { BackIcon } from './icons'
 import { formatDate } from '../lib/formatDate'
 import { ConfirmDialog, DialogButtons, Overlay } from './Dialog'
 import { useScrollToTop } from '../state/useScrollToTop'
+import { ScreenHeader } from './ScreenHeader'
 
 interface AdminUser {
   id: string
@@ -601,15 +601,7 @@ export function AdminScreen({ currentUser, onBack }: { currentUser: User; onBack
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <button type="button" onClick={onBack} aria-label="Volver">
-          <BackIcon className="w-5 h-5" style={{ color: 'var(--color-paper-100)' }} />
-        </button>
-        <h2 className="font-poster text-2xl" style={{ color: 'var(--color-paper-50)' }}>
-          Administrar
-        </h2>
-        <span className="w-5" />
-      </div>
+      <ScreenHeader title="Administrar" onBack={onBack} />
 
       <div className="grid grid-cols-2 gap-2">
         <button

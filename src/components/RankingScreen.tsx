@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { User } from '../types'
-import { BackIcon, FlameIcon } from './icons'
+import { FlameIcon } from './icons'
 import { useScrollToTop } from '../state/useScrollToTop'
+import { ScreenHeader } from './ScreenHeader'
 
 export interface LeaderboardEntry {
   id: string
@@ -66,15 +67,7 @@ export function RankingScreen({ currentUser, onBack }: { currentUser: User; onBa
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <button type="button" onClick={onBack} aria-label="Volver">
-          <BackIcon className="w-5 h-5" style={{ color: 'var(--color-paper-100)' }} />
-        </button>
-        <h2 className="font-poster text-2xl" style={{ color: 'var(--color-paper-50)' }}>
-          Ranking general
-        </h2>
-        <span className="w-5" />
-      </div>
+      <ScreenHeader title="Ranking general" onBack={onBack} />
 
       <div className="grid grid-cols-2 gap-2">
         {(Object.keys(SORT_LABEL) as SortMode[]).map((m) => (

@@ -1,9 +1,10 @@
 import type { ActiveMatch } from '../types'
 import { Scoreboard } from './Scoreboard'
 import { ManoBadge } from './ManoBadge'
-import { BackIcon, ChatIcon } from './icons'
+import { ChatIcon } from './icons'
 import { useElapsedSeconds } from '../state/useElapsedSeconds'
 import { formatDuration } from '../lib/formatDuration'
+import { ScreenHeader } from './ScreenHeader'
 
 export function MatchLive({
   match,
@@ -24,26 +25,24 @@ export function MatchLive({
 
   return (
     <div className="screen-fill flex flex-col">
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center">
-        <button type="button" onClick={onBack} aria-label="Volver" className="justify-self-start">
-          <BackIcon className="w-5 h-5" style={{ color: 'var(--color-paper-100)' }} />
-        </button>
-        <h2 className="font-poster text-2xl whitespace-nowrap" style={{ color: 'var(--color-paper-50)' }}>
-          Anotador
-        </h2>
-        {onOpenKak && (
-          <button
-            type="button"
-            onClick={onOpenKak}
-            className="flex items-center gap-1 shrink-0 justify-self-end"
-            style={{ color: 'var(--color-ember-500)' }}
-          >
-            <ChatIcon className="w-4 h-4" />
-            <span className="text-xs font-bold whitespace-nowrap">Llamar a Kak</span>
-          </button>
-        )}
-      </div>
-      <p className="text-center font-num text-xs opacity-50 -mt-1">{formatDuration(elapsed)}</p>
+      <ScreenHeader
+        title="Anotador"
+        onBack={onBack}
+        subtitle={formatDuration(elapsed)}
+        action={
+          onOpenKak && (
+            <button
+              type="button"
+              onClick={onOpenKak}
+              className="flex items-center gap-1 shrink-0"
+              style={{ color: 'var(--color-ember-500)' }}
+            >
+              <ChatIcon className="w-4 h-4" />
+              <span className="text-xs font-bold whitespace-nowrap">Kak</span>
+            </button>
+          )
+        }
+      />
 
       <div className="flex-1 min-h-0 flex flex-col">
         <Scoreboard

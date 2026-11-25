@@ -3,7 +3,6 @@ import type { ReactNode } from 'react'
 import type { User } from '../types'
 import { useMatches } from '../state/useMatches'
 import {
-  BackIcon,
   CardsIcon,
   ChartIcon,
   ChevronRightIcon,
@@ -103,15 +102,7 @@ function AdminUnlock({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <button type="button" onClick={onBack} aria-label="Volver">
-          <BackIcon className="w-5 h-5" style={{ color: 'var(--color-paper-100)' }} />
-        </button>
-        <h2 className="font-poster text-2xl" style={{ color: 'var(--color-paper-50)' }}>
-          Modo administrador
-        </h2>
-        <span className="w-5" />
-      </div>
+      <ScreenHeader title="Modo administrador" onBack={onBack} />
 
       <p className="text-sm opacity-70 text-center">Ingresá el código de administrador para continuar.</p>
 

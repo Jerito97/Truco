@@ -42,12 +42,12 @@ export function HomeDashboard({
             <p className="font-poster text-lg" style={{ color: 'var(--color-paper-50)' }}>
               {activeMatch ? 'Partido en curso' : 'Nuevo partido'}
             </p>
-            {activeMatch && (
-              <p className="text-sm opacity-60 truncate">
-                {activeMatch.teamAName} {activeMatch.scoreA} – {activeMatch.scoreB} {activeMatch.teamBName}
-              </p>
-            )}
           </div>
+          {activeMatch && (
+            <span className="font-num text-sm font-bold shrink-0" style={{ color: 'var(--color-ember-500)' }}>
+              {activeMatch.scoreA} – {activeMatch.scoreB}
+            </span>
+          )}
           <ChevronRightIcon className="w-5 h-5 shrink-0 opacity-50" style={{ color: 'var(--color-paper-100)' }} />
         </button>
 
