@@ -63,12 +63,18 @@ export function Scoreboard({
           >
             {left.label}
           </h3>
-          <span className="font-num text-sm opacity-60" style={{ color: 'var(--color-ember-500)' }}>
+          <span
+            className={`font-num font-bold ${size === 'compact' ? 'text-xl' : 'text-2xl sm:text-3xl'}`}
+            style={{ color: 'var(--color-ember-500)' }}
+          >
             {left.score}
           </span>
         </div>
         <div className="flex items-center gap-1.5 justify-end min-w-0">
-          <span className="font-num text-sm opacity-60" style={{ color: 'var(--color-ember-500)' }}>
+          <span
+            className={`font-num font-bold ${size === 'compact' ? 'text-xl' : 'text-2xl sm:text-3xl'}`}
+            style={{ color: 'var(--color-ember-500)' }}
+          >
             {right.score}
           </span>
           <h3
