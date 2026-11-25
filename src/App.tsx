@@ -49,6 +49,13 @@ function App() {
     wasFinished.current = justFinished
   }, [state.activeMatch?.status])
 
+  // Al cambiar de pestaña el scroll de la anterior quedaba como estaba (por
+  // ejemplo, bajar en Historial y después entrar a Perfil arrancaba a mitad
+  // de página en vez de arriba del todo).
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [tab])
+
   if (!user) {
     return (
       <>
