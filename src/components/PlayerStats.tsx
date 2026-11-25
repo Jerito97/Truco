@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import type { FinishedMatch } from '../types'
+import { ChevronRightIcon } from './icons'
 
 // Separada del componente para poder testearla sin armar un match real: para
 // cada rival (identificado por id, no por nombre, para no separar a alguien
@@ -42,7 +44,9 @@ export function StatBlock({ value, label }: { value: string; label: string }) {
 }
 
 const dividerStyle = { backgroundColor: 'rgba(203, 170, 106, 0.25)' }
-const blockStyle = { borderColor: 'rgba(203, 170, 106, 0.25)' }
+// Un fondo apenas tintado (no solo el borde) para que cada tarjeta se note
+// como un bloque propio, separado de los demás.
+const blockStyle = { borderColor: 'rgba(203, 170, 106, 0.25)', backgroundColor: 'rgba(203, 170, 106, 0.04)' }
 
 export const TIER_STYLE: Record<1 | 2 | 3, { label: string; color: string; border: string }> = {
   1: { label: 'Tier 1', color: 'var(--color-ember-500)', border: 'var(--color-ember-600)' },
@@ -95,12 +99,13 @@ export function PlayerStatBlocks({
   rivalStats: { best: { name: string; wins: number } | null; worst: { name: string; losses: number } | null } | null
   pronoun: 'self' | 'other'
 }) {
+  const [picaPicaExpanded, setPicaPicaExpanded] = useState(false)
   const pct = played > 0 ? Math.round((won / played) * 100) : 0
   const bestLabel = pronoun === 'self' ? 'Rival al que más le ganaste' : 'Rival al que más le ganó'
   const worstLabel = pronoun === 'self' ? 'Rival contra el que más perdiste' : 'Rival contra el que más perdió'
 
   return (
-    <>
+    <div className="space-y-5">
       {streaks?.tier != null && <TierBadge tier={streaks.tier} />}
 
       <div className="flex rounded-2xl border py-4" style={blockStyle}>
@@ -120,16 +125,32 @@ export function PlayerStatBlocks({
       )}
 
       {picaPicaRecord && picaPicaRecord.played > 0 && (
-        <div className="rounded-2xl border p-4 space-y-3" style={blockStyle}>
-          <div className="text-center text-[11px] opacity-60">De tus {played} partidos jugados, así te fue en el pica-pica</div>
-          <div className="flex pt-1" style={{ borderTop: '1px solid rgba(203, 170, 106, 0.15)' }}>
-            <StatBlock value={String(picaPicaRecord.won)} label="Ganados" />
-            <div className="w-px" style={dividerStyle} />
-            <StatBlock value={String(picaPicaRecord.drawn)} label="Empatados" />
-            <div className="w-px" style={dividerStyle} />
-            <StatBlock value={String(picaPicaRecord.lost)} label="Perdidos" />
+        <button
+          type="button"
+          onClick={() => setPicaPicaExpanded((v) => !v)}
+          className="w-full rounded-2xl border p-4 space-y-3 text-left"
+          style={blockStyle}
+        >
+          <div className="flex items-center justify-center gap-1.5">
+            <span className="font-num text-2xl font-bold" style={{ color: 'var(--color-paper-50)' }}>
+              {picaPicaRecord.played}
+            </span>
+            <span className="text-[11px] opacity-60">duelos de pica-pica jugados</span>
+            <ChevronRightIcon
+              className={`w-3.5 h-3.5 opacity-50 transition-transform ${picaPicaExpanded ? '-rotate-90' : 'rotate-90'}`}
+            />
           </div>
-        </div>
+
+          {picaPicaExpanded && (
+            <div className="flex pt-1" style={{ borderTop: '1px solid rgba(203, 170, 106, 0.15)' }}>
+              <StatBlock value={String(picaPicaRecord.won)} label="Ganados" />
+              <div className="w-px" style={dividerStyle} />
+              <StatBlock value={String(picaPicaRecord.drawn)} label="Empatados" />
+              <div className="w-px" style={dividerStyle} />
+              <StatBlock value={String(picaPicaRecord.lost)} label="Perdidos" />
+            </div>
+          )}
+        </button>
       )}
 
       {rivalStats && (rivalStats.best || rivalStats.worst) && (
@@ -148,6 +169,6 @@ export function PlayerStatBlocks({
           </div>
         </div>
       )}
-    </>
+    </div>
   )
 }
