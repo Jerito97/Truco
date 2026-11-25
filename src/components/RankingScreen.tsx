@@ -134,7 +134,7 @@ export function RankingScreen({ currentUser, onBack }: { currentUser: User; onBa
                       ? (
                           <span className="inline-flex items-center gap-1 justify-end">
                             {r.streak}
-                            <FlameIcon className="w-3.5 h-3.5" />
+                            <FlameIcon className="w-4 h-4" />
                           </span>
                         )
                       : '0'

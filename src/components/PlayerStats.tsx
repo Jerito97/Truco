@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import type { FinishedMatch } from '../types'
-import { formatDate } from '../lib/formatDate'
 import { ChevronRightIcon, FlameIcon } from './icons'
 
 function isMyDuel(
@@ -216,7 +215,7 @@ export function PlayerStatBlocks({
               streaks.current > 0 ? (
                 <span className="inline-flex items-center gap-1">
                   {streaks.current}
-                  <FlameIcon className="w-4 h-4" style={{ color: 'var(--color-ember-500)' }} />
+                  <FlameIcon className="w-5 h-5" style={{ color: 'var(--color-ember-500)' }} />
                 </span>
               ) : (
                 '0'
@@ -251,25 +250,24 @@ export function PlayerStatBlocks({
             />
           </div>
 
-          {picaPicaExpanded && picaPicaDuels && picaPicaDuels.length > 0 && (
-            <div className="divide-y -mx-4" style={{ borderTop: '1px solid rgba(203, 170, 106, 0.15)', borderColor: 'rgba(203, 170, 106, 0.15)' }}>
-              {picaPicaDuels.map((d, i) => {
-                const outcomeColor =
-                  d.myScore > d.rivalScore ? 'var(--color-ember-500)' : d.myScore < d.rivalScore ? LOST_COLOR : 'var(--color-paper-100)'
-                return (
-                  <div key={`${d.matchId}-${i}`} className="flex items-center justify-between gap-3 px-4 py-2.5">
-                    <div className="min-w-0">
-                      <p className="text-sm truncate" style={{ color: 'var(--color-paper-100)' }}>
-                        vs {d.rivalName}
-                      </p>
-                      <p className="text-[11px] opacity-50">{formatDate(d.playedAt)}</p>
-                    </div>
-                    <span className="font-num font-bold shrink-0" style={{ color: outcomeColor }}>
-                      {d.myScore} - {d.rivalScore}
-                    </span>
-                  </div>
-                )
-              })}
+          {picaPicaExpanded && picaPicaDuels && (
+            <div className="flex pt-1" style={{ borderTop: '1px solid rgba(203, 170, 106, 0.15)' }}>
+              <StatBlock
+                value={String(picaPicaDuels.filter((d) => d.myScore > d.rivalScore).length)}
+                label="Duelos ganados"
+                valueColor="var(--color-ember-500)"
+              />
+              <div className="w-px" style={dividerStyle} />
+              <StatBlock
+                value={String(picaPicaDuels.filter((d) => d.myScore === d.rivalScore).length)}
+                label="Duelos empatados"
+              />
+              <div className="w-px" style={dividerStyle} />
+              <StatBlock
+                value={String(picaPicaDuels.filter((d) => d.myScore < d.rivalScore).length)}
+                label="Duelos perdidos"
+                valueColor={LOST_COLOR}
+              />
             </div>
           )}
         </button>
