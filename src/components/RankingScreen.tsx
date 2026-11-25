@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { User } from '../types'
-import { BackIcon } from './icons'
+import { BackIcon, FlameIcon } from './icons'
 import { useScrollToTop } from '../state/useScrollToTop'
 
 interface LeaderboardEntry {
@@ -131,7 +131,12 @@ export function RankingScreen({ currentUser, onBack }: { currentUser: User; onBa
                   ? String(r.played)
                   : sortMode === 'streak'
                     ? r.streak > 0
-                      ? `${r.streak} 🔥`
+                      ? (
+                          <span className="inline-flex items-center gap-1 justify-end">
+                            {r.streak}
+                            <FlameIcon className="w-3.5 h-3.5" />
+                          </span>
+                        )
                       : '0'
                     : `${pct}%`
             return (

@@ -1,6 +1,7 @@
 import { useState } from 'react'
+import type { ReactNode } from 'react'
 import type { FinishedMatch } from '../types'
-import { ChevronRightIcon } from './icons'
+import { ChevronRightIcon, FlameIcon } from './icons'
 
 // Separada del componente para poder testearla sin armar un match real: para
 // cada rival (identificado por id, no por nombre, para no separar a alguien
@@ -32,16 +33,20 @@ export function computeRivalStats(matches: FinishedMatch[], userId: string) {
   return { best, worst }
 }
 
-export function StatBlock({ value, label }: { value: string; label: string }) {
+export function StatBlock({ value, label, valueColor }: { value: ReactNode; label: string; valueColor?: string }) {
   return (
     <div className="flex-1 text-center">
-      <div className="font-num text-2xl font-bold" style={{ color: 'var(--color-paper-50)' }}>
+      <div className="font-num text-2xl font-bold" style={{ color: valueColor ?? 'var(--color-paper-50)' }}>
         {value}
       </div>
       <div className="text-[11px] opacity-60 mt-0.5">{label}</div>
     </div>
   )
 }
+
+// Rojo suave usado para "perdió" en todo el resto de la app (TournamentView,
+// mensajes de error).
+const LOST_COLOR = '#d9695f'
 
 const dividerStyle = { backgroundColor: 'rgba(203, 170, 106, 0.25)' }
 // Un fondo apenas tintado (no solo el borde) para que cada tarjeta se note
@@ -118,7 +123,19 @@ export function PlayerStatBlocks({
 
       {streaks && played > 0 && (
         <div className="flex rounded-2xl border py-4" style={blockStyle}>
-          <StatBlock value={streaks.current > 0 ? `${streaks.current} 🔥` : '0'} label="Racha actual" />
+          <StatBlock
+            value={
+              streaks.current > 0 ? (
+                <span className="inline-flex items-center gap-1">
+                  {streaks.current}
+                  <FlameIcon className="w-4 h-4" style={{ color: 'var(--color-ember-500)' }} />
+                </span>
+              ) : (
+                '0'
+              )
+            }
+            label="Racha actual"
+          />
           <div className="w-px" style={dividerStyle} />
           <StatBlock value={String(streaks.best)} label="Mejor racha" />
         </div>
@@ -143,11 +160,11 @@ export function PlayerStatBlocks({
 
           {picaPicaExpanded && (
             <div className="flex pt-1" style={{ borderTop: '1px solid rgba(203, 170, 106, 0.15)' }}>
-              <StatBlock value={String(picaPicaRecord.won)} label="Ganados" />
+              <StatBlock value={String(picaPicaRecord.won)} label="Ganados" valueColor="var(--color-ember-500)" />
               <div className="w-px" style={dividerStyle} />
               <StatBlock value={String(picaPicaRecord.drawn)} label="Empatados" />
               <div className="w-px" style={dividerStyle} />
-              <StatBlock value={String(picaPicaRecord.lost)} label="Perdidos" />
+              <StatBlock value={String(picaPicaRecord.lost)} label="Perdidos" valueColor={LOST_COLOR} />
             </div>
           )}
         </button>
