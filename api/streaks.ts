@@ -5,14 +5,13 @@ import { UUID_RE } from './_lib/validation.js'
 import { computeTier } from './_lib/tier.js'
 import { buildGeminiRequestBody, extractReplyText, isValidChatMessages, type ChatMessage } from './_lib/kak.js'
 
-const GEMINI_MODEL = 'gemini-3.8-flash'
-const GEMINI_MAX_ATTEMPTS = 2
+// El de arriba es el que se usa primero; si está saturado (503, bastante
+// común en la capa gratis de Gemini, sobre todo en modelos recién salidos)
+// se prueba con el siguiente en vez de insistir con el mismo que ya dijo que
+// no — cambiar de modelo tiene más chances de funcionar que repetirle la
+// pregunta al mismo que está colapsado.
+const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-3.8-flash']
 const GEMINI_ATTEMPT_TIMEOUT_MS = 4000
-const GEMINI_RETRY_DELAY_MS = 700
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
 
 // El chat con "Kak" vive en este mismo archivo (en vez de un api/kak.ts
 // aparte) por el mismo motivo que los torneos viven en matches.ts: el plan
@@ -32,20 +31,23 @@ async function handleKak(req: VercelRequest, res: VercelResponse) {
   }
 
   const body = JSON.stringify(buildGeminiRequestBody(messages as ChatMessage[]))
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`
+  let lastStatus: number | null = null
 
-  for (let attempt = 1; attempt <= GEMINI_MAX_ATTEMPTS; attempt++) {
+  for (const model of GEMINI_MODELS) {
     try {
-      const geminiRes = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body,
-        // Si Gemini se cuelga, que falle rápido y avise en vez de dejar al
-        // cliente esperando hasta que el límite de tiempo de la función de
-        // Vercel la corte de mala manera (eso sí se queda "pensando" para
-        // siempre en la app).
-        signal: AbortSignal.timeout(GEMINI_ATTEMPT_TIMEOUT_MS),
-      })
+      const geminiRes = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body,
+          // Si Gemini se cuelga, que falle rápido y avise (o pruebe el
+          // siguiente modelo) en vez de dejar al cliente esperando hasta que
+          // el límite de tiempo de la función de Vercel la corte de mala
+          // manera (eso sí se queda "pensando" para siempre en la app).
+          signal: AbortSignal.timeout(GEMINI_ATTEMPT_TIMEOUT_MS),
+        },
+      )
       if (geminiRes.ok) {
         const reply = extractReplyText(await geminiRes.json())
         if (!reply) {
@@ -56,31 +58,19 @@ async function handleKak(req: VercelRequest, res: VercelResponse) {
         return
       }
 
-      const bodyText = await geminiRes.text()
-      console.error('Gemini respondió', geminiRes.status, bodyText)
-      // 503 ("UNAVAILABLE", modelo saturado) suele ser transitorio: vale la
-      // pena un segundo intento antes de darnos por vencidos.
-      if (geminiRes.status === 503 && attempt < GEMINI_MAX_ATTEMPTS) {
-        await sleep(GEMINI_RETRY_DELAY_MS)
-        continue
-      }
-      res.status(502).json({
-        error:
-          geminiRes.status === 503
-            ? 'Kak está saturado en este momento (mucha demanda en el modelo). Probá de nuevo en un ratito.'
-            : 'No se pudo conectar con Kak ahora. Probá de nuevo en un rato.',
-      })
-      return
+      lastStatus = geminiRes.status
+      console.error('Gemini respondió', model, geminiRes.status, await geminiRes.text())
     } catch (err) {
-      if (attempt < GEMINI_MAX_ATTEMPTS) {
-        await sleep(GEMINI_RETRY_DELAY_MS)
-        continue
-      }
-      console.error('kak chat failed', err)
-      res.status(502).json({ error: 'No se pudo conectar con Kak ahora. Probá de nuevo en un rato.' })
-      return
+      console.error('kak chat failed', model, err)
     }
   }
+
+  res.status(502).json({
+    error:
+      lastStatus === 503
+        ? 'Kak está saturado en este momento (mucha demanda en el modelo). Probá de nuevo en un ratito.'
+        : 'No se pudo conectar con Kak ahora. Probá de nuevo en un rato.',
+  })
 }
 
 // Separada del handler para poder testearla sin una base de datos: recibe
