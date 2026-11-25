@@ -36,11 +36,15 @@ export function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) =
               key={t.id}
               type="button"
               onClick={() => onChange(t.id)}
-              className="flex flex-col items-center gap-1"
-              style={{ color, opacity: isActive ? 1 : 0.6 }}
+              className="flex flex-col items-center gap-1 py-1 mx-1 rounded-xl transition-colors"
+              style={{
+                color,
+                opacity: isActive ? 1 : 0.6,
+                backgroundColor: isActive ? 'rgba(203, 170, 106, 0.12)' : 'transparent',
+              }}
             >
               <t.Icon className="w-5 h-5" />
-              <span className="text-[11px] font-medium">{t.label}</span>
+              <span className={`text-[11px] ${isActive ? 'font-bold' : 'font-medium'}`}>{t.label}</span>
             </button>
           )
         })}

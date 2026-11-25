@@ -224,3 +224,11 @@ export function ChatIcon(props: SVGProps<SVGSVGElement>) {
     </Icon>
   )
 }
+
+export function FlameIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M8.5 14.5a2.5 2.5 0 0 0 5 0c0-1.4-.9-2.4-1.5-3.5-.7-1.3-.3-2.8 1-4 .3 1.6 1.2 3 2.5 4 1.3 1 2 2.3 2 3.7a5 5 0 1 1-10 0c0-1.1.4-2 1-2.6" />
+    </Icon>
+  )
+}
