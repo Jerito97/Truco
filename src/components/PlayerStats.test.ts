@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { computeRivalStats } from './PlayerStats'
+import { computePicaPicaMatchRecord, computeRivalStats, listPicaPicaDuels } from './PlayerStats'
 import type { FinishedMatch } from '../types'
 
 const U = 'user-1'
@@ -69,5 +69,94 @@ describe('computeRivalStats', () => {
     // Cualquiera de los dos rivales del otro equipo es un candidato válido a
     // "más ganado" con 1 victoria cada uno; alcanza con que no cuente a mate.
     expect(['Rival1', 'Rival2']).toContain(best?.name)
+  })
+})
+
+describe('computePicaPicaMatchRecord', () => {
+  it('sin pica-pica jugado, todo en 0', () => {
+    expect(computePicaPicaMatchRecord([match({})], U)).toEqual({ played: 0, won: 0, drawn: 0, lost: 0 })
+  })
+
+  it('un duelo real cuenta el partido como ganado/perdido/empatado', () => {
+    const won = match({
+      pica_pica_rounds: [{ duels: [{ aId: U, bId: 'rival-1', aName: 'Yo', bName: 'Rival', scoreA: 2, scoreB: 1 }] }],
+    })
+    const lost = match({
+      pica_pica_rounds: [{ duels: [{ aId: U, bId: 'rival-1', aName: 'Yo', bName: 'Rival', scoreA: 0, scoreB: 2 }] }],
+    })
+    const drawn = match({
+      pica_pica_rounds: [{ duels: [{ aId: U, bId: 'rival-1', aName: 'Yo', bName: 'Rival', scoreA: 1, scoreB: 1 }] }],
+    })
+    expect(computePicaPicaMatchRecord([won, lost, drawn], U)).toEqual({ played: 3, won: 1, drawn: 1, lost: 1 })
+  })
+
+  it('si en un mismo partido se jugó pica-pica más de una vez, suma los duelos de ESE partido y el neto decide', () => {
+    const m = match({
+      pica_pica_rounds: [
+        { duels: [{ aId: U, bId: 'rival-1', aName: 'Yo', bName: 'Rival', scoreA: 3, scoreB: 0 }] }, // ganó esta ronda
+        { duels: [{ aId: U, bId: 'rival-1', aName: 'Yo', bName: 'Rival', scoreA: 0, scoreB: 1 }] }, // perdió esta otra
+      ],
+    })
+    // neto: 3 a 1 a favor → el partido cuenta como ganado, no como dos partidos
+    expect(computePicaPicaMatchRecord([m], U)).toEqual({ played: 1, won: 1, drawn: 0, lost: 0 })
+  })
+
+  it('un duelo en 0 a 0 no cuenta el partido como jugado', () => {
+    const m = match({
+      pica_pica_rounds: [{ duels: [{ aId: U, bId: 'rival-1', aName: 'Yo', bName: 'Rival', scoreA: 0, scoreB: 0 }] }],
+    })
+    expect(computePicaPicaMatchRecord([m], U)).toEqual({ played: 0, won: 0, drawn: 0, lost: 0 })
+  })
+})
+
+describe('listPicaPicaDuels', () => {
+  it('sin pica-pica jugado, lista vacía', () => {
+    expect(listPicaPicaDuels([match({})], U)).toEqual([])
+  })
+
+  it('arma una entrada por duelo real, con el rival y el resultado', () => {
+    const matches = [
+      match({
+        id: 'm1',
+        played_at: '2026-02-01T00:00:00.000Z',
+        pica_pica_rounds: [{ duels: [{ aId: U, bId: 'rival-1', aName: 'Yo', bName: 'Rival', scoreA: 2, scoreB: 1 }] }],
+      }),
+    ]
+    expect(listPicaPicaDuels(matches, U)).toEqual([
+      { matchId: 'm1', playedAt: '2026-02-01T00:00:00.000Z', rivalName: 'Rival', myScore: 2, rivalScore: 1 },
+    ])
+  })
+
+  it('un mismo partido jugado dos veces aparece como dos entradas separadas', () => {
+    const m = match({
+      id: 'm1',
+      pica_pica_rounds: [
+        { duels: [{ aId: U, bId: 'rival-1', aName: 'Yo', bName: 'Rival', scoreA: 3, scoreB: 0 }] },
+        { duels: [{ aId: U, bId: 'rival-1', aName: 'Yo', bName: 'Rival', scoreA: 0, scoreB: 1 }] },
+      ],
+    })
+    expect(listPicaPicaDuels([m], U)).toHaveLength(2)
+  })
+
+  it('un duelo en 0 a 0 no aparece en la lista', () => {
+    const matches = [
+      match({
+        pica_pica_rounds: [{ duels: [{ aId: U, bId: 'rival-1', aName: 'Yo', bName: 'Rival', scoreA: 0, scoreB: 0 }] }],
+      }),
+    ]
+    expect(listPicaPicaDuels(matches, U)).toEqual([])
+  })
+
+  it('ignora duelos de otros jugadores del mismo partido', () => {
+    const matches = [
+      match({
+        team_a_player_ids: [U, 'mate'],
+        team_a_player_names: ['Yo', 'Compañero'],
+        pica_pica_rounds: [
+          { duels: [{ aId: 'mate', bId: 'rival-1', aName: 'Compañero', bName: 'Rival', scoreA: 3, scoreB: 0 }] },
+        ],
+      }),
+    ]
+    expect(listPicaPicaDuels(matches, U)).toEqual([])
   })
 })

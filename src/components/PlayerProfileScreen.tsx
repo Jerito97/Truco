@@ -2,8 +2,7 @@ import { useMemo } from 'react'
 import type { User } from '../types'
 import { useMatches } from '../state/useMatches'
 import { useStreaks } from '../state/useStreaks'
-import { usePicaPicaRecord } from '../state/usePicaPicaRecord'
-import { computeRivalStats, PlayerStatBlocks } from './PlayerStats'
+import { computePicaPicaMatchRecord, computeRivalStats, listPicaPicaDuels, PlayerStatBlocks } from './PlayerStats'
 import { BackIcon, PersonIcon } from './icons'
 import { useScrollToTop } from '../state/useScrollToTop'
 
@@ -11,8 +10,12 @@ export function PlayerProfileScreen({ player, onBack }: { player: User; onBack: 
   useScrollToTop()
   const { matches } = useMatches(player.id, 0)
   const streaks = useStreaks(player.id, 0)
-  const picaPicaRecord = usePicaPicaRecord(player.id, 0)
   const rivalStats = useMemo(() => (matches ? computeRivalStats(matches, player.id) : null), [matches, player.id])
+  const picaPicaMatchRecord = useMemo(
+    () => (matches ? computePicaPicaMatchRecord(matches, player.id) : null),
+    [matches, player.id],
+  )
+  const picaPicaDuels = useMemo(() => (matches ? listPicaPicaDuels(matches, player.id) : null), [matches, player.id])
   const played = matches?.length ?? 0
   const won =
     matches?.filter(
@@ -51,7 +54,8 @@ export function PlayerProfileScreen({ player, onBack }: { player: User; onBack: 
           played={played}
           won={won}
           streaks={streaks}
-          picaPicaRecord={picaPicaRecord}
+          picaPicaMatchRecord={picaPicaMatchRecord}
+          picaPicaDuels={picaPicaDuels}
           rivalStats={rivalStats}
           pronoun="other"
         />

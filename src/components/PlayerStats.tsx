@@ -1,7 +1,93 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import type { FinishedMatch } from '../types'
+import { formatDate } from '../lib/formatDate'
 import { ChevronRightIcon, FlameIcon } from './icons'
+
+function isMyDuel(
+  duel: { aId?: string; bId?: string; aName: string; bName: string },
+  userId: string,
+  aIdx: number,
+  bIdx: number,
+  teamANames: string[],
+  teamBNames: string[],
+): 'A' | 'B' | null {
+  const isA = duel.aId !== undefined ? duel.aId === userId : aIdx !== -1 && duel.aName === teamANames[aIdx]
+  const isB = duel.bId !== undefined ? duel.bId === userId : bIdx !== -1 && duel.bName === teamBNames[bIdx]
+  if (isA) return 'A'
+  if (isB) return 'B'
+  return null
+}
+
+// A nivel PARTIDO (no duelo): si jugaste pica-pica una sola vez en ese
+// partido, es lo mismo; si entraste varias veces en el mismo partido, suma
+// todos tus duelos de ESE partido y el resultado neto decide si ese partido
+// fue ganado, empatado o perdido en el pica-pica. Un duelo en 0 a 0 no
+// cuenta (entrar y cerrar sin sumar nada).
+export function computePicaPicaMatchRecord(
+  matches: FinishedMatch[],
+  userId: string,
+): { played: number; won: number; drawn: number; lost: number } {
+  let won = 0
+  let drawn = 0
+  let lost = 0
+  for (const m of matches) {
+    const aIdx = m.team_a_player_ids.indexOf(userId)
+    const bIdx = m.team_b_player_ids.indexOf(userId)
+    let myTotal = 0
+    let rivalTotal = 0
+    let playedAny = false
+    for (const round of m.pica_pica_rounds) {
+      for (const duel of round.duels) {
+        const side = isMyDuel(duel, userId, aIdx, bIdx, m.team_a_player_names, m.team_b_player_names)
+        if (!side) continue
+        if (duel.scoreA === 0 && duel.scoreB === 0) continue
+        playedAny = true
+        myTotal += side === 'A' ? duel.scoreA : duel.scoreB
+        rivalTotal += side === 'A' ? duel.scoreB : duel.scoreA
+      }
+    }
+    if (!playedAny) continue
+    if (myTotal > rivalTotal) won += 1
+    else if (myTotal < rivalTotal) lost += 1
+    else drawn += 1
+  }
+  return { played: won + drawn + lost, won, drawn, lost }
+}
+
+export interface PicaPicaDuelEntry {
+  matchId: string
+  playedAt: string
+  rivalName: string
+  myScore: number
+  rivalScore: number
+}
+
+// El detalle duelo por duelo (no por partido), para cuando se despliega la
+// tarjeta: un mismo partido puede aparecer más de una vez acá si se jugó
+// pica-pica más de una vez en él.
+export function listPicaPicaDuels(matches: FinishedMatch[], userId: string): PicaPicaDuelEntry[] {
+  const entries: PicaPicaDuelEntry[] = []
+  for (const m of matches) {
+    const aIdx = m.team_a_player_ids.indexOf(userId)
+    const bIdx = m.team_b_player_ids.indexOf(userId)
+    for (const round of m.pica_pica_rounds) {
+      for (const duel of round.duels) {
+        const side = isMyDuel(duel, userId, aIdx, bIdx, m.team_a_player_names, m.team_b_player_names)
+        if (!side) continue
+        if (duel.scoreA === 0 && duel.scoreB === 0) continue
+        entries.push({
+          matchId: m.id,
+          playedAt: m.played_at,
+          rivalName: side === 'A' ? duel.bName : duel.aName,
+          myScore: side === 'A' ? duel.scoreA : duel.scoreB,
+          rivalScore: side === 'A' ? duel.scoreB : duel.scoreA,
+        })
+      }
+    }
+  }
+  return entries
+}
 
 // Separada del componente para poder testearla sin armar un match real: para
 // cada rival (identificado por id, no por nombre, para no separar a alguien
@@ -93,14 +179,16 @@ export function PlayerStatBlocks({
   played,
   won,
   streaks,
-  picaPicaRecord,
+  picaPicaMatchRecord,
+  picaPicaDuels,
   rivalStats,
   pronoun,
 }: {
   played: number
   won: number
   streaks: { current: number; best: number; tier: 1 | 2 | 3 | null } | null
-  picaPicaRecord: { played: number; won: number; drawn: number; lost: number } | null
+  picaPicaMatchRecord: { played: number; won: number; drawn: number; lost: number } | null
+  picaPicaDuels: PicaPicaDuelEntry[] | null
   rivalStats: { best: { name: string; wins: number } | null; worst: { name: string; losses: number } | null } | null
   pronoun: 'self' | 'other'
 }) {
@@ -141,30 +229,47 @@ export function PlayerStatBlocks({
         </div>
       )}
 
-      {picaPicaRecord && picaPicaRecord.played > 0 && (
+      {picaPicaMatchRecord && picaPicaMatchRecord.played > 0 && (
         <button
           type="button"
           onClick={() => setPicaPicaExpanded((v) => !v)}
           className="w-full rounded-2xl border p-4 space-y-3 text-left"
           style={blockStyle}
         >
-          <div className="flex items-center justify-center gap-1.5">
-            <span className="font-num text-2xl font-bold" style={{ color: 'var(--color-paper-50)' }}>
-              {picaPicaRecord.played}
-            </span>
-            <span className="text-[11px] opacity-60">duelos de pica-pica jugados</span>
+          <div className="flex">
+            <StatBlock value={String(picaPicaMatchRecord.won)} label="Pica-pica ganados" valueColor="var(--color-ember-500)" />
+            <div className="w-px" style={dividerStyle} />
+            <StatBlock value={String(picaPicaMatchRecord.drawn)} label="Empatados" />
+            <div className="w-px" style={dividerStyle} />
+            <StatBlock value={String(picaPicaMatchRecord.lost)} label="Perdidos" valueColor={LOST_COLOR} />
+          </div>
+
+          <div className="flex items-center justify-center gap-1 text-xs font-bold pt-1" style={{ color: 'var(--color-ember-500)' }}>
+            {picaPicaExpanded ? 'Ocultar duelos' : 'Ver duelos'}
             <ChevronRightIcon
-              className={`w-3.5 h-3.5 opacity-50 transition-transform ${picaPicaExpanded ? '-rotate-90' : 'rotate-90'}`}
+              className={`w-3.5 h-3.5 transition-transform ${picaPicaExpanded ? '-rotate-90' : 'rotate-90'}`}
             />
           </div>
 
-          {picaPicaExpanded && (
-            <div className="flex pt-1" style={{ borderTop: '1px solid rgba(203, 170, 106, 0.15)' }}>
-              <StatBlock value={String(picaPicaRecord.won)} label="Ganados" valueColor="var(--color-ember-500)" />
-              <div className="w-px" style={dividerStyle} />
-              <StatBlock value={String(picaPicaRecord.drawn)} label="Empatados" />
-              <div className="w-px" style={dividerStyle} />
-              <StatBlock value={String(picaPicaRecord.lost)} label="Perdidos" valueColor={LOST_COLOR} />
+          {picaPicaExpanded && picaPicaDuels && picaPicaDuels.length > 0 && (
+            <div className="divide-y -mx-4" style={{ borderTop: '1px solid rgba(203, 170, 106, 0.15)', borderColor: 'rgba(203, 170, 106, 0.15)' }}>
+              {picaPicaDuels.map((d, i) => {
+                const outcomeColor =
+                  d.myScore > d.rivalScore ? 'var(--color-ember-500)' : d.myScore < d.rivalScore ? LOST_COLOR : 'var(--color-paper-100)'
+                return (
+                  <div key={`${d.matchId}-${i}`} className="flex items-center justify-between gap-3 px-4 py-2.5">
+                    <div className="min-w-0">
+                      <p className="text-sm truncate" style={{ color: 'var(--color-paper-100)' }}>
+                        vs {d.rivalName}
+                      </p>
+                      <p className="text-[11px] opacity-50">{formatDate(d.playedAt)}</p>
+                    </div>
+                    <span className="font-num font-bold shrink-0" style={{ color: outcomeColor }}>
+                      {d.myScore} - {d.rivalScore}
+                    </span>
+                  </div>
+                )
+              })}
             </div>
           )}
         </button>
