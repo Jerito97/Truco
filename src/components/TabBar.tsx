@@ -1,11 +1,12 @@
 import type { ComponentType, SVGProps } from 'react'
-import { ClockIcon, HouseIcon, PersonIcon } from './icons'
+import { ClockIcon, HouseIcon, MenuIcon, PersonIcon } from './icons'
 
-export type Tab = 'inicio' | 'historial' | 'perfil'
+export type Tab = 'inicio' | 'historial' | 'mas' | 'perfil'
 
 const TABS: { id: Tab; label: string; Icon: ComponentType<SVGProps<SVGSVGElement>> }[] = [
   { id: 'inicio', label: 'Inicio', Icon: HouseIcon },
   { id: 'historial', label: 'Historial', Icon: ClockIcon },
+  { id: 'mas', label: 'Más', Icon: MenuIcon },
   { id: 'perfil', label: 'Perfil', Icon: PersonIcon },
 ]
 
@@ -26,7 +27,7 @@ export function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) =
         boxShadow: '0 -8px 20px rgba(0,0,0,0.35)',
       }}
     >
-      <div className="max-w-md mx-auto grid grid-cols-3 px-2 py-2.5">
+      <div className="max-w-md mx-auto grid grid-cols-4 px-2 py-2.5">
         {TABS.map((t) => {
           const isActive = active === t.id
           const color = isActive ? 'var(--color-ember-500)' : 'var(--color-paper-200)'

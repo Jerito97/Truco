@@ -7,6 +7,7 @@ import { TabBar, type Tab } from './components/TabBar'
 import { PartidoTab } from './components/PartidoTab'
 import { HistorialTab } from './components/HistorialTab'
 import { ProfileTab } from './components/ProfileTab'
+import { MasTab } from './components/MasTab'
 import { LoginGate } from './components/LoginGate'
 import { UpdateToast } from './components/UpdateToast'
 import { TournamentsListScreen } from './components/TournamentsListScreen'
@@ -127,15 +128,15 @@ function App() {
               />
             )}
             {tab === 'historial' && <HistorialTab user={user} refreshKey={historialRefreshKey} />}
-            {tab === 'perfil' && (
-              <ProfileTab
+            {tab === 'mas' && (
+              <MasTab
                 user={user}
                 onLogout={logout}
                 onUnlockAdmin={unlockAdmin}
-                onRenameSelf={renameSelf}
                 onOpenTournaments={() => setTournamentRoute({ screen: 'list' })}
               />
             )}
+            {tab === 'perfil' && <ProfileTab user={user} onRenameSelf={renameSelf} />}
           </>
         )}
       </main>
