@@ -4,7 +4,7 @@ import type { User } from '../types'
 import { useMatches } from '../state/useMatches'
 import { useStreaks } from '../state/useStreaks'
 import { usePicaPicaRecord } from '../state/usePicaPicaRecord'
-import { BackIcon, ChartIcon, ChevronRightIcon, LogoutIcon, PencilIcon, PeopleIcon, PersonIcon, ShieldIcon, TrophyIcon } from './icons'
+import { BackIcon, ChartIcon, ChatIcon, ChevronRightIcon, LogoutIcon, PencilIcon, PeopleIcon, PersonIcon, ShieldIcon, TrophyIcon } from './icons'
 import { AdminScreen } from './AdminScreen'
 import { StatsScreen } from './StatsScreen'
 import { RankingScreen } from './RankingScreen'
@@ -94,12 +94,14 @@ export function ProfileTab({
   onUnlockAdmin,
   onRenameSelf,
   onOpenTournaments,
+  onOpenKak,
 }: {
   user: User
   onLogout: () => void
   onUnlockAdmin: (code: string) => Promise<string | null>
   onRenameSelf: (name: string) => Promise<string | null>
   onOpenTournaments?: () => void
+  onOpenKak?: () => void
 }) {
   const [view, setView] = useState<'profile' | 'unlock' | 'admin' | 'stats' | 'ranking' | 'players'>('profile')
   const [editingName, setEditingName] = useState(false)
@@ -227,6 +229,7 @@ export function ProfileTab({
         {onOpenTournaments && (
           <MenuRow icon={<TrophyIcon className="w-5 h-5" />} label="Torneos" onClick={onOpenTournaments} />
         )}
+        {onOpenKak && <MenuRow icon={<ChatIcon className="w-5 h-5" />} label="Preguntale a Kak" onClick={onOpenKak} />}
         <MenuRow icon={<PeopleIcon className="w-5 h-5" />} label="Jugadores" onClick={() => setView('players')} />
         <MenuRow
           icon={<ShieldIcon className="w-5 h-5" />}

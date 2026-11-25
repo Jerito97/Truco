@@ -214,3 +214,13 @@ export function RefreshIcon(props: SVGProps<SVGSVGElement>) {
     </Icon>
   )
 }
+
+export function ChatIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M4 5h16v11H9l-4 4v-4H4Z" />
+      <line x1={8} y1={9} x2={16} y2={9} />
+      <line x1={8} y1={12.5} x2={13} y2={12.5} />
+    </Icon>
+  )
+}
