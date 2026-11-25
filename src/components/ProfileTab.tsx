@@ -4,12 +4,13 @@ import type { User } from '../types'
 import { useMatches } from '../state/useMatches'
 import { useStreaks } from '../state/useStreaks'
 import { usePicaPicaRecord } from '../state/usePicaPicaRecord'
-import { BackIcon, ChartIcon, ChevronRightIcon, LogoutIcon, PencilIcon, PeopleIcon, PersonIcon, ShieldIcon, TrophyIcon } from './icons'
+import { BackIcon, CardsIcon, ChartIcon, ChevronRightIcon, LogoutIcon, PencilIcon, PeopleIcon, PersonIcon, ShieldIcon, TrophyIcon } from './icons'
 import { AdminScreen } from './AdminScreen'
 import { StatsScreen } from './StatsScreen'
 import { RankingScreen } from './RankingScreen'
 import { PlayersScreen } from './PlayersScreen'
-import { computeRivalStats, PlayerStatBlocks } from './PlayerStats'
+import { MyMatchesScreen } from './MyMatchesScreen'
+import { computeRivalStats, listPicaPicaDuels, PlayerStatBlocks } from './PlayerStats'
 
 function MenuRow({ icon, label, danger, onClick }: { icon: ReactNode; label: string; danger?: boolean; onClick?: () => void }) {
   return (
@@ -101,7 +102,7 @@ export function ProfileTab({
   onRenameSelf: (name: string) => Promise<string | null>
   onOpenTournaments?: () => void
 }) {
-  const [view, setView] = useState<'profile' | 'unlock' | 'admin' | 'stats' | 'ranking' | 'players'>('profile')
+  const [view, setView] = useState<'profile' | 'unlock' | 'admin' | 'stats' | 'ranking' | 'players' | 'matches'>('profile')
   const [editingName, setEditingName] = useState(false)
   const [nameDraft, setNameDraft] = useState(user.name)
   const [renameError, setRenameError] = useState<string | null>(null)
@@ -110,6 +111,7 @@ export function ProfileTab({
   const streaks = useStreaks(user.id, 0)
   const picaPicaRecord = usePicaPicaRecord(user.id, 0)
   const rivalStats = useMemo(() => (matches ? computeRivalStats(matches, user.id) : null), [matches, user.id])
+  const picaPicaDuels = useMemo(() => (matches ? listPicaPicaDuels(matches, user.id) : null), [matches, user.id])
   const played = matches?.length ?? 0
   const won =
     matches?.filter(
@@ -161,6 +163,10 @@ export function ProfileTab({
 
   if (view === 'stats') {
     return <StatsScreen user={user} matches={matches} onBack={() => setView('profile')} />
+  }
+
+  if (view === 'matches') {
+    return <MyMatchesScreen user={user} onBack={() => setView('profile')} />
   }
 
   if (view === 'ranking') {
@@ -217,11 +223,13 @@ export function ProfileTab({
         won={won}
         streaks={streaks}
         picaPicaRecord={picaPicaRecord}
+        picaPicaDuels={picaPicaDuels}
         rivalStats={rivalStats}
         pronoun="self"
       />
 
       <div className="divide-y" style={{ borderColor: 'rgba(203, 170, 106, 0.15)' }}>
+        <MenuRow icon={<CardsIcon className="w-5 h-5" />} label="Mis partidos" onClick={() => setView('matches')} />
         <MenuRow icon={<ChartIcon className="w-5 h-5" />} label="Estadísticas" onClick={() => setView('stats')} />
         <MenuRow icon={<TrophyIcon className="w-5 h-5" />} label="Ranking general" onClick={() => setView('ranking')} />
         {onOpenTournaments && (
