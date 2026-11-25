@@ -343,7 +343,6 @@ export function TeamPicker({
                         <p className="font-bold truncate" style={{ color: 'var(--color-paper-50)' }}>
                           {u.name}
                         </p>
-                        <p className="text-xs opacity-50">Jugador registrado</p>
                       </div>
                       {u.tier != null && <TierTag tier={u.tier} />}
                       <span
