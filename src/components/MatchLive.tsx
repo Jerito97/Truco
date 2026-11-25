@@ -1,7 +1,7 @@
 import type { ActiveMatch } from '../types'
 import { Scoreboard } from './Scoreboard'
 import { ManoBadge } from './ManoBadge'
-import { BackIcon } from './icons'
+import { BackIcon, ChatIcon } from './icons'
 import { useElapsedSeconds } from '../state/useElapsedSeconds'
 import { formatDuration } from '../lib/formatDuration'
 
@@ -11,12 +11,14 @@ export function MatchLive({
   onSub,
   onEnterPicaPica,
   onBack,
+  onOpenKak,
 }: {
   match: ActiveMatch
   onAdd: (team: 'A' | 'B') => void
   onSub: (team: 'A' | 'B') => void
   onEnterPicaPica: () => void
   onBack: () => void
+  onOpenKak?: () => void
 }) {
   const elapsed = useElapsedSeconds(match.startedAt)
 
@@ -29,7 +31,19 @@ export function MatchLive({
         <h2 className="font-poster text-2xl" style={{ color: 'var(--color-paper-50)' }}>
           Anotador
         </h2>
-        <span className="w-5" />
+        {onOpenKak ? (
+          <button
+            type="button"
+            onClick={onOpenKak}
+            className="flex items-center gap-1 shrink-0"
+            style={{ color: 'var(--color-ember-500)' }}
+          >
+            <ChatIcon className="w-4 h-4" />
+            <span className="text-xs font-bold whitespace-nowrap">Llamar a Kak</span>
+          </button>
+        ) : (
+          <span className="w-5" />
+        )}
       </div>
       <p className="text-center font-num text-xs opacity-50 -mt-1">{formatDuration(elapsed)}</p>
 
