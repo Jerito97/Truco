@@ -4,6 +4,7 @@ import { useMatches } from '../state/useMatches'
 import { useStreaks } from '../state/useStreaks'
 import { PencilIcon, PersonIcon } from './icons'
 import { computePicaPicaMatchRecord, computeRivalStats, listPicaPicaDuels, PlayerStatBlocks } from './PlayerStats'
+import { ScreenHeader } from './ScreenHeader'
 
 export function ProfileTab({
   user,
@@ -55,9 +56,7 @@ export function ProfileTab({
 
   return (
     <div className="space-y-6">
-      <h2 className="font-poster text-2xl text-center" style={{ color: 'var(--color-paper-50)' }}>
-        Mi perfil
-      </h2>
+      <ScreenHeader title="Mi perfil" />
 
       <div className="text-center">
         <div
