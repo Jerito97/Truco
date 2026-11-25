@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { getPool } from './_lib/db.js'
 import { ensureSchema } from './_lib/ensureSchema.js'
 import { UUID_RE } from './_lib/validation.js'
+import { computeTier } from './_lib/tier.js'
 
 // Separada del handler para poder testearla sin una base de datos: recibe
 // las filas ya en orden cronológico ascendente.
@@ -25,27 +26,6 @@ export function computeStreaks(
   // racha que sigue vigente hasta el partido más reciente (0 si el último
   // partido lo perdió).
   return { current: running, best }
-}
-
-const TIER_WINDOW = 10
-const TIER_MIN_GAMES = 5
-
-// El tier (1 el mejor, 3 el peor) se calcula como el handicap de golf: no es
-// el rendimiento de toda la vida, sino de los últimos TIER_WINDOW partidos
-// (los que tenga, si todavía no llegó a esa cantidad), para que se note
-// cuando alguien viene en racha o en bajón. Con menos de TIER_MIN_GAMES
-// partidos jugados no alcanza la muestra para asignar ningún tier.
-export function computeTier(rows: { winner: 'A' | 'B'; team_a_player_ids: string[] }[], userId: string): 1 | 2 | 3 | null {
-  const recent = rows.slice(-TIER_WINDOW)
-  if (recent.length < TIER_MIN_GAMES) return null
-  const wins = recent.filter((row) => {
-    const onA = row.team_a_player_ids.includes(userId)
-    return (onA && row.winner === 'A') || (!onA && row.winner === 'B')
-  }).length
-  const winRate = wins / recent.length
-  if (winRate >= 0.6) return 1
-  if (winRate >= 0.4) return 2
-  return 3
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {

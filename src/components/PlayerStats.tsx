@@ -44,10 +44,7 @@ export function StatBlock({ value, label }: { value: string; label: string }) {
 const dividerStyle = { backgroundColor: 'rgba(203, 170, 106, 0.25)' }
 const blockStyle = { borderColor: 'rgba(203, 170, 106, 0.25)' }
 
-// Como el handicap de golf: refleja el nivel de los últimos partidos (no el
-// de toda la vida), así que puede cambiar de racha en racha. Por eso el
-// texto aclara "último 10", para que no se lea como un puesto fijo.
-const TIER_STYLE: Record<1 | 2 | 3, { label: string; color: string; border: string }> = {
+export const TIER_STYLE: Record<1 | 2 | 3, { label: string; color: string; border: string }> = {
   1: { label: 'Tier 1', color: 'var(--color-ember-500)', border: 'var(--color-ember-600)' },
   2: { label: 'Tier 2', color: 'var(--color-paper-100)', border: 'var(--color-wood-600)' },
   3: { label: 'Tier 3', color: 'var(--color-paper-100)', border: 'var(--color-wood-700)' },
@@ -60,11 +57,21 @@ function TierBadge({ tier }: { tier: 1 | 2 | 3 }) {
       <span
         className="px-3 py-1 rounded-full border text-xs font-bold uppercase tracking-wide"
         style={{ color: s.color, borderColor: s.border, opacity: tier === 3 ? 0.7 : 1 }}
-        title="Según los últimos 10 partidos jugados"
       >
-        {s.label} · últimos 10
+        {s.label}
       </span>
     </div>
+  )
+}
+
+// Versión chica para meter en una fila de lista (PlayersScreen, TeamPicker):
+// sin el recuadro de insignia, solo el texto con su color.
+export function TierTag({ tier }: { tier: 1 | 2 | 3 }) {
+  const s = TIER_STYLE[tier]
+  return (
+    <span className="text-xs font-bold shrink-0" style={{ color: s.color, opacity: tier === 3 ? 0.7 : 1 }}>
+      {s.label}
+    </span>
   )
 }
 
