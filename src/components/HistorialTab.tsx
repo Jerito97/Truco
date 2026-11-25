@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { FinishedMatch, User } from '../types'
 import { useMatches } from '../state/useMatches'
+import { groupMatchesByDay } from '../lib/groupMatchesByDay'
 import { MatchRow } from './MatchRow'
 import { MatchDetailScreen } from './MatchDetailScreen'
 import { SearchIcon } from './icons'
@@ -278,9 +279,14 @@ export function HistorialTab({ user, refreshKey }: { user: User; refreshKey: num
       )}
 
       {!error && matches !== null && matches.length > 0 && (
-        <div className="space-y-2.5">
-          {matches.map((m) => (
-            <MatchRow key={m.id} match={m} onSelect={setViewingMatch} />
+        <div className="space-y-5">
+          {groupMatchesByDay(matches).map((group) => (
+            <div key={group.matches[0].id} className="space-y-2.5">
+              <p className="text-xs font-bold uppercase tracking-wide opacity-50 pl-1">{group.label}</p>
+              {group.matches.map((m) => (
+                <MatchRow key={m.id} match={m} onSelect={setViewingMatch} />
+              ))}
+            </div>
           ))}
         </div>
       )}
