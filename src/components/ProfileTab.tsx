@@ -2,9 +2,8 @@ import { useMemo, useState } from 'react'
 import type { User } from '../types'
 import { useMatches } from '../state/useMatches'
 import { useStreaks } from '../state/useStreaks'
-import { usePicaPicaRecord } from '../state/usePicaPicaRecord'
 import { PencilIcon, PersonIcon } from './icons'
-import { computeRivalStats, PlayerStatBlocks } from './PlayerStats'
+import { computePicaPicaMatchRecord, computeRivalStats, listPicaPicaDuels, PlayerStatBlocks } from './PlayerStats'
 
 export function ProfileTab({
   user,
@@ -19,8 +18,9 @@ export function ProfileTab({
   const [renaming, setRenaming] = useState(false)
   const { matches } = useMatches(user.id, 0)
   const streaks = useStreaks(user.id, 0)
-  const picaPicaRecord = usePicaPicaRecord(user.id, 0)
   const rivalStats = useMemo(() => (matches ? computeRivalStats(matches, user.id) : null), [matches, user.id])
+  const picaPicaMatchRecord = useMemo(() => (matches ? computePicaPicaMatchRecord(matches, user.id) : null), [matches, user.id])
+  const picaPicaDuels = useMemo(() => (matches ? listPicaPicaDuels(matches, user.id) : null), [matches, user.id])
   const played = matches?.length ?? 0
   const won =
     matches?.filter(
@@ -98,7 +98,8 @@ export function ProfileTab({
         played={played}
         won={won}
         streaks={streaks}
-        picaPicaRecord={picaPicaRecord}
+        picaPicaMatchRecord={picaPicaMatchRecord}
+        picaPicaDuels={picaPicaDuels}
         rivalStats={rivalStats}
         pronoun="self"
       />
