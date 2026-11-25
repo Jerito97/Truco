@@ -1,4 +1,7 @@
+import { useState } from 'react'
 import type { FinishedMatch } from '../types'
+import { formatDate } from '../lib/formatDate'
+import { ChevronRightIcon } from './icons'
 
 // Separada del componente para poder testearla sin armar un match real: para
 // cada rival (identificado por id, no por nombre, para no separar a alguien
@@ -28,6 +31,42 @@ export function computeRivalStats(matches: FinishedMatch[], userId: string) {
     if (r.losses > 0 && (!worst || r.losses > worst.losses)) worst = { name: r.name, losses: r.losses }
   }
   return { best, worst }
+}
+
+export interface PicaPicaDuelEntry {
+  matchId: string
+  playedAt: string
+  rivalName: string
+  myScore: number
+  rivalScore: number
+}
+
+// Mismo criterio que computePicaPicaRecord del backend (api/picaPicaRecord.ts):
+// un duelo en 0 a 0 no cuenta (entrar y cerrar sin sumar nada). Se duplica acá
+// en vez de compartir código porque uno trabaja con filas crudas de la base y
+// este con los FinishedMatch ya tipados que ya tiene el frontend a mano.
+export function listPicaPicaDuels(matches: FinishedMatch[], userId: string): PicaPicaDuelEntry[] {
+  const entries: PicaPicaDuelEntry[] = []
+  for (const m of matches) {
+    const aIdx = m.team_a_player_ids.indexOf(userId)
+    const bIdx = m.team_b_player_ids.indexOf(userId)
+    for (const round of m.pica_pica_rounds) {
+      for (const duel of round.duels) {
+        const isA = duel.aId !== undefined ? duel.aId === userId : aIdx !== -1 && duel.aName === m.team_a_player_names[aIdx]
+        const isB = duel.bId !== undefined ? duel.bId === userId : bIdx !== -1 && duel.bName === m.team_b_player_names[bIdx]
+        if (!isA && !isB) continue
+        if (duel.scoreA === 0 && duel.scoreB === 0) continue
+        entries.push({
+          matchId: m.id,
+          playedAt: m.played_at,
+          rivalName: isA ? duel.bName : duel.aName,
+          myScore: isA ? duel.scoreA : duel.scoreB,
+          rivalScore: isA ? duel.scoreB : duel.scoreA,
+        })
+      }
+    }
+  }
+  return entries
 }
 
 export function StatBlock({ value, label }: { value: string; label: string }) {
@@ -85,6 +124,7 @@ export function PlayerStatBlocks({
   won,
   streaks,
   picaPicaRecord,
+  picaPicaDuels,
   rivalStats,
   pronoun,
 }: {
@@ -92,9 +132,11 @@ export function PlayerStatBlocks({
   won: number
   streaks: { current: number; best: number; tier: 1 | 2 | 3 | null } | null
   picaPicaRecord: { played: number; won: number; drawn: number; lost: number } | null
+  picaPicaDuels: PicaPicaDuelEntry[] | null
   rivalStats: { best: { name: string; wins: number } | null; worst: { name: string; losses: number } | null } | null
   pronoun: 'self' | 'other'
 }) {
+  const [duelsExpanded, setDuelsExpanded] = useState(false)
   const pct = played > 0 ? Math.round((won / played) * 100) : 0
   const bestLabel = pronoun === 'self' ? 'Rival al que más le ganaste' : 'Rival al que más le ganó'
   const worstLabel = pronoun === 'self' ? 'Rival contra el que más perdiste' : 'Rival contra el que más perdió'
@@ -120,20 +162,47 @@ export function PlayerStatBlocks({
       )}
 
       {picaPicaRecord && picaPicaRecord.played > 0 && (
-        <div className="rounded-2xl border p-4 space-y-3" style={blockStyle}>
-          <div className="text-center">
-            <span className="font-num text-2xl font-bold" style={{ color: 'var(--color-paper-50)' }}>
-              {picaPicaRecord.played}
-            </span>
-            <span className="text-[11px] opacity-60 ml-1.5">duelos de pica-pica jugados</span>
-          </div>
-          <div className="flex pt-1" style={{ borderTop: '1px solid rgba(203, 170, 106, 0.15)' }}>
-            <StatBlock value={String(picaPicaRecord.won)} label="Ganados" />
-            <div className="w-px" style={dividerStyle} />
-            <StatBlock value={String(picaPicaRecord.drawn)} label="Empatados" />
-            <div className="w-px" style={dividerStyle} />
-            <StatBlock value={String(picaPicaRecord.lost)} label="Perdidos" />
-          </div>
+        <div className="rounded-2xl border overflow-hidden" style={blockStyle}>
+          <button
+            type="button"
+            onClick={() => setDuelsExpanded((v) => !v)}
+            className="w-full p-4 space-y-3 text-left"
+          >
+            <div className="text-center text-[11px] opacity-60">De tus {played} partidos jugados, así te fue en el pica-pica</div>
+            <div className="flex pt-1" style={{ borderTop: '1px solid rgba(203, 170, 106, 0.15)' }}>
+              <StatBlock value={String(picaPicaRecord.won)} label="Ganados" />
+              <div className="w-px" style={dividerStyle} />
+              <StatBlock value={String(picaPicaRecord.drawn)} label="Empatados" />
+              <div className="w-px" style={dividerStyle} />
+              <StatBlock value={String(picaPicaRecord.lost)} label="Perdidos" />
+            </div>
+            <div className="flex items-center justify-center gap-1 text-xs font-bold pt-1" style={{ color: 'var(--color-ember-500)' }}>
+              {duelsExpanded ? 'Ocultar duelos' : 'Ver duelos'}
+              <ChevronRightIcon className={`w-3.5 h-3.5 transition-transform ${duelsExpanded ? '-rotate-90' : 'rotate-90'}`} />
+            </div>
+          </button>
+
+          {duelsExpanded && picaPicaDuels && picaPicaDuels.length > 0 && (
+            <div className="divide-y" style={{ borderTop: '1px solid rgba(203, 170, 106, 0.15)', borderColor: 'rgba(203, 170, 106, 0.15)' }}>
+              {picaPicaDuels.map((d, i) => {
+                const outcomeColor =
+                  d.myScore > d.rivalScore ? 'var(--color-ember-500)' : d.myScore < d.rivalScore ? '#d9695f' : 'var(--color-paper-100)'
+                return (
+                  <div key={`${d.matchId}-${i}`} className="flex items-center justify-between gap-3 px-4 py-2.5">
+                    <div className="min-w-0">
+                      <p className="text-sm truncate" style={{ color: 'var(--color-paper-100)' }}>
+                        vs {d.rivalName}
+                      </p>
+                      <p className="text-[11px] opacity-50">{formatDate(d.playedAt)}</p>
+                    </div>
+                    <span className="font-num font-bold shrink-0" style={{ color: outcomeColor }}>
+                      {d.myScore} - {d.rivalScore}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
       )}
 
