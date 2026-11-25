@@ -5,7 +5,7 @@ import { UUID_RE } from './_lib/validation.js'
 import { computeTier } from './_lib/tier.js'
 import { buildGeminiRequestBody, extractReplyText, isValidChatMessages, type ChatMessage } from './_lib/kak.js'
 
-const GEMINI_MODEL = 'gemini-2.0-flash'
+const GEMINI_MODEL = 'gemini-3.8-flash'
 
 // El chat con "Kak" vive en este mismo archivo (en vez de un api/kak.ts
 // aparte) por el mismo motivo que los torneos viven en matches.ts: el plan
