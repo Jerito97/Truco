@@ -6,6 +6,13 @@ import { computeTier } from './_lib/tier.js'
 import { buildGeminiRequestBody, extractReplyText, isValidChatMessages, type ChatMessage } from './_lib/kak.js'
 
 const GEMINI_MODEL = 'gemini-3.8-flash'
+const GEMINI_MAX_ATTEMPTS = 2
+const GEMINI_ATTEMPT_TIMEOUT_MS = 4000
+const GEMINI_RETRY_DELAY_MS = 700
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
 
 // El chat con "Kak" vive en este mismo archivo (en vez de un api/kak.ts
 // aparte) por el mismo motivo que los torneos viven en matches.ts: el plan
@@ -24,34 +31,55 @@ async function handleKak(req: VercelRequest, res: VercelResponse) {
     return
   }
 
-  try {
-    const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`,
-      {
+  const body = JSON.stringify(buildGeminiRequestBody(messages as ChatMessage[]))
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`
+
+  for (let attempt = 1; attempt <= GEMINI_MAX_ATTEMPTS; attempt++) {
+    try {
+      const geminiRes = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(buildGeminiRequestBody(messages as ChatMessage[])),
+        body,
         // Si Gemini se cuelga, que falle rápido y avise en vez de dejar al
         // cliente esperando hasta que el límite de tiempo de la función de
         // Vercel la corte de mala manera (eso sí se queda "pensando" para
         // siempre en la app).
-        signal: AbortSignal.timeout(8000),
-      },
-    )
-    if (!geminiRes.ok) {
-      console.error('Gemini respondió', geminiRes.status, await geminiRes.text())
+        signal: AbortSignal.timeout(GEMINI_ATTEMPT_TIMEOUT_MS),
+      })
+      if (geminiRes.ok) {
+        const reply = extractReplyText(await geminiRes.json())
+        if (!reply) {
+          res.status(502).json({ error: 'Kak se quedó sin palabras. Probá de nuevo.' })
+          return
+        }
+        res.status(200).json({ reply })
+        return
+      }
+
+      const bodyText = await geminiRes.text()
+      console.error('Gemini respondió', geminiRes.status, bodyText)
+      // 503 ("UNAVAILABLE", modelo saturado) suele ser transitorio: vale la
+      // pena un segundo intento antes de darnos por vencidos.
+      if (geminiRes.status === 503 && attempt < GEMINI_MAX_ATTEMPTS) {
+        await sleep(GEMINI_RETRY_DELAY_MS)
+        continue
+      }
+      res.status(502).json({
+        error:
+          geminiRes.status === 503
+            ? 'Kak está saturado en este momento (mucha demanda en el modelo). Probá de nuevo en un ratito.'
+            : 'No se pudo conectar con Kak ahora. Probá de nuevo en un rato.',
+      })
+      return
+    } catch (err) {
+      if (attempt < GEMINI_MAX_ATTEMPTS) {
+        await sleep(GEMINI_RETRY_DELAY_MS)
+        continue
+      }
+      console.error('kak chat failed', err)
       res.status(502).json({ error: 'No se pudo conectar con Kak ahora. Probá de nuevo en un rato.' })
       return
     }
-    const reply = extractReplyText(await geminiRes.json())
-    if (!reply) {
-      res.status(502).json({ error: 'Kak se quedó sin palabras. Probá de nuevo.' })
-      return
-    }
-    res.status(200).json({ reply })
-  } catch (err) {
-    console.error('kak chat failed', err)
-    res.status(502).json({ error: 'No se pudo conectar con Kak ahora. Probá de nuevo en un rato.' })
   }
 }
 
