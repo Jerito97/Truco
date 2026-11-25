@@ -31,6 +31,11 @@ async function handleKak(req: VercelRequest, res: VercelResponse) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(buildGeminiRequestBody(messages as ChatMessage[])),
+        // Si Gemini se cuelga, que falle rápido y avise en vez de dejar al
+        // cliente esperando hasta que el límite de tiempo de la función de
+        // Vercel la corte de mala manera (eso sí se queda "pensando" para
+        // siempre en la app).
+        signal: AbortSignal.timeout(8000),
       },
     )
     if (!geminiRes.ok) {
