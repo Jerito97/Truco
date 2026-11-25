@@ -17,6 +17,7 @@ App web para llevar el marcador de partidas de truco 3 vs 3 entre un grupo de am
 - **Ranking general**: posiciones de todo el grupo, con 4 criterios para ordenar (rendimiento, más victorias, más activo, mejor racha histórica) y una tarjeta fija mostrando tu posición actual.
 - **Perfil**: nombre de la cuenta actual, estadísticas propias (incluida la racha actual/mejor, el **tier** y el rival al que más le ganaste o perdiste), botón para cambiar de usuario, y **Jugadores**: la lista de todos los registrados, para entrar al perfil de cualquiera y ver las mismas estadísticas que las propias. Desde ahí, **Estadísticas** detalla el resultado con cada compañero y contra cada rival (una pestaña para elegir cuál ver), con 3 criterios para ordenar (más jugados, mejor rendimiento, más victorias).
 - **Tier**: de 1 (el mejor) a 3, calculado como el hándicap de golf — según el rendimiento de los últimos 10 partidos (no de toda la vida), para que se note cuando alguien viene en racha o en bajón. Hace falta haber jugado al menos 5 partidos para tener uno asignado.
+- **Preguntale a Kak** (desde Inicio o Perfil): un chat para resolver dudas de truco (reglas, señas, discusiones de mesa), respondidas por una IA con la onda de "Kak", el amigo del grupo al que todos le preguntan esto. Necesita tener configurado `GEMINI_API_KEY` (ver abajo); sin esa variable, la pantalla se abre igual pero avisa que no se pudo conectar.
 
 Se conservan: deshacer el último punto, indicador de mano con botón para pasarla, y revancha rápida con los mismos equipos y parejas.
 
@@ -53,6 +54,19 @@ Desde Perfil → Modo administrador se puede renombrar, fusionar o borrar cualqu
    - Aplicala a **Production**.
 2. Redeploy.
 3. En la app, entrá a Perfil → Modo administrador, y poné ese código una vez. A partir de ahí tu cuenta queda marcada como administrador para siempre (no hace falta volver a ingresarlo).
+
+## Chat con Kak
+
+Usa la API de **Gemini** (Google) del lado del servidor — tiene una capa gratis bastante generosa, de sobra para un grupo de amigos, pero sigue siendo una IA de terceros (no es gratis "para siempre" ni ilimitado). Para habilitarlo:
+
+1. Entrá a **aistudio.google.com**, iniciá sesión con una cuenta de Google y generá una API key gratis (no pide tarjeta).
+2. En Vercel → el proyecto → **Settings** → **Environment Variables**, agregá:
+   - Name: `GEMINI_API_KEY`
+   - Value: la key que generaste.
+   - Aplicala a **Production**.
+3. Redeploy.
+
+Sin esa variable configurada, "Preguntale a Kak" se abre igual pero cada mensaje devuelve un error pidiendo que se configure.
 
 ## Desarrollo
 

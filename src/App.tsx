@@ -12,6 +12,7 @@ import { UpdateToast } from './components/UpdateToast'
 import { TournamentsListScreen } from './components/TournamentsListScreen'
 import { TournamentSetup } from './components/TournamentSetup'
 import { TournamentView, type MatchSetupPayload } from './components/TournamentView'
+import { KakChat } from './components/KakChat'
 import type { Tournament, TournamentContext } from './types'
 
 type TournamentRoute = { screen: 'list' } | { screen: 'setup' } | { screen: 'view'; id: string }
@@ -36,6 +37,7 @@ function App() {
   const online = useOnlineStatus()
   const [historialRefreshKey, setHistorialRefreshKey] = useState(0)
   const [tournamentRoute, setTournamentRoute] = useState<TournamentRoute | null>(null)
+  const [kakOpen, setKakOpen] = useState(false)
 
   const wasFinished = useRef(false)
   useEffect(() => {
@@ -79,7 +81,9 @@ function App() {
       <UpdateToast />
       {!online && <OfflineBanner />}
       <main className="max-w-md mx-auto px-4 pt-6">
-        {tournamentRoute ? (
+        {kakOpen ? (
+          <KakChat onBack={() => setKakOpen(false)} />
+        ) : tournamentRoute ? (
           tournamentRoute.screen === 'list' ? (
             <TournamentsListScreen
               onBack={() => setTournamentRoute(null)}
@@ -119,6 +123,7 @@ function App() {
                 onNewMatch={state.clearMatch}
                 onBackToTournament={backToTournament}
                 onOpenTournaments={() => setTournamentRoute({ screen: 'list' })}
+                onOpenKak={() => setKakOpen(true)}
               />
             )}
             {tab === 'historial' && <HistorialTab user={user} refreshKey={historialRefreshKey} />}
@@ -129,6 +134,7 @@ function App() {
                 onUnlockAdmin={unlockAdmin}
                 onRenameSelf={renameSelf}
                 onOpenTournaments={() => setTournamentRoute({ screen: 'list' })}
+                onOpenKak={() => setKakOpen(true)}
               />
             )}
           </>
@@ -140,6 +146,7 @@ function App() {
         onChange={(t) => {
           setTab(t)
           setTournamentRoute(null)
+          setKakOpen(false)
         }}
       />
     </div>

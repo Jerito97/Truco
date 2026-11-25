@@ -24,6 +24,7 @@ export function PartidoTab({
   onNewMatch,
   onBackToTournament,
   onOpenTournaments,
+  onOpenKak,
 }: {
   currentUser: User
   activeMatch: ActiveMatch | null
@@ -48,6 +49,7 @@ export function PartidoTab({
   onNewMatch: () => void
   onBackToTournament?: (tournamentId: string) => void
   onOpenTournaments?: () => void
+  onOpenKak?: () => void
 }) {
   const [view, setView] = useState<View>(activeMatch && activeMatch.status === 'playing' ? 'anotador' : 'dashboard')
 
@@ -61,6 +63,7 @@ export function PartidoTab({
         onNewMatch={() => setView('setup')}
         onResumeMatch={() => setView('setup')}
         onOpenTournaments={onOpenTournaments}
+        onOpenKak={onOpenKak}
       />
     )
   }
@@ -106,6 +109,7 @@ export function PartidoTab({
           setView('setup')
         }}
         onOpenTournaments={onOpenTournaments}
+        onOpenKak={onOpenKak}
       />
     )
   }
