@@ -42,11 +42,11 @@ export function HomeDashboard({
             <p className="font-poster text-lg" style={{ color: 'var(--color-paper-50)' }}>
               {activeMatch ? 'Partido en curso' : 'Nuevo partido'}
             </p>
-            <p className="text-sm opacity-60 truncate">
-              {activeMatch
-                ? `${activeMatch.teamAName} ${activeMatch.scoreA} – ${activeMatch.scoreB} ${activeMatch.teamBName}`
-                : 'Crear un nuevo partido y empezar a jugar.'}
-            </p>
+            {activeMatch && (
+              <p className="text-sm opacity-60 truncate">
+                {activeMatch.teamAName} {activeMatch.scoreA} – {activeMatch.scoreB} {activeMatch.teamBName}
+              </p>
+            )}
           </div>
           <ChevronRightIcon className="w-5 h-5 shrink-0 opacity-50" style={{ color: 'var(--color-paper-100)' }} />
         </button>
@@ -63,7 +63,6 @@ export function HomeDashboard({
               <p className="font-poster text-lg" style={{ color: 'var(--color-paper-50)' }}>
                 Nuevo partido
               </p>
-              <p className="text-sm opacity-60 truncate">Empezar de cero (borra el partido en curso).</p>
             </div>
             <ChevronRightIcon className="w-5 h-5 shrink-0 opacity-50" style={{ color: 'var(--color-paper-100)' }} />
           </button>
@@ -81,7 +80,6 @@ export function HomeDashboard({
               <p className="font-poster text-lg" style={{ color: 'var(--color-paper-50)' }}>
                 Torneos
               </p>
-              <p className="text-sm opacity-60 truncate">Armar un torneo o ver uno en curso.</p>
             </div>
             <ChevronRightIcon className="w-5 h-5 shrink-0 opacity-50" style={{ color: 'var(--color-paper-100)' }} />
           </button>

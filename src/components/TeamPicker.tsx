@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { User } from '../types'
-import { BackIcon, CardsIcon, PlusIcon, SearchIcon } from './icons'
+import { CardsIcon, PlusIcon, SearchIcon } from './icons'
 import { useTeamPresets, type TeamPreset } from '../state/useTeamPresets'
 import { TABBAR_HEIGHT } from './TabBar'
 import { ConfirmDialog, PromptDialog } from './Dialog'
 import { TierTag } from './PlayerStats'
+import { ScreenHeader } from './ScreenHeader'
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean)
@@ -160,26 +161,19 @@ export function TeamPicker({
   return (
     <>
       <div className="space-y-5 pb-40">
-        <div>
-          <div className="flex items-center justify-between">
-            <button type="button" onClick={onBack} aria-label="Volver">
-              <BackIcon className="w-5 h-5" style={{ color: 'var(--color-paper-100)' }} />
-            </button>
+        <ScreenHeader
+          title={title}
+          subtitle="Elegí a los jugadores de tu equipo"
+          onBack={onBack}
+          action={
             <div
               className="px-3 py-1 rounded-full border text-sm font-bold"
               style={{ borderColor: 'var(--color-ember-600)', color: 'var(--color-ember-500)' }}
             >
               {selected.length}/{teamSize}
             </div>
-          </div>
-
-          <div className="text-center space-y-1 mt-2">
-            <h2 className="font-poster text-2xl truncate" style={{ color: 'var(--color-paper-50)' }}>
-              {title}
-            </h2>
-            <p className="text-sm opacity-60">Elegí a los jugadores de tu equipo</p>
-          </div>
-        </div>
+          }
+        />
 
         <SectionLabel>Tu equipo</SectionLabel>
 
