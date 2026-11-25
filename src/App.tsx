@@ -134,7 +134,6 @@ function App() {
                 onUnlockAdmin={unlockAdmin}
                 onRenameSelf={renameSelf}
                 onOpenTournaments={() => setTournamentRoute({ screen: 'list' })}
-                onOpenKak={() => setKakOpen(true)}
               />
             )}
           </>

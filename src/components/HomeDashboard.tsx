@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { ActiveMatch } from '../types'
-import { ChatIcon, ChevronRightIcon, PeopleIcon, PlusIcon, TrophyIcon } from './icons'
+import { ChevronRightIcon, PeopleIcon, PlusIcon, TrophyIcon } from './icons'
 import { ConfirmDialog } from './Dialog'
 import { useLiveMatches } from '../state/useLiveMatches'
 
@@ -10,14 +10,12 @@ export function HomeDashboard({
   onResumeMatch,
   onDiscardAndNew,
   onOpenTournaments,
-  onOpenKak,
 }: {
   activeMatch: ActiveMatch | null
   onNewMatch: () => void
   onResumeMatch: () => void
   onDiscardAndNew?: () => void
   onOpenTournaments?: () => void
-  onOpenKak?: () => void
 }) {
   const [confirmingDiscard, setConfirmingDiscard] = useState(false)
   const liveMatches = useLiveMatches()
@@ -84,24 +82,6 @@ export function HomeDashboard({
                 Torneos
               </p>
               <p className="text-sm opacity-60 truncate">Armar un torneo o ver uno en curso.</p>
-            </div>
-            <ChevronRightIcon className="w-5 h-5 shrink-0 opacity-50" style={{ color: 'var(--color-paper-100)' }} />
-          </button>
-        )}
-
-        {onOpenKak && (
-          <button
-            type="button"
-            onClick={onOpenKak}
-            className="w-full flex items-center gap-4 rounded-2xl px-4 py-4 text-left border"
-            style={{ borderColor: 'var(--color-wood-600)' }}
-          >
-            <ChatIcon className="w-7 h-7 shrink-0" style={{ color: 'var(--color-paper-100)' }} />
-            <div className="flex-1 min-w-0">
-              <p className="font-poster text-lg" style={{ color: 'var(--color-paper-50)' }}>
-                Preguntale a Kak
-              </p>
-              <p className="text-sm opacity-60 truncate">¿Duda de truco? Llamalo.</p>
             </div>
             <ChevronRightIcon className="w-5 h-5 shrink-0 opacity-50" style={{ color: 'var(--color-paper-100)' }} />
           </button>

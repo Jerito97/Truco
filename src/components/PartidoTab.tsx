@@ -63,7 +63,6 @@ export function PartidoTab({
         onNewMatch={() => setView('setup')}
         onResumeMatch={() => setView('setup')}
         onOpenTournaments={onOpenTournaments}
-        onOpenKak={onOpenKak}
       />
     )
   }
@@ -109,7 +108,6 @@ export function PartidoTab({
           setView('setup')
         }}
         onOpenTournaments={onOpenTournaments}
-        onOpenKak={onOpenKak}
       />
     )
   }
@@ -121,6 +119,7 @@ export function PartidoTab({
       onSub={onSub}
       onEnterPicaPica={onEnterPicaPica}
       onBack={() => setView('dashboard')}
+      onOpenKak={onOpenKak}
     />
   )
 }
