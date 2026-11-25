@@ -63,6 +63,12 @@ describe('buildGeminiRequestBody', () => {
     expect(body.system_instruction.parts[0].text).toContain('Kak')
     expect(body.contents).toEqual([{ role: 'user', parts: [{ text: 'hola' }] }])
   })
+
+  it('apaga el "pensamiento" extendido y pone un tope de largo a la respuesta', () => {
+    const body = buildGeminiRequestBody([{ role: 'user', content: 'hola' }])
+    expect(body.generationConfig.thinkingConfig.thinkingBudget).toBe(0)
+    expect(body.generationConfig.maxOutputTokens).toBeGreaterThan(0)
+  })
 })
 
 describe('extractReplyText', () => {
@@ -83,5 +89,14 @@ describe('extractReplyText', () => {
 
   it('devuelve null si el texto viene vacío', () => {
     expect(extractReplyText({ candidates: [{ content: { parts: [{ text: '   ' }] } }] })).toBeNull()
+  })
+
+  it('se salta las partes de "pensamiento" (thought: true) y agarra la respuesta real', () => {
+    const response = {
+      candidates: [
+        { content: { parts: [{ text: 'pensando en voz alta...', thought: true }, { text: 'la respuesta posta' }] } },
+      ],
+    }
+    expect(extractReplyText(response)).toBe('la respuesta posta')
   })
 })

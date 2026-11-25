@@ -48,14 +48,27 @@ export function buildGeminiRequestBody(messages: ChatMessage[]) {
   return {
     system_instruction: { parts: [{ text: KAK_SYSTEM_PROMPT }] },
     contents: toGeminiContents(messages),
+    // Nada de "pensamiento" extendido ni respuestas largas: esto es un chat
+    // corto tipo WhatsApp, no hace falta que razone de más (y cada segundo
+    // de más es un segundo más cerca del límite de tiempo de la función).
+    generationConfig: { maxOutputTokens: 300, thinkingConfig: { thinkingBudget: 0 } },
   }
 }
 
 // La forma exacta de la respuesta de Gemini no está garantizada (puede venir
 // sin candidatos si lo bloqueó el filtro de seguridad, por ejemplo), así que
 // esto nunca asume la forma feliz: devuelve null si no hay texto para leer.
+// Si el modelo viene con "pensamiento" (partes marcadas thought:true), esas
+// no son la respuesta real — se salta hasta encontrar la primera parte de
+// texto que no sea un pensamiento.
 export function extractReplyText(geminiResponse: unknown): string | null {
-  const text = (geminiResponse as { candidates?: { content?: { parts?: { text?: unknown }[] } }[] } | null)
-    ?.candidates?.[0]?.content?.parts?.[0]?.text
-  return typeof text === 'string' && text.trim().length > 0 ? text : null
+  const parts = (
+    geminiResponse as { candidates?: { content?: { parts?: { text?: unknown; thought?: unknown }[] } }[] } | null
+  )?.candidates?.[0]?.content?.parts
+  if (!Array.isArray(parts)) return null
+  for (const part of parts) {
+    if (part.thought) continue
+    if (typeof part.text === 'string' && part.text.trim().length > 0) return part.text
+  }
+  return null
 }
