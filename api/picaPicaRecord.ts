@@ -25,9 +25,18 @@ interface MatchForRecord {
 // solo tienen el nombre de ese momento, así que para esos caemos al nombre
 // tal cual estaba guardado en ESE partido (no el nombre actual del
 // jugador, por si se renombró después).
-export function computePicaPicaRecord(matches: MatchForRecord[], userId: string): { played: number; won: number } {
-  let played = 0
+//
+// Un duelo en 0 a 0 se descarta (no cuenta ni como jugado): es lo que queda
+// si alguien entra al pica-pica y cierra sin llegar a sumar nada, que de
+// otra forma se registraría como un empate "jugado" sin haberse jugado en
+// los hechos.
+export function computePicaPicaRecord(
+  matches: MatchForRecord[],
+  userId: string,
+): { played: number; won: number; drawn: number; lost: number } {
   let won = 0
+  let drawn = 0
+  let lost = 0
   for (const m of matches) {
     const aIdx = m.team_a_player_ids.indexOf(userId)
     const bIdx = m.team_b_player_ids.indexOf(userId)
@@ -36,12 +45,16 @@ export function computePicaPicaRecord(matches: MatchForRecord[], userId: string)
         const isA = duel.aId !== undefined ? duel.aId === userId : aIdx !== -1 && duel.aName === m.team_a_player_names[aIdx]
         const isB = duel.bId !== undefined ? duel.bId === userId : bIdx !== -1 && duel.bName === m.team_b_player_names[bIdx]
         if (!isA && !isB) continue
-        played += 1
-        if ((isA && duel.scoreA > duel.scoreB) || (isB && duel.scoreB > duel.scoreA)) won += 1
+        if (duel.scoreA === 0 && duel.scoreB === 0) continue
+        const myScore = isA ? duel.scoreA : duel.scoreB
+        const rivalScore = isA ? duel.scoreB : duel.scoreA
+        if (myScore > rivalScore) won += 1
+        else if (myScore < rivalScore) lost += 1
+        else drawn += 1
       }
     }
   }
-  return { played, won }
+  return { played: won + drawn + lost, won, drawn, lost }
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -67,6 +80,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     [userId],
   )
 
-  const { played, won } = computePicaPicaRecord(result.rows, userId)
-  res.status(200).json({ played, won })
+  res.status(200).json(computePicaPicaRecord(result.rows, userId))
 }
