@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 interface PicaPicaRecord {
   played: number
   won: number
+  drawn: number
+  lost: number
 }
 
 export function usePicaPicaRecord(userId: string, refreshKey: number) {

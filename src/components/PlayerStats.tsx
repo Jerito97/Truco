@@ -91,7 +91,7 @@ export function PlayerStatBlocks({
   played: number
   won: number
   streaks: { current: number; best: number; tier: 1 | 2 | 3 | null } | null
-  picaPicaRecord: { played: number; won: number } | null
+  picaPicaRecord: { played: number; won: number; drawn: number; lost: number } | null
   rivalStats: { best: { name: string; wins: number } | null; worst: { name: string; losses: number } | null } | null
   pronoun: 'self' | 'other'
 }) {
@@ -120,12 +120,20 @@ export function PlayerStatBlocks({
       )}
 
       {picaPicaRecord && picaPicaRecord.played > 0 && (
-        <div className="flex rounded-2xl border py-4" style={blockStyle}>
-          <StatBlock value={String(picaPicaRecord.won)} label="Duelos ganados" />
-          <div className="w-px" style={dividerStyle} />
-          <StatBlock value={String(picaPicaRecord.played)} label="Duelos de pica-pica" />
-          <div className="w-px" style={dividerStyle} />
-          <StatBlock value={`${Math.round((picaPicaRecord.won / picaPicaRecord.played) * 100)}%`} label="Efectividad" />
+        <div className="rounded-2xl border p-4 space-y-3" style={blockStyle}>
+          <div className="text-center">
+            <span className="font-num text-2xl font-bold" style={{ color: 'var(--color-paper-50)' }}>
+              {picaPicaRecord.played}
+            </span>
+            <span className="text-[11px] opacity-60 ml-1.5">duelos de pica-pica jugados</span>
+          </div>
+          <div className="flex pt-1" style={{ borderTop: '1px solid rgba(203, 170, 106, 0.15)' }}>
+            <StatBlock value={String(picaPicaRecord.won)} label="Ganados" />
+            <div className="w-px" style={dividerStyle} />
+            <StatBlock value={String(picaPicaRecord.drawn)} label="Empatados" />
+            <div className="w-px" style={dividerStyle} />
+            <StatBlock value={String(picaPicaRecord.lost)} label="Perdidos" />
+          </div>
         </div>
       )}
 
