@@ -3,7 +3,7 @@ import type { User } from '../types'
 import { BackIcon, FlameIcon } from './icons'
 import { useScrollToTop } from '../state/useScrollToTop'
 
-interface LeaderboardEntry {
+export interface LeaderboardEntry {
   id: string
   name: string
   played: number
@@ -24,7 +24,7 @@ const SORT_LABEL: Record<SortMode, string> = {
 
 // Desempate siempre igual (más partidos, después nombre) para que el orden
 // no "salte" sin sentido entre jugadores empatados en el criterio principal.
-function sortRows(rows: LeaderboardEntry[], mode: SortMode): LeaderboardEntry[] {
+export function sortRows(rows: LeaderboardEntry[], mode: SortMode): LeaderboardEntry[] {
   const byTiebreak = (a: LeaderboardEntry, b: LeaderboardEntry) => b.played - a.played || a.name.localeCompare(b.name)
   const sorted = [...rows]
   if (mode === 'wins') {

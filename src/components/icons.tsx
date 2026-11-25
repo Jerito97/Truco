@@ -232,3 +232,12 @@ export function FlameIcon(props: SVGProps<SVGSVGElement>) {
     </Icon>
   )
 }
+
+export function CrownIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M3 8l4 4 5-7 5 7 4-4-2 11H5Z" />
+      <line x1={5} y1={19} x2={19} y2={19} />
+    </Icon>
+  )
+}
