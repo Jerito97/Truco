@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 interface Streaks {
   current: number
   best: number
+  tier: 1 | 2 | 3 | null
 }
 
 export function useStreaks(userId: string, refreshKey: number) {

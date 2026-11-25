@@ -44,6 +44,30 @@ export function StatBlock({ value, label }: { value: string; label: string }) {
 const dividerStyle = { backgroundColor: 'rgba(203, 170, 106, 0.25)' }
 const blockStyle = { borderColor: 'rgba(203, 170, 106, 0.25)' }
 
+// Como el handicap de golf: refleja el nivel de los últimos partidos (no el
+// de toda la vida), así que puede cambiar de racha en racha. Por eso el
+// texto aclara "último 10", para que no se lea como un puesto fijo.
+const TIER_STYLE: Record<1 | 2 | 3, { label: string; color: string; border: string }> = {
+  1: { label: 'Tier 1', color: 'var(--color-ember-500)', border: 'var(--color-ember-600)' },
+  2: { label: 'Tier 2', color: 'var(--color-paper-100)', border: 'var(--color-wood-600)' },
+  3: { label: 'Tier 3', color: 'var(--color-paper-100)', border: 'var(--color-wood-700)' },
+}
+
+function TierBadge({ tier }: { tier: 1 | 2 | 3 }) {
+  const s = TIER_STYLE[tier]
+  return (
+    <div className="flex justify-center">
+      <span
+        className="px-3 py-1 rounded-full border text-xs font-bold uppercase tracking-wide"
+        style={{ color: s.color, borderColor: s.border, opacity: tier === 3 ? 0.7 : 1 }}
+        title="Según los últimos 10 partidos jugados"
+      >
+        {s.label} · últimos 10
+      </span>
+    </div>
+  )
+}
+
 // Las mismas tarjetas de estadísticas sirven para "Mi perfil" (ProfileTab) y
 // para el perfil de cualquier otro jugador (PlayerProfileScreen): reciben los
 // valores ya calculados en vez de los hooks, así cada pantalla decide con qué
@@ -59,7 +83,7 @@ export function PlayerStatBlocks({
 }: {
   played: number
   won: number
-  streaks: { current: number; best: number } | null
+  streaks: { current: number; best: number; tier: 1 | 2 | 3 | null } | null
   picaPicaRecord: { played: number; won: number } | null
   rivalStats: { best: { name: string; wins: number } | null; worst: { name: string; losses: number } | null } | null
   pronoun: 'self' | 'other'
@@ -70,6 +94,8 @@ export function PlayerStatBlocks({
 
   return (
     <>
+      {streaks?.tier != null && <TierBadge tier={streaks.tier} />}
+
       <div className="flex rounded-2xl border py-4" style={blockStyle}>
         <StatBlock value={String(played)} label="Partidos jugados" />
         <div className="w-px" style={dividerStyle} />
