@@ -19,6 +19,7 @@ import { RankingScreen, sortRows, type LeaderboardEntry } from './RankingScreen'
 import { PlayersScreen } from './PlayersScreen'
 import { MyMatchesScreen } from './MyMatchesScreen'
 import { ConfirmDialog } from './Dialog'
+import { ScreenHeader } from './ScreenHeader'
 
 const cardStyle = { borderColor: 'rgba(203, 170, 106, 0.25)', backgroundColor: 'rgba(203, 170, 106, 0.04)' }
 const iconBoxStyle = { backgroundColor: 'rgba(203, 170, 106, 0.14)' }
@@ -221,9 +222,7 @@ export function MasTab({
 
   return (
     <div className="space-y-6">
-      <h2 className="font-poster text-2xl text-center" style={{ color: 'var(--color-paper-50)' }}>
-        Más
-      </h2>
+      <ScreenHeader title="Más" subtitle="Torneos, ranking y gestión de la cuenta" />
 
       {user.is_admin && (
         <div
