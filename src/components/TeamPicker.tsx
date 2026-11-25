@@ -4,6 +4,7 @@ import { BackIcon, CardsIcon, PlusIcon, SearchIcon } from './icons'
 import { useTeamPresets, type TeamPreset } from '../state/useTeamPresets'
 import { TABBAR_HEIGHT } from './TabBar'
 import { ConfirmDialog, PromptDialog } from './Dialog'
+import { TierTag } from './PlayerStats'
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean)
@@ -344,6 +345,7 @@ export function TeamPicker({
                         </p>
                         <p className="text-xs opacity-50">Jugador registrado</p>
                       </div>
+                      {u.tier != null && <TierTag tier={u.tier} />}
                       <span
                         className="w-6 h-6 rounded-full border flex items-center justify-center text-sm font-bold shrink-0"
                         style={{

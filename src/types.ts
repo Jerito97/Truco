@@ -5,6 +5,7 @@ export interface User {
   name: string
   created_at?: string
   is_admin?: boolean
+  tier?: 1 | 2 | 3 | null
 }
 
 export interface Pairing {

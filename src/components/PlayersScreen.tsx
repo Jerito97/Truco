@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { User } from '../types'
 import { BackIcon, ChevronRightIcon } from './icons'
 import { PlayerProfileScreen } from './PlayerProfileScreen'
+import { TierTag } from './PlayerStats'
 import { useScrollToTop } from '../state/useScrollToTop'
 
 function initials(name: string): string {
@@ -74,6 +75,7 @@ export function PlayersScreen({ currentUser, onBack }: { currentUser: User; onBa
                 {p.name}
                 {p.id === currentUser.id && <span className="ml-2 text-xs opacity-50">(vos)</span>}
               </span>
+              {p.tier != null && <TierTag tier={p.tier} />}
               <ChevronRightIcon className="w-4 h-4 opacity-40 shrink-0" style={{ color: 'var(--color-paper-100)' }} />
             </button>
           ))}
