@@ -67,13 +67,17 @@ body {
    de abajo, para que las pantallas de una sola vista (Anotador, Armar
    partido, Pica-pica) puedan centrar su contenido en vez de quedar pegado
    arriba. La variante "no-header" es para pantallas sin fila de volver/título
-   propia (le resta menos, porque no hay esa fila que descontar). */
+   propia (le resta menos, porque no hay esa fila que descontar). También
+   resta el inset de arriba (el notch): ese espacio ya lo consume el padding
+   del contenedor raíz (ver App.tsx), así que si esta cuenta no lo descuenta
+   también, el documento termina más alto que la pantalla real y aparece un
+   scroll vertical de sobra aunque no haya nada para scrollear. */
 .screen-fill {
-  min-height: calc(100dvh - 160px - env(safe-area-inset-bottom, 0px));
+  min-height: calc(100dvh - 160px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
 }
 
 .screen-fill-no-header {
-  min-height: calc(100dvh - 120px - env(safe-area-inset-bottom, 0px));
+  min-height: calc(100dvh - 120px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
 }
 
 .paper-card {
