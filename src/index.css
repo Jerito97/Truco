@@ -32,6 +32,13 @@ html,
 body,
 #root {
   height: 100%;
+  /* 100dvh (alto de viewport "dinámico") sigue en tiempo real el espacio que
+     deja la barra del navegador en celulares cuando aparece/desaparece, a
+     diferencia de 100%/100vh que quedan calculados contra un valor viejo:
+     ayuda a que la TabBar (fixed) no se vea "saltar" cuando el contenido de
+     una pestaña recién cargada cambia de alto. Fallback a 100% en
+     navegadores que no soportan dvh. */
+  height: 100dvh;
 }
 
 body {
@@ -62,11 +69,11 @@ body {
    arriba. La variante "no-header" es para pantallas sin fila de volver/título
    propia (le resta menos, porque no hay esa fila que descontar). */
 .screen-fill {
-  min-height: calc(100vh - 160px - env(safe-area-inset-bottom, 0px));
+  min-height: calc(100dvh - 160px - env(safe-area-inset-bottom, 0px));
 }
 
 .screen-fill-no-header {
-  min-height: calc(100vh - 120px - env(safe-area-inset-bottom, 0px));
+  min-height: calc(100dvh - 120px - env(safe-area-inset-bottom, 0px));
 }
 
 .paper-card {
