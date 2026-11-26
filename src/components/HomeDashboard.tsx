@@ -24,11 +24,14 @@ export function HomeDashboard({
   const othersLive = liveMatches?.filter((m) => m.id !== activeMatch?.id) ?? []
 
   return (
-    // Espaciadores 4/3/3 en vez de centrar todo junto: así el logo queda un
-    // poco arriba del centro y los botones un poco más abajo, como se pidió.
+    // Espaciadores en vez de centrar todo junto: así el logo queda un poco
+    // arriba del centro y los botones un poco más abajo, como se pidió. El
+    // logo nuevo trae más contenido (cartas + subtítulo) que el wordmark
+    // viejo, así que se agranda un poco y se achica el hueco de abajo para
+    // que el bloque entero quede más centrado, sin tanto vacío al final.
     <div className="screen-fill-no-header flex flex-col items-center">
       <div className="flex-[2]" />
-      <img src="/home-hero.webp" alt="Osobuco — Envido, Truco" className="w-64" />
+      <img src="/home-hero.webp" alt="Osobuco — Envido, Truco" className="w-72" />
       <div className="flex-[2]" />
       <div className="w-full space-y-3">
         <button
@@ -112,7 +115,7 @@ export function HomeDashboard({
           </div>
         )}
       </div>
-      <div className="flex-[3]" />
+      <div className="flex-[1]" />
 
       <ConfirmDialog
         open={confirmingDiscard}
