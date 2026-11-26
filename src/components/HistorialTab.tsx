@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { FinishedMatch, User } from '../types'
 import { useMatches } from '../state/useMatches'
 import { groupMatchesByDay } from '../lib/groupMatchesByDay'
+import { splitMatchesByRecency } from '../lib/splitMatchesByRecency'
 import { MatchRow } from './MatchRow'
 import { MatchDetailScreen } from './MatchDetailScreen'
 import { SearchIcon } from './icons'
@@ -207,12 +208,18 @@ export function HistorialTab({ user, refreshKey }: { user: User; refreshKey: num
   // tocar la lupa de arriba para pedirlo.
   const [searchOpen, setSearchOpen] = useState(false)
   const [viewingMatch, setViewingMatch] = useState<FinishedMatch | null>(null)
+  // Arranca mostrando solo el mes actual y el anterior (ver
+  // splitMatchesByRecency): un historial de meses de juego ya no cabe en una
+  // sola lista sin volverse interminable. Se resetea cada vez que cambia el
+  // filtro para que una selección nueva también arranque acotada.
+  const [showAll, setShowAll] = useState(false)
   const { matches, error } = useMatches(user.id, refreshKey, 'all', filter?.id, against?.id)
 
   const clearFilter = () => {
     setFilter(null)
     setAgainst(null)
     setSearchOpen(false)
+    setShowAll(false)
   }
 
   if (viewingMatch) {
@@ -244,8 +251,14 @@ export function HistorialTab({ user, refreshKey }: { user: User; refreshKey: num
           filter={filter}
           against={against}
           matches={matches}
-          onSelectFilter={setFilter}
-          onSelectAgainst={setAgainst}
+          onSelectFilter={(u) => {
+            setFilter(u)
+            setShowAll(false)
+          }}
+          onSelectAgainst={(u) => {
+            setAgainst(u)
+            setShowAll(false)
+          }}
           onClear={clearFilter}
         />
       )}
@@ -281,16 +294,37 @@ export function HistorialTab({ user, refreshKey }: { user: User; refreshKey: num
         )}
 
         {!error && matches !== null && matches.length > 0 && (
-          <div className="space-y-5">
-            {groupMatchesByDay(matches).map((group) => (
-              <div key={group.matches[0].id} className="space-y-2.5">
-                <p className="text-xs font-bold uppercase tracking-wide opacity-50 pl-1">{group.label}</p>
-                {group.matches.map((m) => (
-                  <MatchRow key={m.id} match={m} onSelect={setViewingMatch} />
+          (() => {
+            const { recent, older } = splitMatchesByRecency(matches)
+            // Si no hay nada en el mes actual/anterior (pero sí partidos más
+            // viejos), colapsar igual dejaría la lista vacía con el botón
+            // flotando sin sentido: en ese caso se muestra todo directamente.
+            const collapsible = recent.length > 0 && older.length > 0
+            const shown = showAll || !collapsible ? matches : recent
+            return (
+              <div className="space-y-5">
+                {groupMatchesByDay(shown).map((group) => (
+                  <div key={group.matches[0].id} className="space-y-2.5">
+                    <p className="text-xs font-bold uppercase tracking-wide opacity-50 pl-1">{group.label}</p>
+                    {group.matches.map((m) => (
+                      <MatchRow key={m.id} match={m} onSelect={setViewingMatch} />
+                    ))}
+                  </div>
                 ))}
+
+                {collapsible && !showAll && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAll(true)}
+                    className="w-full py-3 rounded-xl font-bold border text-sm"
+                    style={{ borderColor: 'var(--color-wood-600)', color: 'var(--color-paper-100)' }}
+                  >
+                    Ver historial completo
+                  </button>
+                )}
               </div>
-            ))}
-          </div>
+            )
+          })()
         )}
       </div>
     </div>
