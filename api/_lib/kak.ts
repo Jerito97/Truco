@@ -54,10 +54,16 @@ export function buildGroqRequestBody(messages: ChatMessage[], model: string) {
   return {
     model,
     messages: [{ role: 'system', content: KAK_SYSTEM_PROMPT } as GroqMessage, ...toGroqMessages(messages)],
-    // Esto es un chat corto tipo WhatsApp, no hace falta una respuesta larga
-    // (y cada segundo de más es un segundo más cerca del límite de tiempo de
-    // la función).
-    max_tokens: 300,
+    // Los modelos gpt-oss de Groq "piensan" antes de responder (como
+    // thinkingConfig en Gemini): sin bajarles el esfuerzo de razonamiento,
+    // ese pensamiento interno puede comerse todo el presupuesto de tokens y
+    // dejar la respuesta real vacía. Para un chat corto tipo WhatsApp no hace
+    // falta que razonen de más.
+    reasoning_effort: 'low',
+    // Groq documenta "max_completion_tokens" (no "max_tokens") para estos
+    // modelos. Con margen de sobra por si el razonamiento igual consume
+    // parte del presupuesto incluso en "low".
+    max_completion_tokens: 600,
   }
 }
 
