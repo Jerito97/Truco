@@ -91,14 +91,14 @@ function App() {
   return (
     <div
       className="min-h-full"
-      style={{ paddingBottom: kakOpen ? 0 : 'calc(96px + env(safe-area-inset-bottom, 0px))' }}
+      style={{
+        paddingTop: 'env(safe-area-inset-top, 0px)',
+        paddingBottom: kakOpen ? 0 : 'calc(96px + env(safe-area-inset-bottom, 0px))',
+      }}
     >
       <UpdateToast />
       {!online && <OfflineBanner />}
-      <main
-        className="max-w-md mx-auto px-4"
-        style={{ paddingTop: 'calc(1.5rem + env(safe-area-inset-top, 0px))' }}
-      >
+      <main className="max-w-md mx-auto px-4 pt-6">
         {kakOpen ? (
           <KakChat onBack={() => setKakOpen(false)} />
         ) : tournamentRoute ? (
