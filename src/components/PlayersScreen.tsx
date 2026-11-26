@@ -117,7 +117,11 @@ export function PlayersScreen({ currentUser, onBack }: { currentUser: User; onBa
         })}
       </div>
 
-      <div className="flex-1 flex flex-col min-h-0" style={{ justifyContent: 'safe center' }}>
+      {/* Mientras se está buscando, el resultado va pegado justo debajo de
+          los filtros (no centrado): estás mirando algo puntual que
+          acabás de pedir, no un estado vacío/corto para acomodar en el
+          medio de la pantalla. */}
+      <div className="flex-1 flex flex-col min-h-0" style={{ justifyContent: normalizedQuery ? 'flex-start' : 'safe center' }}>
         {error && (
           <p className="text-sm text-center py-4" style={{ color: '#d9695f' }}>
             No se pudo cargar la lista de jugadores.
