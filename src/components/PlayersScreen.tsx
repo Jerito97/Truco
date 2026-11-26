@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { User } from '../types'
-import { ChevronRightIcon } from './icons'
+import { ChevronRightIcon, SearchIcon } from './icons'
 import { PlayerProfileScreen } from './PlayerProfileScreen'
 import { TierTag } from './PlayerStats'
 import { useScrollToTop } from '../state/useScrollToTop'
@@ -33,6 +33,10 @@ export function PlayersScreen({ currentUser, onBack }: { currentUser: User; onBa
   const [error, setError] = useState(false)
   const [selected, setSelected] = useState<User | null>(null)
   const [tierFilter, setTierFilter] = useState<TierFilter>('todos')
+  // Arranca cerrada (sin teclado saltando solo): hay que tocar la lupa de
+  // arriba para pedirla, igual que en Historial.
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [query, setQuery] = useState('')
 
   useEffect(() => {
     fetch('/api/users/search')
@@ -48,11 +52,48 @@ export function PlayersScreen({ currentUser, onBack }: { currentUser: User; onBa
     return <PlayerProfileScreen player={selected} onBack={() => setSelected(null)} />
   }
 
-  const filteredPlayers = players?.filter((p) => matchesTierFilter(p, tierFilter)) ?? null
+  const normalizedQuery = query.trim().toLowerCase()
+  const filteredPlayers =
+    players
+      ?.filter((p) => matchesTierFilter(p, tierFilter))
+      .filter((p) => !normalizedQuery || p.name.toLowerCase().includes(normalizedQuery)) ?? null
 
   return (
     <div className="screen-fill flex flex-col gap-4">
-      <ScreenHeader title="Jugadores" onBack={onBack} />
+      <ScreenHeader
+        title="Jugadores"
+        onBack={onBack}
+        action={
+          <button
+            type="button"
+            onClick={() => {
+              setSearchOpen((v) => !v)
+              setQuery('')
+            }}
+            aria-label={searchOpen ? 'Cerrar búsqueda' : 'Buscar jugador'}
+          >
+            <SearchIcon
+              className="w-5 h-5"
+              style={{ color: searchOpen ? 'var(--color-ember-500)' : 'var(--color-paper-100)' }}
+            />
+          </button>
+        }
+      />
+
+      {searchOpen && (
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Buscar por nombre..."
+          autoFocus
+          className="w-full rounded-lg px-3 py-2.5 border outline-none"
+          style={{
+            borderColor: 'rgba(203, 170, 106, 0.35)',
+            backgroundColor: 'rgba(0,0,0,0.2)',
+            color: 'var(--color-paper-50)',
+          }}
+        />
+      )}
 
       <div className="flex rounded-full border p-1 gap-1" style={{ borderColor: 'var(--color-ember-600)' }}>
         {(['todos', 'con', 'sin'] as const).map((f) => {
@@ -85,11 +126,13 @@ export function PlayersScreen({ currentUser, onBack }: { currentUser: User; onBa
         {!error && filteredPlayers === null && <p className="text-center opacity-60 py-6">Cargando...</p>}
         {!error && filteredPlayers && filteredPlayers.length === 0 && (
           <p className="text-center opacity-60 py-6">
-            {tierFilter === 'con'
-              ? 'Todavía nadie tiene un tier asignado.'
-              : tierFilter === 'sin'
-                ? 'Todos los jugadores ya tienen un tier asignado.'
-                : 'Todavía no hay nadie registrado.'}
+            {normalizedQuery
+              ? 'Nadie coincide con esa búsqueda.'
+              : tierFilter === 'con'
+                ? 'Todavía nadie tiene un tier asignado.'
+                : tierFilter === 'sin'
+                  ? 'Todos los jugadores ya tienen un tier asignado.'
+                  : 'Todavía no hay nadie registrado.'}
           </p>
         )}
         {!error && filteredPlayers && filteredPlayers.length > 0 && (
