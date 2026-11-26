@@ -90,7 +90,7 @@ function App() {
 
   return (
     <div
-      className="min-h-full"
+      className="min-h-dvh"
       style={{
         paddingTop: 'env(safe-area-inset-top, 0px)',
         paddingBottom: kakOpen ? 0 : 'calc(96px + env(safe-area-inset-bottom, 0px))',
