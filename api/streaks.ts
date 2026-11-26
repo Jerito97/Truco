@@ -3,24 +3,23 @@ import { getPool } from './_lib/db.js'
 import { ensureSchema } from './_lib/ensureSchema.js'
 import { UUID_RE } from './_lib/validation.js'
 import { computeTier } from './_lib/tier.js'
-import { buildGeminiRequestBody, extractReplyText, isValidChatMessages, type ChatMessage } from './_lib/kak.js'
+import { buildGroqRequestBody, extractGroqReplyText, isValidChatMessages, type ChatMessage } from './_lib/kak.js'
 
-// El de arriba es el que se usa primero; si está saturado (503, bastante
-// común en la capa gratis de Gemini, sobre todo en modelos recién salidos)
-// se prueba con el siguiente en vez de insistir con el mismo que ya dijo que
-// no — cambiar de modelo tiene más chances de funcionar que repetirle la
-// pregunta al mismo que está colapsado.
-const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-3.8-flash']
-const GEMINI_ATTEMPT_TIMEOUT_MS = 4000
+// El de arriba es el que se usa primero; si está saturado o rate-limiteado
+// (429) se prueba con el siguiente en vez de insistir con el mismo que ya
+// dijo que no — cambiar de modelo tiene más chances de funcionar que
+// repetirle la pregunta al mismo que está colapsado.
+const GROQ_MODELS = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant']
+const GROQ_ATTEMPT_TIMEOUT_MS = 4000
 
 // El chat con "Kak" vive en este mismo archivo (en vez de un api/kak.ts
 // aparte) por el mismo motivo que los torneos viven en matches.ts: el plan
 // Hobby de Vercel tiene un tope de 12 funciones serverless y ya estábamos
 // justo en el límite.
 async function handleKak(req: VercelRequest, res: VercelResponse) {
-  const apiKey = process.env.GEMINI_API_KEY
+  const apiKey = process.env.GROQ_API_KEY
   if (!apiKey) {
-    res.status(500).json({ error: 'Falta configurar GEMINI_API_KEY en las variables de entorno de Vercel.' })
+    res.status(500).json({ error: 'Falta configurar GROQ_API_KEY en las variables de entorno de Vercel.' })
     return
   }
 
@@ -30,31 +29,27 @@ async function handleKak(req: VercelRequest, res: VercelResponse) {
     return
   }
 
-  const body = JSON.stringify(buildGeminiRequestBody(messages as ChatMessage[]))
   let lastStatus: number | null = null
   // Si ningún modelo responde ok, esto guarda por qué (timeout, DNS, lo que
   // sea) para poder mostrarlo en el mensaje de error: sin esto, un fallo de
-  // red y un 503 de Gemini se ven exactamente igual desde la app, y no hay
+  // red y un 429 de Groq se ven exactamente igual desde la app, y no hay
   // forma de saber cuál es sin meterse a los logs de Vercel.
   let lastErrorDetail: string | null = null
 
-  for (const model of GEMINI_MODELS) {
+  for (const model of GROQ_MODELS) {
     try {
-      const geminiRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body,
-          // Si Gemini se cuelga, que falle rápido y avise (o pruebe el
-          // siguiente modelo) en vez de dejar al cliente esperando hasta que
-          // el límite de tiempo de la función de Vercel la corte de mala
-          // manera (eso sí se queda "pensando" para siempre en la app).
-          signal: AbortSignal.timeout(GEMINI_ATTEMPT_TIMEOUT_MS),
-        },
-      )
-      if (geminiRes.ok) {
-        const reply = extractReplyText(await geminiRes.json())
+      const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+        body: JSON.stringify(buildGroqRequestBody(messages as ChatMessage[], model)),
+        // Si Groq se cuelga, que falle rápido y avise (o pruebe el siguiente
+        // modelo) en vez de dejar al cliente esperando hasta que el límite de
+        // tiempo de la función de Vercel la corte de mala manera (eso sí se
+        // queda "pensando" para siempre en la app).
+        signal: AbortSignal.timeout(GROQ_ATTEMPT_TIMEOUT_MS),
+      })
+      if (groqRes.ok) {
+        const reply = extractGroqReplyText(await groqRes.json())
         if (!reply) {
           res.status(502).json({ error: 'Kak se quedó sin palabras. Probá de nuevo.' })
           return
@@ -63,10 +58,10 @@ async function handleKak(req: VercelRequest, res: VercelResponse) {
         return
       }
 
-      lastStatus = geminiRes.status
-      const errText = await geminiRes.text()
-      lastErrorDetail = `${model}: HTTP ${geminiRes.status} — ${errText.slice(0, 200)}`
-      console.error('Gemini respondió', model, geminiRes.status, errText)
+      lastStatus = groqRes.status
+      const errText = await groqRes.text()
+      lastErrorDetail = `${model}: HTTP ${groqRes.status} — ${errText.slice(0, 200)}`
+      console.error('Groq respondió', model, groqRes.status, errText)
     } catch (err) {
       lastErrorDetail = `${model}: ${err instanceof Error ? `${err.name} — ${err.message}` : 'error desconocido'}`
       console.error('kak chat failed', model, err)
@@ -75,7 +70,7 @@ async function handleKak(req: VercelRequest, res: VercelResponse) {
 
   res.status(502).json({
     error:
-      lastStatus === 503
+      lastStatus === 429 || lastStatus === 503
         ? 'Kak está saturado en este momento (mucha demanda en el modelo). Probá de nuevo en un ratito.'
         : `No se pudo conectar con Kak ahora. Probá de nuevo en un rato. (${lastErrorDetail ?? 'sin detalle'})`,
   })
