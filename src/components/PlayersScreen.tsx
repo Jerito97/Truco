@@ -18,6 +18,11 @@ export function PlayersScreen({ currentUser, onBack }: { currentUser: User; onBa
   const [players, setPlayers] = useState<User[] | null>(null)
   const [error, setError] = useState(false)
   const [selected, setSelected] = useState<User | null>(null)
+  // Los dos arrancan prendidos (se ve todo el mundo); apagar uno saca a ese
+  // grupo de la lista. Independientes entre sí: se puede dejar solo "con
+  // tier", solo "sin tier", o ninguno (lista vacía).
+  const [showWithTier, setShowWithTier] = useState(true)
+  const [showWithoutTier, setShowWithoutTier] = useState(true)
 
   useEffect(() => {
     fetch('/api/users/search')
@@ -33,9 +38,39 @@ export function PlayersScreen({ currentUser, onBack }: { currentUser: User; onBa
     return <PlayerProfileScreen player={selected} onBack={() => setSelected(null)} />
   }
 
+  const filterActive = !showWithTier || !showWithoutTier
+  const filteredPlayers = players?.filter((p) => (p.tier != null ? showWithTier : showWithoutTier)) ?? null
+
   return (
     <div className="screen-fill flex flex-col gap-4">
       <ScreenHeader title="Jugadores" onBack={onBack} />
+
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={() => setShowWithTier((v) => !v)}
+          className="py-2 rounded-lg font-bold text-sm border"
+          style={{
+            borderColor: showWithTier ? 'var(--color-ember-600)' : 'var(--color-wood-600)',
+            color: showWithTier ? 'var(--color-ember-500)' : 'var(--color-paper-100)',
+            opacity: showWithTier ? 1 : 0.6,
+          }}
+        >
+          Con tier
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowWithoutTier((v) => !v)}
+          className="py-2 rounded-lg font-bold text-sm border"
+          style={{
+            borderColor: showWithoutTier ? 'var(--color-ember-600)' : 'var(--color-wood-600)',
+            color: showWithoutTier ? 'var(--color-ember-500)' : 'var(--color-paper-100)',
+            opacity: showWithoutTier ? 1 : 0.6,
+          }}
+        >
+          Sin tier
+        </button>
+      </div>
 
       <div className="flex-1 flex flex-col min-h-0" style={{ justifyContent: 'safe center' }}>
         {error && (
@@ -43,13 +78,15 @@ export function PlayersScreen({ currentUser, onBack }: { currentUser: User; onBa
             No se pudo cargar la lista de jugadores.
           </p>
         )}
-        {!error && players === null && <p className="text-center opacity-60 py-6">Cargando...</p>}
-        {!error && players && players.length === 0 && (
-          <p className="text-center opacity-60 py-6">Todavía no hay nadie registrado.</p>
+        {!error && filteredPlayers === null && <p className="text-center opacity-60 py-6">Cargando...</p>}
+        {!error && filteredPlayers && filteredPlayers.length === 0 && (
+          <p className="text-center opacity-60 py-6">
+            {filterActive ? 'Ningún jugador coincide con el filtro.' : 'Todavía no hay nadie registrado.'}
+          </p>
         )}
-        {!error && players && players.length > 0 && (
+        {!error && filteredPlayers && filteredPlayers.length > 0 && (
           <div className="divide-y" style={{ borderColor: 'rgba(203, 170, 106, 0.15)' }}>
-            {players.map((p) => (
+            {filteredPlayers.map((p) => (
               <button
                 key={p.id}
                 type="button"
