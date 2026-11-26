@@ -66,9 +66,10 @@ describe('buildGroqRequestBody', () => {
     expect(body.messages[1]).toEqual({ role: 'user', content: 'hola' })
   })
 
-  it('pone un tope de largo a la respuesta', () => {
+  it('pone un tope de largo a la respuesta y baja el esfuerzo de razonamiento', () => {
     const body = buildGroqRequestBody([{ role: 'user', content: 'hola' }], 'llama-3.3-70b-versatile')
-    expect(body.max_tokens).toBeGreaterThan(0)
+    expect(body.max_completion_tokens).toBeGreaterThan(0)
+    expect(body.reasoning_effort).toBe('low')
   })
 })
 
