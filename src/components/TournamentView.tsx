@@ -126,17 +126,26 @@ export function TournamentView({
 
   if (error) {
     return (
-      <div className="space-y-5">
+      <div className="screen-fill flex flex-col">
         <ScreenHeader title="Torneo" onBack={onBack} />
-        <p className="text-sm text-center py-6" style={{ color: '#d9695f' }}>
-          No se pudo cargar el torneo.
-        </p>
+        <div className="flex-1 flex flex-col justify-center min-h-0">
+          <p className="text-sm text-center py-6" style={{ color: '#d9695f' }}>
+            No se pudo cargar el torneo.
+          </p>
+        </div>
       </div>
     )
   }
 
   if (!tournament) {
-    return <p className="text-center opacity-60 py-10">Cargando...</p>
+    return (
+      <div className="screen-fill flex flex-col">
+        <ScreenHeader title="Torneo" onBack={onBack} />
+        <div className="flex-1 flex flex-col justify-center min-h-0">
+          <p className="text-center opacity-60 py-10">Cargando...</p>
+        </div>
+      </div>
+    )
   }
 
   const { teams } = tournament
@@ -165,7 +174,7 @@ export function TournamentView({
   const championName = tournament.champion_team_index != null ? teams[tournament.champion_team_index]?.name : null
 
   return (
-    <div className="space-y-5">
+    <div className="screen-fill flex flex-col gap-5">
       <ScreenHeader title={tournament.name} onBack={onBack} />
 
       {tournament.status === 'finalizado' && (
@@ -188,21 +197,25 @@ export function TournamentView({
         </div>
       )}
 
-      {tournament.format === 'eliminacion' ? (
-        <EliminationView
-          board={tournament.board as Bracket}
-          teamName={teamName}
-          canPlayFixture={canPlayFixture}
-          onPlay={playFixture}
-        />
-      ) : (
-        <RoundRobinView
-          board={tournament.board as RoundRobinBoard}
-          teams={teams}
-          canPlayFixture={canPlayFixture}
-          onPlay={playFixture}
-        />
-      )}
+      {/* "safe center" porque un torneo puede tener muchas rondas/equipos y
+          ya no entrar en una pantalla; no queremos cortar el bracket. */}
+      <div className="flex-1 flex flex-col min-h-0" style={{ justifyContent: 'safe center' }}>
+        {tournament.format === 'eliminacion' ? (
+          <EliminationView
+            board={tournament.board as Bracket}
+            teamName={teamName}
+            canPlayFixture={canPlayFixture}
+            onPlay={playFixture}
+          />
+        ) : (
+          <RoundRobinView
+            board={tournament.board as RoundRobinBoard}
+            teams={teams}
+            canPlayFixture={canPlayFixture}
+            onPlay={playFixture}
+          />
+        )}
+      </div>
     </div>
   )
 }

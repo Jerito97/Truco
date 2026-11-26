@@ -101,35 +101,37 @@ function AdminUnlock({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="screen-fill flex flex-col">
       <ScreenHeader title="Modo administrador" onBack={onBack} />
 
-      <p className="text-sm opacity-70 text-center">Ingresá el código de administrador para continuar.</p>
+      <div className="flex-1 flex flex-col justify-center gap-4 min-h-0">
+        <p className="text-sm opacity-70 text-center">Ingresá el código de administrador para continuar.</p>
 
-      <input
-        type="password"
-        value={code}
-        onChange={(e) => setCode(e.target.value)}
-        onKeyDown={(e) => e.key === 'Enter' && submit()}
-        placeholder="Código"
-        autoFocus
-        className="w-full rounded-lg px-3 py-3 border outline-none text-center font-num text-lg"
-        style={{ borderColor: 'rgba(203, 170, 106, 0.35)', backgroundColor: 'rgba(0,0,0,0.2)', color: 'var(--color-paper-50)' }}
-      />
-      {error && (
-        <p className="text-sm text-center" style={{ color: '#d9695f' }}>
-          {error}
-        </p>
-      )}
-      <button
-        type="button"
-        onClick={submit}
-        disabled={!code.trim() || loading}
-        className="w-full py-3 rounded-xl font-poster text-xl tracking-wide border disabled:opacity-40"
-        style={{ borderColor: 'var(--color-ember-600)', color: 'var(--color-ember-500)' }}
-      >
-        {loading ? 'Verificando...' : 'Desbloquear'}
-      </button>
+        <input
+          type="password"
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && submit()}
+          placeholder="Código"
+          autoFocus
+          className="w-full rounded-lg px-3 py-3 border outline-none text-center font-num text-lg"
+          style={{ borderColor: 'rgba(203, 170, 106, 0.35)', backgroundColor: 'rgba(0,0,0,0.2)', color: 'var(--color-paper-50)' }}
+        />
+        {error && (
+          <p className="text-sm text-center" style={{ color: '#d9695f' }}>
+            {error}
+          </p>
+        )}
+        <button
+          type="button"
+          onClick={submit}
+          disabled={!code.trim() || loading}
+          className="w-full py-3 rounded-xl font-poster text-xl tracking-wide border disabled:opacity-40"
+          style={{ borderColor: 'var(--color-ember-600)', color: 'var(--color-ember-500)' }}
+        >
+          {loading ? 'Verificando...' : 'Desbloquear'}
+        </button>
+      </div>
     </div>
   )
 }

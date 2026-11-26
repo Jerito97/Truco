@@ -26,29 +26,31 @@ export function MatchDetailScreen({ match, onBack }: { match: FinishedMatch; onB
   }
 
   return (
-    <div className="space-y-5">
+    <div className="screen-fill flex flex-col">
       <ScreenHeader title="Partido" onBack={onBack} />
 
-      <MatchResultCard
-        eyebrow={formatDate(match.played_at)}
-        teamAName={match.team_a_name}
-        teamBName={match.team_b_name}
-        scoreA={match.score_a}
-        scoreB={match.score_b}
-        aWins={aWins}
-        picaPicaPlayed={match.pica_pica_played}
-        picaPicaTotalA={match.pica_pica_total_a}
-        picaPicaTotalB={match.pica_pica_total_b}
-        picaPicaRounds={match.pica_pica_rounds}
-        durationSeconds={match.duration_seconds}
-        scoreEvents={match.score_events}
-      />
+      <div className="flex-1 flex flex-col justify-center gap-5 min-h-0">
+        <MatchResultCard
+          eyebrow={formatDate(match.played_at)}
+          teamAName={match.team_a_name}
+          teamBName={match.team_b_name}
+          scoreA={match.score_a}
+          scoreB={match.score_b}
+          aWins={aWins}
+          picaPicaPlayed={match.pica_pica_played}
+          picaPicaTotalA={match.pica_pica_total_a}
+          picaPicaTotalB={match.pica_pica_total_b}
+          picaPicaRounds={match.pica_pica_rounds}
+          durationSeconds={match.duration_seconds}
+          scoreEvents={match.score_events}
+        />
 
-      <ShareResultButton
-        match={shareableMatch}
-        shareText={`¡Ganó ${winnerName}! ${match.score_a} - ${match.score_b}`}
-        tone="muted"
-      />
+        <ShareResultButton
+          match={shareableMatch}
+          shareText={`¡Ganó ${winnerName}! ${match.score_a} - ${match.score_b}`}
+          tone="muted"
+        />
+      </div>
     </div>
   )
 }
