@@ -61,16 +61,15 @@ export function KakChat({ onBack }: { onBack: () => void }) {
         <div ref={bottomRef} />
       </div>
 
-      {/* "sticky" en vez de "fixed": al enfocar el input y abrirse el teclado,
-          un elemento "fixed" peleaba con el scroll automático que hace el
-          navegador para mostrarlo (el header quedaba tapado y la TabBar
-          terminaba flotando arriba del teclado). Al ser parte del flujo
-          normal de la página no tiene ese problema, y no hace falta reservar
-          espacio a mano debajo de los mensajes. La TabBar de abajo se oculta
-          mientras este chat está abierto (ver App.tsx), así que esta barra
-          reserva ella misma el margen seguro del borde del celular. */}
+      {/* Sin "sticky"/"fixed": con el teclado de iOS abierto, un elemento
+          posicionado así se calcula contra el viewport "de layout" (el que
+          ignoraría el teclado), no contra el viewport visual que de verdad
+          se ve en pantalla — por eso quedaba un hueco vacío entre esta barra
+          y el teclado. Al ser parte del flujo normal de la página, el propio
+          scroll-al-foco del navegador la deja pegada arriba del teclado sin
+          ese hueco, y el header no se tapa. */}
       <div
-        className="sticky bottom-0 z-10 -mx-4 px-4 pt-3 flex items-center gap-2"
+        className="-mx-4 px-4 pt-3 flex items-center gap-2"
         style={{
           paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))',
           backgroundColor: 'var(--color-wood-900)',
