@@ -41,6 +41,17 @@ body,
   height: 100dvh;
 }
 
+/* Recién abierta (sobre todo instalada como ícono en el celular), a veces
+   iOS tarda un instante en terminar de calcular el alto real de la
+   pantalla contra este 100dvh, y mientras tanto se asoma por abajo (o por
+   donde falte) el fondo nativo del sistema en vez del de la app — sin
+   darle color propio al <html>, ese fondo nativo es negro. Pintándolo acá
+   (no solo en <body>) ese instante queda del mismo marrón de toda la app
+   en vez de un cartel negro raro. */
+html {
+  background-color: var(--color-wood-950);
+}
+
 body {
   background-color: var(--color-wood-950);
   color: var(--color-paper-100);
