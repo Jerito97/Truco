@@ -85,7 +85,10 @@ function App() {
   }
 
   return (
-    <div className="min-h-full" style={{ paddingBottom: 'calc(96px + env(safe-area-inset-bottom, 0px))' }}>
+    <div
+      className="min-h-full"
+      style={{ paddingBottom: kakOpen ? 0 : 'calc(96px + env(safe-area-inset-bottom, 0px))' }}
+    >
       <UpdateToast />
       {!online && <OfflineBanner />}
       <main className="max-w-md mx-auto px-4 pt-6">
@@ -149,14 +152,16 @@ function App() {
         )}
       </main>
 
-      <TabBar
-        active={tab}
-        onChange={(t) => {
-          setTab(t)
-          setTournamentRoute(null)
-          setKakOpen(false)
-        }}
-      />
+      {!kakOpen && (
+        <TabBar
+          active={tab}
+          onChange={(t) => {
+            setTab(t)
+            setTournamentRoute(null)
+            setKakOpen(false)
+          }}
+        />
+      )}
     </div>
   )
 }
