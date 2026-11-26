@@ -159,11 +159,15 @@ function TierBadge({ tier }: { tier: 1 | 2 | 3 }) {
 }
 
 // Versión chica para meter en una fila de lista (PlayersScreen, TeamPicker):
-// sin el recuadro de insignia, solo el texto con su color.
+// una pastilla con borde fino (no el recuadro grande y en mayúsculas de
+// TierBadge, que es para destacarlo solo, centrado).
 export function TierTag({ tier }: { tier: 1 | 2 | 3 }) {
   const s = TIER_STYLE[tier]
   return (
-    <span className="text-xs font-bold shrink-0" style={{ color: s.color, opacity: tier === 3 ? 0.7 : 1 }}>
+    <span
+      className="text-xs font-bold shrink-0 px-2.5 py-1 rounded-full border"
+      style={{ color: s.color, borderColor: s.border, opacity: tier === 3 ? 0.7 : 1 }}
+    >
       {s.label}
     </span>
   )

@@ -13,14 +13,26 @@ function initials(name: string): string {
   return (parts[0][0] + parts[1][0]).toUpperCase()
 }
 
+type TierFilter = 'todos' | 'con' | 'sin'
+
+const TIER_FILTER_LABEL: Record<TierFilter, string> = {
+  todos: 'Todos',
+  con: 'Con tier',
+  sin: 'Sin tier',
+}
+
+function matchesTierFilter(p: User, filter: TierFilter): boolean {
+  if (filter === 'con') return p.tier != null
+  if (filter === 'sin') return p.tier == null
+  return true
+}
+
 export function PlayersScreen({ currentUser, onBack }: { currentUser: User; onBack: () => void }) {
   useScrollToTop()
   const [players, setPlayers] = useState<User[] | null>(null)
   const [error, setError] = useState(false)
   const [selected, setSelected] = useState<User | null>(null)
-  // Arranca apagado (se ve todo el mundo, con y sin tier); al prenderlo
-  // deja solo a los que ya tienen uno asignado.
-  const [onlyWithTier, setOnlyWithTier] = useState(false)
+  const [tierFilter, setTierFilter] = useState<TierFilter>('todos')
 
   useEffect(() => {
     fetch('/api/users/search')
@@ -36,24 +48,33 @@ export function PlayersScreen({ currentUser, onBack }: { currentUser: User; onBa
     return <PlayerProfileScreen player={selected} onBack={() => setSelected(null)} />
   }
 
-  const filteredPlayers = onlyWithTier ? (players?.filter((p) => p.tier != null) ?? null) : players
+  const filteredPlayers = players?.filter((p) => matchesTierFilter(p, tierFilter)) ?? null
 
   return (
     <div className="screen-fill flex flex-col gap-4">
       <ScreenHeader title="Jugadores" onBack={onBack} />
 
-      <button
-        type="button"
-        onClick={() => setOnlyWithTier((v) => !v)}
-        className="py-2 rounded-lg font-bold text-sm border self-start px-4"
-        style={{
-          borderColor: onlyWithTier ? 'var(--color-ember-600)' : 'var(--color-wood-600)',
-          color: onlyWithTier ? 'var(--color-ember-500)' : 'var(--color-paper-100)',
-          backgroundColor: onlyWithTier ? 'rgba(203, 170, 106, 0.1)' : 'transparent',
-        }}
-      >
-        Con tier
-      </button>
+      <div className="flex rounded-full border p-1 gap-1" style={{ borderColor: 'var(--color-ember-600)' }}>
+        {(['todos', 'con', 'sin'] as const).map((f) => {
+          const isActive = tierFilter === f
+          const count = players?.filter((p) => matchesTierFilter(p, f)).length
+          return (
+            <button
+              key={f}
+              type="button"
+              onClick={() => setTierFilter(f)}
+              className="flex-1 py-1.5 rounded-full text-[11px] font-bold text-center truncate px-1"
+              style={{
+                backgroundColor: isActive ? 'var(--color-ember-500)' : 'transparent',
+                color: isActive ? 'var(--color-wood-950)' : 'var(--color-paper-100)',
+              }}
+            >
+              {TIER_FILTER_LABEL[f]}
+              {count != null && ` (${count})`}
+            </button>
+          )
+        })}
+      </div>
 
       <div className="flex-1 flex flex-col min-h-0" style={{ justifyContent: 'safe center' }}>
         {error && (
@@ -64,7 +85,11 @@ export function PlayersScreen({ currentUser, onBack }: { currentUser: User; onBa
         {!error && filteredPlayers === null && <p className="text-center opacity-60 py-6">Cargando...</p>}
         {!error && filteredPlayers && filteredPlayers.length === 0 && (
           <p className="text-center opacity-60 py-6">
-            {onlyWithTier ? 'Todavía nadie tiene un tier asignado.' : 'Todavía no hay nadie registrado.'}
+            {tierFilter === 'con'
+              ? 'Todavía nadie tiene un tier asignado.'
+              : tierFilter === 'sin'
+                ? 'Todos los jugadores ya tienen un tier asignado.'
+                : 'Todavía no hay nadie registrado.'}
           </p>
         )}
         {!error && filteredPlayers && filteredPlayers.length > 0 && (
