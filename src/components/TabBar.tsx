@@ -16,12 +16,22 @@ const TABS: { id: Tab; label: string; Icon: ComponentType<SVGProps<SVGSVGElement
 // depender en vez de un número copiado a mano.
 export const TABBAR_HEIGHT = 70
 
+// Con el "home indicator" de los iPhone sin botón físico, los íconos quedaban
+// pegados al borde mismo de la pantalla (ver queja del usuario: "tengo que
+// apretar casi en el borde del celular"). Este es el alto real de la barra
+// más el inset seguro de abajo, para que todo lo que se ancle "justo arriba
+// de la barra" (el input de Kak, el botón de confirmar en TeamPicker) respete
+// ese margen también. Requiere viewport-fit=cover en index.html: sin eso,
+// env(safe-area-inset-bottom) siempre da 0.
+export const TABBAR_SAFE_BOTTOM = `calc(${TABBAR_HEIGHT}px + env(safe-area-inset-bottom, 0px))`
+
 export function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-10"
       style={{
-        height: TABBAR_HEIGHT,
+        height: TABBAR_SAFE_BOTTOM,
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
         backgroundColor: 'var(--color-wood-900)',
         borderTop: '1px solid rgba(203, 170, 106, 0.2)',
         boxShadow: '0 -8px 20px rgba(0,0,0,0.35)',

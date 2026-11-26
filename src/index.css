@@ -62,11 +62,11 @@ body {
    arriba. La variante "no-header" es para pantallas sin fila de volver/título
    propia (le resta menos, porque no hay esa fila que descontar). */
 .screen-fill {
-  min-height: calc(100vh - 160px);
+  min-height: calc(100vh - 160px - env(safe-area-inset-bottom, 0px));
 }
 
 .screen-fill-no-header {
-  min-height: calc(100vh - 120px);
+  min-height: calc(100vh - 120px - env(safe-area-inset-bottom, 0px));
 }
 
 .paper-card {

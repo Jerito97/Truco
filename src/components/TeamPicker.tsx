@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { User } from '../types'
 import { CardsIcon, PlusIcon, SearchIcon } from './icons'
 import { useTeamPresets, type TeamPreset } from '../state/useTeamPresets'
-import { TABBAR_HEIGHT } from './TabBar'
+import { TABBAR_SAFE_BOTTOM } from './TabBar'
 import { ConfirmDialog, PromptDialog } from './Dialog'
 import { TierTag } from './PlayerStats'
 import { ScreenHeader } from './ScreenHeader'
@@ -363,7 +363,7 @@ export function TeamPicker({
       <div
         className="fixed left-0 right-0 z-10 px-4 py-3"
         style={{
-          bottom: TABBAR_HEIGHT,
+          bottom: TABBAR_SAFE_BOTTOM,
           backgroundColor: 'var(--color-wood-900)',
           borderTop: '1px solid rgba(203, 170, 106, 0.2)',
           boxShadow: '0 -8px 20px rgba(0,0,0,0.35)',

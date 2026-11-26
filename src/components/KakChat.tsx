@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useKakChat } from '../state/useKakChat'
 import { useScrollToTop } from '../state/useScrollToTop'
 import { ChatIcon } from './icons'
-import { TABBAR_HEIGHT } from './TabBar'
+import { TABBAR_SAFE_BOTTOM } from './TabBar'
 import { ScreenHeader } from './ScreenHeader'
 
 function Bubble({ role, content }: { role: 'user' | 'kak'; content: string }) {
@@ -40,7 +40,7 @@ export function KakChat({ onBack }: { onBack: () => void }) {
   }
 
   return (
-    <div className="space-y-5" style={{ paddingBottom: `calc(${TABBAR_HEIGHT}px + 76px)` }}>
+    <div className="space-y-5" style={{ paddingBottom: `calc(${TABBAR_SAFE_BOTTOM} + 76px)` }}>
       <ScreenHeader title="Kak" onBack={onBack} />
 
       <div className="space-y-3">
@@ -62,7 +62,7 @@ export function KakChat({ onBack }: { onBack: () => void }) {
       <div
         className="fixed left-0 right-0 z-10 px-4 py-3 flex items-center gap-2"
         style={{
-          bottom: TABBAR_HEIGHT,
+          bottom: TABBAR_SAFE_BOTTOM,
           backgroundColor: 'var(--color-wood-900)',
           borderTop: '1px solid rgba(203, 170, 106, 0.2)',
           boxShadow: '0 -8px 20px rgba(0,0,0,0.35)',
