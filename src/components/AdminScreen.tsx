@@ -609,7 +609,7 @@ export function AdminScreen({
   const [section, setSection] = useState<'users' | 'matches'>('users')
 
   return (
-    <div className="space-y-4">
+    <div className="screen-fill flex flex-col gap-4">
       <ScreenHeader title="Administrar" onBack={onBack} />
 
       {onOpenKak && (
@@ -649,7 +649,9 @@ export function AdminScreen({
         </button>
       </div>
 
-      {section === 'users' ? <UsersPanel currentUser={currentUser} /> : <MatchesPanel currentUser={currentUser} />}
+      <div className="flex-1 flex flex-col min-h-0" style={{ justifyContent: 'safe center' }}>
+        {section === 'users' ? <UsersPanel currentUser={currentUser} /> : <MatchesPanel currentUser={currentUser} />}
+      </div>
     </div>
   )
 }

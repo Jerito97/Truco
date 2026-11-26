@@ -20,36 +20,38 @@ export function MyMatchesScreen({ user, onBack }: { user: User; onBack: () => vo
   }
 
   return (
-    <div className="space-y-4">
+    <div className="screen-fill flex flex-col gap-4">
       <ScreenHeader title="Mis partidos" onBack={onBack} />
 
-      {error && (
-        <div className="text-center py-10 opacity-70">
-          <p className="font-poster text-lg mb-1">No se pudieron cargar tus partidos</p>
-          <p className="text-sm">Revisá la conexión e intentá de nuevo más tarde.</p>
-        </div>
-      )}
+      <div className="flex-1 flex flex-col min-h-0" style={{ justifyContent: 'safe center' }}>
+        {error && (
+          <div className="text-center py-10 opacity-70">
+            <p className="font-poster text-lg mb-1">No se pudieron cargar tus partidos</p>
+            <p className="text-sm">Revisá la conexión e intentá de nuevo más tarde.</p>
+          </div>
+        )}
 
-      {!error && matches === null && <div className="text-center py-10 opacity-60">Cargando...</div>}
+        {!error && matches === null && <div className="text-center py-10 opacity-60">Cargando...</div>}
 
-      {!error && matches !== null && matches.length === 0 && (
-        <div className="text-center py-10 opacity-70">
-          <p className="font-poster text-lg mb-1">Todavía no jugaste ningún partido</p>
-        </div>
-      )}
+        {!error && matches !== null && matches.length === 0 && (
+          <div className="text-center py-10 opacity-70">
+            <p className="font-poster text-lg mb-1">Todavía no jugaste ningún partido</p>
+          </div>
+        )}
 
-      {!error && matches !== null && matches.length > 0 && (
-        <div className="space-y-5">
-          {groupMatchesByDay(matches).map((group) => (
-            <div key={group.matches[0].id} className="space-y-2.5">
-              <p className="text-xs font-bold uppercase tracking-wide opacity-50 pl-1">{group.label}</p>
-              {group.matches.map((m) => (
-                <MatchRow key={m.id} match={m} onSelect={setViewingMatch} />
-              ))}
-            </div>
-          ))}
-        </div>
-      )}
+        {!error && matches !== null && matches.length > 0 && (
+          <div className="space-y-5">
+            {groupMatchesByDay(matches).map((group) => (
+              <div key={group.matches[0].id} className="space-y-2.5">
+                <p className="text-xs font-bold uppercase tracking-wide opacity-50 pl-1">{group.label}</p>
+                {group.matches.map((m) => (
+                  <MatchRow key={m.id} match={m} onSelect={setViewingMatch} />
+                ))}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

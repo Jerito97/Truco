@@ -50,7 +50,7 @@ export function TournamentsListScreen({
   const { tournaments, error } = useTournaments(0)
 
   return (
-    <div className="space-y-5">
+    <div className="screen-fill flex flex-col gap-5">
       <ScreenHeader title="Torneos" onBack={onBack} />
 
       <button
@@ -63,23 +63,25 @@ export function TournamentsListScreen({
         Nuevo torneo
       </button>
 
-      {error && (
-        <p className="text-sm text-center py-4" style={{ color: '#d9695f' }}>
-          No se pudieron cargar los torneos.
-        </p>
-      )}
-      {!error && tournaments === null && <p className="text-center opacity-60 py-6">Cargando...</p>}
-      {!error && tournaments !== null && tournaments.length === 0 && (
-        <p className="text-sm opacity-60 text-center py-4">Todavía no se armó ningún torneo.</p>
-      )}
+      <div className="flex-1 flex flex-col min-h-0" style={{ justifyContent: 'safe center' }}>
+        {error && (
+          <p className="text-sm text-center py-4" style={{ color: '#d9695f' }}>
+            No se pudieron cargar los torneos.
+          </p>
+        )}
+        {!error && tournaments === null && <p className="text-center opacity-60 py-6">Cargando...</p>}
+        {!error && tournaments !== null && tournaments.length === 0 && (
+          <p className="text-sm opacity-60 text-center py-4">Todavía no se armó ningún torneo.</p>
+        )}
 
-      {!error && tournaments !== null && tournaments.length > 0 && (
-        <div className="space-y-2.5">
-          {tournaments.map((t) => (
-            <TournamentRow key={t.id} tournament={t} onSelect={onOpen} />
-          ))}
-        </div>
-      )}
+        {!error && tournaments !== null && tournaments.length > 0 && (
+          <div className="space-y-2.5">
+            {tournaments.map((t) => (
+              <TournamentRow key={t.id} tournament={t} onSelect={onOpen} />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

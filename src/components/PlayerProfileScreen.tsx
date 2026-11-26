@@ -26,33 +26,35 @@ export function PlayerProfileScreen({ player, onBack }: { player: User; onBack: 
     ).length ?? 0
 
   return (
-    <div className="space-y-6">
+    <div className="screen-fill flex flex-col">
       <ScreenHeader title={player.name} onBack={onBack} />
 
-      <div className="text-center">
-        <div
-          className="w-20 h-20 rounded-full mx-auto flex items-center justify-center border"
-          style={{ borderColor: 'var(--color-ember-600)' }}
-        >
-          <PersonIcon className="w-9 h-9" style={{ color: 'var(--color-ember-500)' }} />
+      <div className="flex-1 flex flex-col justify-center gap-6 min-h-0">
+        <div className="text-center">
+          <div
+            className="w-20 h-20 rounded-full mx-auto flex items-center justify-center border"
+            style={{ borderColor: 'var(--color-ember-600)' }}
+          >
+            <PersonIcon className="w-9 h-9" style={{ color: 'var(--color-ember-500)' }} />
+          </div>
         </div>
-      </div>
 
-      {matches === null ? (
-        <p className="text-center opacity-60 py-6">Cargando...</p>
-      ) : played === 0 ? (
-        <p className="text-sm opacity-60 text-center py-6">Todavía no jugó ningún partido.</p>
-      ) : (
-        <PlayerStatBlocks
-          played={played}
-          won={won}
-          streaks={streaks}
-          picaPicaMatchRecord={picaPicaMatchRecord}
-          picaPicaDuels={picaPicaDuels}
-          rivalStats={rivalStats}
-          pronoun="other"
-        />
-      )}
+        {matches === null ? (
+          <p className="text-center opacity-60 py-6">Cargando...</p>
+        ) : played === 0 ? (
+          <p className="text-sm opacity-60 text-center py-6">Todavía no jugó ningún partido.</p>
+        ) : (
+          <PlayerStatBlocks
+            played={played}
+            won={won}
+            streaks={streaks}
+            picaPicaMatchRecord={picaPicaMatchRecord}
+            picaPicaDuels={picaPicaDuels}
+            rivalStats={rivalStats}
+            pronoun="other"
+          />
+        )}
+      </div>
     </div>
   )
 }

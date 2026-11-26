@@ -55,9 +55,10 @@ export function ProfileTab({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="screen-fill flex flex-col">
       <ScreenHeader title="Mi perfil" />
 
+      <div className="flex-1 flex flex-col justify-center gap-6 min-h-0">
       <div className="text-center">
         <div
           className="w-20 h-20 rounded-full mx-auto mb-3 flex items-center justify-center border"
@@ -102,6 +103,7 @@ export function ProfileTab({
         rivalStats={rivalStats}
         pronoun="self"
       />
+      </div>
     </div>
   )
 }
