@@ -4,6 +4,7 @@ import { formatDate } from '../lib/formatDate'
 import { ConfirmDialog, DialogButtons, Overlay } from './Dialog'
 import { useScrollToTop } from '../state/useScrollToTop'
 import { ScreenHeader } from './ScreenHeader'
+import { ChatIcon } from './icons'
 
 interface AdminUser {
   id: string
@@ -595,13 +596,33 @@ function MatchesPanel({ currentUser }: { currentUser: User }) {
   )
 }
 
-export function AdminScreen({ currentUser, onBack }: { currentUser: User; onBack: () => void }) {
+export function AdminScreen({
+  currentUser,
+  onBack,
+  onOpenKak,
+}: {
+  currentUser: User
+  onBack: () => void
+  onOpenKak?: () => void
+}) {
   useScrollToTop()
   const [section, setSection] = useState<'users' | 'matches'>('users')
 
   return (
     <div className="space-y-4">
       <ScreenHeader title="Administrar" onBack={onBack} />
+
+      {onOpenKak && (
+        <button
+          type="button"
+          onClick={onOpenKak}
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border font-bold text-sm"
+          style={{ borderColor: 'var(--color-ember-600)', color: 'var(--color-ember-500)' }}
+        >
+          <ChatIcon className="w-4 h-4" />
+          Probar Kak
+        </button>
+      )}
 
       <div className="grid grid-cols-2 gap-2">
         <button

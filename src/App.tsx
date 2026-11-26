@@ -141,6 +141,7 @@ function App() {
                 onLogout={logout}
                 onUnlockAdmin={unlockAdmin}
                 onOpenTournaments={() => setTournamentRoute({ screen: 'list' })}
+                onOpenKak={() => setKakOpen(true)}
               />
             )}
             {tab === 'perfil' && <ProfileTab user={user} onRenameSelf={renameSelf} />}

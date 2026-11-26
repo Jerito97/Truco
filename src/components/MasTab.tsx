@@ -139,11 +139,13 @@ export function MasTab({
   onLogout,
   onUnlockAdmin,
   onOpenTournaments,
+  onOpenKak,
 }: {
   user: User
   onLogout: () => void
   onUnlockAdmin: (code: string) => Promise<string | null>
   onOpenTournaments?: () => void
+  onOpenKak?: () => void
 }) {
   const [view, setView] = useState<'menu' | 'unlock' | 'admin' | 'stats' | 'ranking' | 'players' | 'matches'>('menu')
   const [confirmingLogout, setConfirmingLogout] = useState(false)
@@ -192,7 +194,7 @@ export function MasTab({
   }
 
   if (view === 'admin') {
-    return <AdminScreen currentUser={user} onBack={() => setView('menu')} />
+    return <AdminScreen currentUser={user} onBack={() => setView('menu')} onOpenKak={onOpenKak} />
   }
 
   if (view === 'stats') {
