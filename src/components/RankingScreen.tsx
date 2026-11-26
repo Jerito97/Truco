@@ -66,7 +66,7 @@ export function RankingScreen({ currentUser, onBack }: { currentUser: User; onBa
   }
 
   return (
-    <div className="space-y-4">
+    <div className="screen-fill flex flex-col gap-4">
       <ScreenHeader title="Ranking general" onBack={onBack} />
 
       <div className="grid grid-cols-2 gap-2">
@@ -86,35 +86,36 @@ export function RankingScreen({ currentUser, onBack }: { currentUser: User; onBa
         ))}
       </div>
 
-      {error && (
-        <p className="text-sm text-center py-4" style={{ color: '#d9695f' }}>
-          No se pudo cargar el ranking.
-        </p>
-      )}
-      {!error && sortedRows === null && <p className="text-center opacity-60 py-6">Cargando...</p>}
-      {!error && sortedRows !== null && sortedRows.length === 0 && (
-        <p className="text-sm opacity-60 text-center py-4">Todavía no hay partidos jugados.</p>
-      )}
+      <div className="flex-1 flex flex-col gap-4 min-h-0" style={{ justifyContent: 'safe center' }}>
+        {error && (
+          <p className="text-sm text-center py-4" style={{ color: '#d9695f' }}>
+            No se pudo cargar el ranking.
+          </p>
+        )}
+        {!error && sortedRows === null && <p className="text-center opacity-60 py-6">Cargando...</p>}
+        {!error && sortedRows !== null && sortedRows.length === 0 && (
+          <p className="text-sm opacity-60 text-center py-4">Todavía no hay partidos jugados.</p>
+        )}
 
-      {myIndex !== -1 && sortedRows && (
-        <button
-          type="button"
-          onClick={goToMyRow}
-          className="w-full rounded-xl border px-4 py-2.5 flex items-center justify-between"
-          style={{ borderColor: 'var(--color-ember-600)', backgroundColor: 'rgba(203, 170, 106, 0.08)' }}
-        >
-          <span className="text-sm font-bold" style={{ color: 'var(--color-paper-50)' }}>
-            Tu posición: #{myIndex + 1}
-          </span>
-          <span className="font-num text-sm font-bold" style={{ color: 'var(--color-ember-500)' }}>
-            {Math.round((sortedRows[myIndex].won / sortedRows[myIndex].played) * 100)}%
-          </span>
-        </button>
-      )}
+        {myIndex !== -1 && sortedRows && (
+          <button
+            type="button"
+            onClick={goToMyRow}
+            className="w-full rounded-xl border px-4 py-2.5 flex items-center justify-between"
+            style={{ borderColor: 'var(--color-ember-600)', backgroundColor: 'rgba(203, 170, 106, 0.08)' }}
+          >
+            <span className="text-sm font-bold" style={{ color: 'var(--color-paper-50)' }}>
+              Tu posición: #{myIndex + 1}
+            </span>
+            <span className="font-num text-sm font-bold" style={{ color: 'var(--color-ember-500)' }}>
+              {Math.round((sortedRows[myIndex].won / sortedRows[myIndex].played) * 100)}%
+            </span>
+          </button>
+        )}
 
-      {!error && sortedRows !== null && sortedRows.length > 0 && (
-        <div className="divide-y" style={{ borderColor: 'rgba(203, 170, 106, 0.15)' }}>
-          {sortedRows.map((r, i) => {
+        {!error && sortedRows !== null && sortedRows.length > 0 && (
+          <div className="divide-y" style={{ borderColor: 'rgba(203, 170, 106, 0.15)' }}>
+            {sortedRows.map((r, i) => {
             const pct = Math.round((r.won / r.played) * 100)
             const isMe = r.id === currentUser.id
             const highlight =
@@ -154,8 +155,9 @@ export function RankingScreen({ currentUser, onBack }: { currentUser: User; onBa
               </div>
             )
           })}
-        </div>
-      )}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

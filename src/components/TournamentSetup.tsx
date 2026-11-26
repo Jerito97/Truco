@@ -118,9 +118,10 @@ export function TournamentSetup({
   }
 
   return (
-    <div className="space-y-5 pb-6">
+    <div className="screen-fill flex flex-col pb-6">
       <ScreenHeader title="Armar torneo" onBack={onBack} />
 
+      <div className="flex-1 flex flex-col gap-5 min-h-0 pt-5" style={{ justifyContent: 'safe center' }}>
       <input
         value={name}
         onChange={(e) => setName(e.target.value)}
@@ -243,6 +244,7 @@ export function TournamentSetup({
       >
         {creating ? 'Creando...' : 'Crear torneo'}
       </button>
+      </div>
     </div>
   )
 }

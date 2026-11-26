@@ -39,10 +39,13 @@ export function KakChat({ onBack }: { onBack: () => void }) {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="screen-fill flex flex-col gap-5">
       <ScreenHeader title="Kak" onBack={onBack} />
 
-      <div className="space-y-3">
+      {/* "justify-end" en vez de centrar: en un chat los mensajes se leen
+          pegados a la barra de escribir (como en cualquier app de
+          mensajes), no flotando en la mitad de la pantalla. */}
+      <div className="flex-1 flex flex-col justify-end gap-3 min-h-0">
         {messages.length === 0 && (
           <Bubble role="kak" content="Dale, pegame la duda. ¿Qué querés saber del truco?" />
         )}

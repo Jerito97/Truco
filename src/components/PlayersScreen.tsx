@@ -34,46 +34,48 @@ export function PlayersScreen({ currentUser, onBack }: { currentUser: User; onBa
   }
 
   return (
-    <div className="space-y-4">
+    <div className="screen-fill flex flex-col gap-4">
       <ScreenHeader title="Jugadores" onBack={onBack} />
 
-      {error && (
-        <p className="text-sm text-center py-4" style={{ color: '#d9695f' }}>
-          No se pudo cargar la lista de jugadores.
-        </p>
-      )}
-      {!error && players === null && <p className="text-center opacity-60 py-6">Cargando...</p>}
-      {!error && players && players.length === 0 && (
-        <p className="text-center opacity-60 py-6">Todavía no hay nadie registrado.</p>
-      )}
-      {!error && players && players.length > 0 && (
-        <div className="divide-y" style={{ borderColor: 'rgba(203, 170, 106, 0.15)' }}>
-          {players.map((p) => (
-            <button
-              key={p.id}
-              type="button"
-              onClick={() => setSelected(p)}
-              className="w-full flex items-center gap-3 py-3 text-left"
-            >
-              <div
-                className="w-10 h-10 rounded-full border flex items-center justify-center font-bold text-sm shrink-0"
-                style={{ borderColor: 'var(--color-ember-500)', color: 'var(--color-ember-500)' }}
+      <div className="flex-1 flex flex-col min-h-0" style={{ justifyContent: 'safe center' }}>
+        {error && (
+          <p className="text-sm text-center py-4" style={{ color: '#d9695f' }}>
+            No se pudo cargar la lista de jugadores.
+          </p>
+        )}
+        {!error && players === null && <p className="text-center opacity-60 py-6">Cargando...</p>}
+        {!error && players && players.length === 0 && (
+          <p className="text-center opacity-60 py-6">Todavía no hay nadie registrado.</p>
+        )}
+        {!error && players && players.length > 0 && (
+          <div className="divide-y" style={{ borderColor: 'rgba(203, 170, 106, 0.15)' }}>
+            {players.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => setSelected(p)}
+                className="w-full flex items-center gap-3 py-3 text-left"
               >
-                {initials(p.name)}
-              </div>
-              <span
-                className="flex-1 font-bold truncate"
-                style={{ color: p.id === currentUser.id ? 'var(--color-ember-500)' : 'var(--color-paper-100)' }}
-              >
-                {p.name}
-                {p.id === currentUser.id && <span className="ml-2 text-xs opacity-50">(vos)</span>}
-              </span>
-              {p.tier != null && <TierTag tier={p.tier} />}
-              <ChevronRightIcon className="w-4 h-4 opacity-40 shrink-0" style={{ color: 'var(--color-paper-100)' }} />
-            </button>
-          ))}
-        </div>
-      )}
+                <div
+                  className="w-10 h-10 rounded-full border flex items-center justify-center font-bold text-sm shrink-0"
+                  style={{ borderColor: 'var(--color-ember-500)', color: 'var(--color-ember-500)' }}
+                >
+                  {initials(p.name)}
+                </div>
+                <span
+                  className="flex-1 font-bold truncate"
+                  style={{ color: p.id === currentUser.id ? 'var(--color-ember-500)' : 'var(--color-paper-100)' }}
+                >
+                  {p.name}
+                  {p.id === currentUser.id && <span className="ml-2 text-xs opacity-50">(vos)</span>}
+                </span>
+                {p.tier != null && <TierTag tier={p.tier} />}
+                <ChevronRightIcon className="w-4 h-4 opacity-40 shrink-0" style={{ color: 'var(--color-paper-100)' }} />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

@@ -220,7 +220,7 @@ export function HistorialTab({ user, refreshKey }: { user: User; refreshKey: num
   }
 
   return (
-    <div className="space-y-4">
+    <div className="screen-fill flex flex-col gap-4">
       <ScreenHeader
         title="Historial"
         action={
@@ -250,44 +250,49 @@ export function HistorialTab({ user, refreshKey }: { user: User; refreshKey: num
         />
       )}
 
-      {error && (
-        <div className="text-center py-10 opacity-70">
-          <p className="font-poster text-lg mb-1">No se pudo cargar el historial</p>
-          <p className="text-sm">Revisá la conexión e intentá de nuevo más tarde.</p>
-        </div>
-      )}
+      {/* "safe center" en vez de "center": centra el resultado cuando es
+          corto (cargando, vacío, error) pero no corta la lista de arriba
+          cuando hay muchos partidos y ya no entra en una pantalla. */}
+      <div className="flex-1 flex flex-col min-h-0" style={{ justifyContent: 'safe center' }}>
+        {error && (
+          <div className="text-center py-10 opacity-70">
+            <p className="font-poster text-lg mb-1">No se pudo cargar el historial</p>
+            <p className="text-sm">Revisá la conexión e intentá de nuevo más tarde.</p>
+          </div>
+        )}
 
-      {!error && matches === null && <div className="text-center py-10 opacity-60">Cargando...</div>}
+        {!error && matches === null && <div className="text-center py-10 opacity-60">Cargando...</div>}
 
-      {!error && matches !== null && matches.length === 0 && (
-        <div className="text-center py-10 opacity-70">
-          {against && filter ? (
-            <p className="font-poster text-lg mb-1">
-              {filter.name} y {against.name} todavía no jugaron uno contra el otro
-            </p>
-          ) : filter ? (
-            <p className="font-poster text-lg mb-1">{filter.name} todavía no jugó ningún partido</p>
-          ) : (
-            <>
-              <p className="font-poster text-lg mb-1">Todavía no hay partidos jugados</p>
-              <p className="text-sm">Cuando termine un partido, va a aparecer acá.</p>
-            </>
-          )}
-        </div>
-      )}
+        {!error && matches !== null && matches.length === 0 && (
+          <div className="text-center py-10 opacity-70">
+            {against && filter ? (
+              <p className="font-poster text-lg mb-1">
+                {filter.name} y {against.name} todavía no jugaron uno contra el otro
+              </p>
+            ) : filter ? (
+              <p className="font-poster text-lg mb-1">{filter.name} todavía no jugó ningún partido</p>
+            ) : (
+              <>
+                <p className="font-poster text-lg mb-1">Todavía no hay partidos jugados</p>
+                <p className="text-sm">Cuando termine un partido, va a aparecer acá.</p>
+              </>
+            )}
+          </div>
+        )}
 
-      {!error && matches !== null && matches.length > 0 && (
-        <div className="space-y-5">
-          {groupMatchesByDay(matches).map((group) => (
-            <div key={group.matches[0].id} className="space-y-2.5">
-              <p className="text-xs font-bold uppercase tracking-wide opacity-50 pl-1">{group.label}</p>
-              {group.matches.map((m) => (
-                <MatchRow key={m.id} match={m} onSelect={setViewingMatch} />
-              ))}
-            </div>
-          ))}
-        </div>
-      )}
+        {!error && matches !== null && matches.length > 0 && (
+          <div className="space-y-5">
+            {groupMatchesByDay(matches).map((group) => (
+              <div key={group.matches[0].id} className="space-y-2.5">
+                <p className="text-xs font-bold uppercase tracking-wide opacity-50 pl-1">{group.label}</p>
+                {group.matches.map((m) => (
+                  <MatchRow key={m.id} match={m} onSelect={setViewingMatch} />
+                ))}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

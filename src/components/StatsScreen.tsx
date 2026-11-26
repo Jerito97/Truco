@@ -68,7 +68,7 @@ export function sortPairStats(stats: PairStat[], mode: SortMode): PairStat[] {
 
 function PairStatsList({ stats, mode, emptyText }: { stats: PairStat[] | null; mode: SortMode; emptyText: string }) {
   if (stats === null) return <p className="text-center opacity-60 py-6">Cargando...</p>
-  if (stats.length === 0) return <p className="text-sm opacity-60 py-4">{emptyText}</p>
+  if (stats.length === 0) return <p className="text-sm opacity-60 py-4 text-center">{emptyText}</p>
 
   const sorted = sortPairStats(stats, mode)
 
@@ -114,7 +114,7 @@ export function StatsScreen({
   const opponents = matches ? computePairStats(matches, user.id, 'opponent') : null
 
   return (
-    <div className="space-y-6">
+    <div className="screen-fill flex flex-col gap-6">
       <ScreenHeader title="Estadísticas" onBack={onBack} />
 
       <div className="grid grid-cols-2 gap-2">
@@ -151,25 +151,25 @@ export function StatsScreen({
         ))}
       </div>
 
-      {section === 'companeros' ? (
-        <div className="space-y-3">
-          <h3 className="font-poster text-lg" style={{ color: 'var(--color-ember-500)' }}>
-            Con cada compañero
-          </h3>
-          <PairStatsList
-            stats={teammates}
-            mode={sortMode}
-            emptyText="Todavía no jugaste en equipo con nadie registrado."
-          />
+      <div className="flex-1 flex flex-col min-h-0 gap-3">
+        <h3 className="font-poster text-lg" style={{ color: 'var(--color-ember-500)' }}>
+          {section === 'companeros' ? 'Con cada compañero' : 'Contra cada jugador'}
+        </h3>
+        {/* "safe center" para que el texto de vacío/cargando quede centrado
+            en el espacio que sobra, sin cortar la lista de arriba cuando hay
+            muchos jugadores y ya no entra en una pantalla. */}
+        <div className="flex-1 flex flex-col min-h-0" style={{ justifyContent: 'safe center' }}>
+          {section === 'companeros' ? (
+            <PairStatsList
+              stats={teammates}
+              mode={sortMode}
+              emptyText="Todavía no jugaste en equipo con nadie registrado."
+            />
+          ) : (
+            <PairStatsList stats={opponents} mode={sortMode} emptyText="Todavía no jugaste contra nadie registrado." />
+          )}
         </div>
-      ) : (
-        <div className="space-y-3">
-          <h3 className="font-poster text-lg" style={{ color: 'var(--color-ember-500)' }}>
-            Contra cada jugador
-          </h3>
-          <PairStatsList stats={opponents} mode={sortMode} emptyText="Todavía no jugaste contra nadie registrado." />
-        </div>
-      )}
+      </div>
     </div>
   )
 }
