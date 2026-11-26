@@ -118,25 +118,10 @@ export function computeRivalStats(matches: FinishedMatch[], userId: string) {
   return { best, worst }
 }
 
-export function StatBlock({
-  value,
-  label,
-  valueColor,
-  large,
-}: {
-  value: ReactNode
-  label: string
-  valueColor?: string
-  // El porcentaje de victorias es el dato que más importa de un vistazo: va
-  // más grande que sus vecinos de la misma tarjeta, no solo del mismo color.
-  large?: boolean
-}) {
+export function StatBlock({ value, label, valueColor }: { value: ReactNode; label: string; valueColor?: string }) {
   return (
     <div className="flex-1 text-center">
-      <div
-        className={`font-num font-bold ${large ? 'text-4xl' : 'text-2xl'}`}
-        style={{ color: valueColor ?? 'var(--color-paper-50)' }}
-      >
+      <div className="font-num text-2xl font-bold" style={{ color: valueColor ?? 'var(--color-paper-50)' }}>
         {value}
       </div>
       <div className="text-[11px] opacity-60 mt-0.5">{label}</div>
@@ -211,7 +196,7 @@ export function PlayerStatBlocks({
         <div className="w-px" style={dividerStyle} />
         <StatBlock value={String(won)} label="Partidos ganados" />
         <div className="w-px" style={dividerStyle} />
-        <StatBlock value={`${pct}%`} label="Porcentaje de victorias" valueColor="var(--color-ember-500)" large />
+        <StatBlock value={`${pct}%`} label="% victorias" valueColor="var(--color-ember-500)" />
       </div>
 
       {/* Rachas: dos tarjetas chicas lado a lado (no una sola dividida),
@@ -248,7 +233,7 @@ export function PlayerStatBlocks({
         >
           <div className="flex items-center justify-between">
             <span className="font-poster text-lg" style={{ color: 'var(--color-paper-50)' }}>
-              Pica-pica
+              Pica-Pica
             </span>
             <span className="flex items-center gap-1 text-xs font-bold" style={{ color: 'var(--color-ember-500)' }}>
               {picaPicaExpanded ? 'Ocultar duelos' : 'Ver duelos'}
@@ -259,7 +244,7 @@ export function PlayerStatBlocks({
           </div>
 
           <div className="flex pt-1" style={{ borderTop: '1px solid rgba(203, 170, 106, 0.15)' }}>
-            <StatBlock value={String(picaPicaMatchRecord.won)} label="Pica-pica ganados" valueColor="var(--color-ember-500)" />
+            <StatBlock value={String(picaPicaMatchRecord.won)} label="Ganados" valueColor="var(--color-ember-500)" />
             <div className="w-px" style={dividerStyle} />
             <StatBlock value={String(picaPicaMatchRecord.drawn)} label="Empatados" />
             <div className="w-px" style={dividerStyle} />
