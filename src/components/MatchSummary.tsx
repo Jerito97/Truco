@@ -37,7 +37,7 @@ export function MatchSummary({
   }
 
   return (
-    <div className="space-y-5">
+    <div className="screen-fill-no-header flex flex-col justify-center gap-5">
       <MatchResultCard
         eyebrow="Partido finalizado"
         teamAName={match.teamAName}
