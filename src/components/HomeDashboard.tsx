@@ -27,9 +27,9 @@ export function HomeDashboard({
     // Espaciadores 4/3/3 en vez de centrar todo junto: así el logo queda un
     // poco arriba del centro y los botones un poco más abajo, como se pidió.
     <div className="screen-fill-no-header flex flex-col items-center">
-      <div className="flex-[4]" />
-      <img src="/wordmark.webp" alt="Osobuco" className="w-80" />
-      <div className="flex-[3]" />
+      <div className="flex-[2]" />
+      <img src="/home-hero.webp" alt="Osobuco — Envido, Truco" className="w-64" />
+      <div className="flex-[2]" />
       <div className="w-full space-y-3">
         <button
           type="button"
