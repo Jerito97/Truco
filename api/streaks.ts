@@ -8,8 +8,12 @@ import { buildGroqRequestBody, extractGroqReplyText, isValidChatMessages, type C
 // El de arriba es el que se usa primero; si está saturado o rate-limiteado
 // (429) se prueba con el siguiente en vez de insistir con el mismo que ya
 // dijo que no — cambiar de modelo tiene más chances de funcionar que
-// repetirle la pregunta al mismo que está colapsado.
-const GROQ_MODELS = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant']
+// repetirle la pregunta al mismo que está colapsado. Groq va dando de baja
+// modelos bastante seguido (llama-3.3-70b-versatile y llama-3.1-8b-instant,
+// los que se usaban acá antes, dejaron de existir); si estos vuelven a tirar
+// 404 de "modelo no encontrado", hay que revisar la lista vigente en
+// https://console.groq.com/docs/models.
+const GROQ_MODELS = ['openai/gpt-oss-120b', 'openai/gpt-oss-20b']
 const GROQ_ATTEMPT_TIMEOUT_MS = 4000
 
 // El chat con "Kak" vive en este mismo archivo (en vez de un api/kak.ts
