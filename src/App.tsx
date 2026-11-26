@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useAppState } from './state/useAppState'
 import { useSession } from './state/useSession'
 import { useOnlineStatus } from './state/useOnlineStatus'
@@ -51,8 +51,12 @@ function App() {
 
   // Al cambiar de pestaña el scroll de la anterior quedaba como estaba (por
   // ejemplo, bajar en Historial y después entrar a Perfil arrancaba a mitad
-  // de página en vez de arriba del todo).
-  useEffect(() => {
+  // de página en vez de arriba del todo). useLayoutEffect (no useEffect) para
+  // que el reseteo pase ANTES de que el navegador pinte el frame nuevo: si no,
+  // se alcanza a ver la pestaña nueva un instante en el scroll viejo y recién
+  // ahí salta a 0, y en iOS ese salto programático hace que la TabBar (fixed)
+  // se vea "moverse" en vez de quedar quieta.
+  useLayoutEffect(() => {
     window.scrollTo(0, 0)
   }, [tab])
 
@@ -91,7 +95,10 @@ function App() {
     >
       <UpdateToast />
       {!online && <OfflineBanner />}
-      <main className="max-w-md mx-auto px-4 pt-6">
+      <main
+        className="max-w-md mx-auto px-4"
+        style={{ paddingTop: 'calc(1.5rem + env(safe-area-inset-top, 0px))' }}
+      >
         {kakOpen ? (
           <KakChat onBack={() => setKakOpen(false)} />
         ) : tournamentRoute ? (
