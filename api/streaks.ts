@@ -32,6 +32,11 @@ async function handleKak(req: VercelRequest, res: VercelResponse) {
 
   const body = JSON.stringify(buildGeminiRequestBody(messages as ChatMessage[]))
   let lastStatus: number | null = null
+  // Si ningún modelo responde ok, esto guarda por qué (timeout, DNS, lo que
+  // sea) para poder mostrarlo en el mensaje de error: sin esto, un fallo de
+  // red y un 503 de Gemini se ven exactamente igual desde la app, y no hay
+  // forma de saber cuál es sin meterse a los logs de Vercel.
+  let lastErrorDetail: string | null = null
 
   for (const model of GEMINI_MODELS) {
     try {
@@ -59,8 +64,11 @@ async function handleKak(req: VercelRequest, res: VercelResponse) {
       }
 
       lastStatus = geminiRes.status
-      console.error('Gemini respondió', model, geminiRes.status, await geminiRes.text())
+      const errText = await geminiRes.text()
+      lastErrorDetail = `${model}: HTTP ${geminiRes.status} — ${errText.slice(0, 200)}`
+      console.error('Gemini respondió', model, geminiRes.status, errText)
     } catch (err) {
+      lastErrorDetail = `${model}: ${err instanceof Error ? `${err.name} — ${err.message}` : 'error desconocido'}`
       console.error('kak chat failed', model, err)
     }
   }
@@ -69,7 +77,7 @@ async function handleKak(req: VercelRequest, res: VercelResponse) {
     error:
       lastStatus === 503
         ? 'Kak está saturado en este momento (mucha demanda en el modelo). Probá de nuevo en un ratito.'
-        : 'No se pudo conectar con Kak ahora. Probá de nuevo en un rato.',
+        : `No se pudo conectar con Kak ahora. Probá de nuevo en un rato. (${lastErrorDetail ?? 'sin detalle'})`,
   })
 }
 
