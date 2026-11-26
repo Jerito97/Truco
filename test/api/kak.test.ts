@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import {
   KAK_MAX_MESSAGES,
-  buildGeminiRequestBody,
-  extractReplyText,
+  buildGroqRequestBody,
+  extractGroqReplyText,
   isValidChatMessages,
-  toGeminiContents,
+  toGroqMessages,
 } from '../../api/_lib/kak.js'
 
 describe('isValidChatMessages', () => {
@@ -44,59 +44,51 @@ describe('isValidChatMessages', () => {
   })
 })
 
-describe('toGeminiContents', () => {
-  it('mapea "kak" a "model" (así lo llama Gemini) y deja "user" igual', () => {
-    const contents = toGeminiContents([
+describe('toGroqMessages', () => {
+  it('mapea "kak" a "assistant" (así lo llama Groq/OpenAI) y deja "user" igual', () => {
+    const messages = toGroqMessages([
       { role: 'user', content: 'hola' },
       { role: 'kak', content: 'qué onda' },
     ])
-    expect(contents).toEqual([
-      { role: 'user', parts: [{ text: 'hola' }] },
-      { role: 'model', parts: [{ text: 'qué onda' }] },
+    expect(messages).toEqual([
+      { role: 'user', content: 'hola' },
+      { role: 'assistant', content: 'qué onda' },
     ])
   })
 })
 
-describe('buildGeminiRequestBody', () => {
-  it('incluye el system prompt y los contenidos mapeados', () => {
-    const body = buildGeminiRequestBody([{ role: 'user', content: 'hola' }])
-    expect(body.system_instruction.parts[0].text).toContain('Kak')
-    expect(body.contents).toEqual([{ role: 'user', parts: [{ text: 'hola' }] }])
+describe('buildGroqRequestBody', () => {
+  it('incluye el modelo, el system prompt primero y los mensajes mapeados', () => {
+    const body = buildGroqRequestBody([{ role: 'user', content: 'hola' }], 'llama-3.3-70b-versatile')
+    expect(body.model).toBe('llama-3.3-70b-versatile')
+    expect(body.messages[0].role).toBe('system')
+    expect(body.messages[0].content).toContain('Kak')
+    expect(body.messages[1]).toEqual({ role: 'user', content: 'hola' })
   })
 
-  it('apaga el "pensamiento" extendido y pone un tope de largo a la respuesta', () => {
-    const body = buildGeminiRequestBody([{ role: 'user', content: 'hola' }])
-    expect(body.generationConfig.thinkingConfig.thinkingBudget).toBe(0)
-    expect(body.generationConfig.maxOutputTokens).toBeGreaterThan(0)
+  it('pone un tope de largo a la respuesta', () => {
+    const body = buildGroqRequestBody([{ role: 'user', content: 'hola' }], 'llama-3.3-70b-versatile')
+    expect(body.max_tokens).toBeGreaterThan(0)
   })
 })
 
-describe('extractReplyText', () => {
+describe('extractGroqReplyText', () => {
   it('extrae el texto de una respuesta con la forma esperada', () => {
-    const response = { candidates: [{ content: { parts: [{ text: 'así se juega' }] } }] }
-    expect(extractReplyText(response)).toBe('así se juega')
+    const response = { choices: [{ message: { content: 'así se juega' } }] }
+    expect(extractGroqReplyText(response)).toBe('así se juega')
   })
 
-  it('devuelve null si no hay candidatos (por ejemplo, bloqueado por el filtro de seguridad)', () => {
-    expect(extractReplyText({ candidates: [] })).toBeNull()
+  it('devuelve null si no hay choices', () => {
+    expect(extractGroqReplyText({ choices: [] })).toBeNull()
   })
 
   it('devuelve null ante cualquier forma inesperada en vez de tirar una excepción', () => {
-    expect(extractReplyText(null)).toBeNull()
-    expect(extractReplyText({})).toBeNull()
-    expect(extractReplyText({ candidates: [{}] })).toBeNull()
+    expect(extractGroqReplyText(null)).toBeNull()
+    expect(extractGroqReplyText({})).toBeNull()
+    expect(extractGroqReplyText({ choices: [{}] })).toBeNull()
   })
 
   it('devuelve null si el texto viene vacío', () => {
-    expect(extractReplyText({ candidates: [{ content: { parts: [{ text: '   ' }] } }] })).toBeNull()
-  })
-
-  it('se salta las partes de "pensamiento" (thought: true) y agarra la respuesta real', () => {
-    const response = {
-      candidates: [
-        { content: { parts: [{ text: 'pensando en voz alta...', thought: true }, { text: 'la respuesta posta' }] } },
-      ],
-    }
-    expect(extractReplyText(response)).toBe('la respuesta posta')
+    expect(extractGroqReplyText({ choices: [{ message: { content: '   ' } }] })).toBeNull()
   })
 })
