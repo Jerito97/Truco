@@ -118,10 +118,25 @@ export function computeRivalStats(matches: FinishedMatch[], userId: string) {
   return { best, worst }
 }
 
-export function StatBlock({ value, label, valueColor }: { value: ReactNode; label: string; valueColor?: string }) {
+export function StatBlock({
+  value,
+  label,
+  valueColor,
+  large,
+}: {
+  value: ReactNode
+  label: string
+  valueColor?: string
+  // El porcentaje de victorias es el dato que más importa de un vistazo: va
+  // más grande que sus vecinos de la misma tarjeta, no solo del mismo color.
+  large?: boolean
+}) {
   return (
     <div className="flex-1 text-center">
-      <div className="font-num text-2xl font-bold" style={{ color: valueColor ?? 'var(--color-paper-50)' }}>
+      <div
+        className={`font-num font-bold ${large ? 'text-4xl' : 'text-2xl'}`}
+        style={{ color: valueColor ?? 'var(--color-paper-50)' }}
+      >
         {value}
       </div>
       <div className="text-[11px] opacity-60 mt-0.5">{label}</div>
@@ -142,20 +157,6 @@ export const TIER_STYLE: Record<1 | 2 | 3, { label: string; color: string; borde
   1: { label: 'Tier 1', color: 'var(--color-ember-500)', border: 'var(--color-ember-600)' },
   2: { label: 'Tier 2', color: 'var(--color-paper-100)', border: 'var(--color-wood-600)' },
   3: { label: 'Tier 3', color: 'var(--color-paper-100)', border: 'var(--color-wood-700)' },
-}
-
-function TierBadge({ tier }: { tier: 1 | 2 | 3 }) {
-  const s = TIER_STYLE[tier]
-  return (
-    <div className="flex justify-center">
-      <span
-        className="px-3 py-1 rounded-full border text-xs font-bold uppercase tracking-wide"
-        style={{ color: s.color, borderColor: s.border, opacity: tier === 3 ? 0.7 : 1 }}
-      >
-        {s.label}
-      </span>
-    </div>
-  )
 }
 
 // Versión chica para meter en una fila de lista (PlayersScreen, TeamPicker):
@@ -201,34 +202,40 @@ export function PlayerStatBlocks({
   const worstLabel = pronoun === 'self' ? 'Rival contra el que más perdiste' : 'Rival contra el que más perdió'
 
   return (
-    <div className="space-y-5">
-      {streaks?.tier != null && <TierBadge tier={streaks.tier} />}
-
-      <div className="flex rounded-2xl border py-4" style={blockStyle}>
+    <div className="space-y-4">
+      {/* Hero: la única tarjeta grande, con el % de victorias destacado por
+          encima de los otros dos números (mismo dato, pero es el que más
+          importa de un vistazo). */}
+      <div className="flex rounded-2xl border py-5" style={blockStyle}>
         <StatBlock value={String(played)} label="Partidos jugados" />
         <div className="w-px" style={dividerStyle} />
         <StatBlock value={String(won)} label="Partidos ganados" />
         <div className="w-px" style={dividerStyle} />
-        <StatBlock value={`${pct}%`} label="Porcentaje de victorias" />
+        <StatBlock value={`${pct}%`} label="Porcentaje de victorias" valueColor="var(--color-ember-500)" large />
       </div>
 
+      {/* Rachas: dos tarjetas chicas lado a lado (no una sola dividida),
+          para que no compitan en tamaño con la hero de arriba. */}
       {streaks && played > 0 && (
-        <div className="flex rounded-2xl border py-4" style={blockStyle}>
-          <StatBlock
-            value={
-              streaks.current > 0 ? (
-                <span className="inline-flex items-center gap-1">
-                  {streaks.current}
-                  <FlameIcon className="w-5 h-5" style={{ color: 'var(--color-ember-500)' }} />
-                </span>
-              ) : (
-                '0'
-              )
-            }
-            label="Racha actual"
-          />
-          <div className="w-px" style={dividerStyle} />
-          <StatBlock value={String(streaks.best)} label="Mejor racha" />
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-xl border py-3" style={blockStyle}>
+            <StatBlock
+              value={
+                streaks.current > 0 ? (
+                  <span className="inline-flex items-center gap-1">
+                    {streaks.current}
+                    <FlameIcon className="w-5 h-5" style={{ color: 'var(--color-ember-500)' }} />
+                  </span>
+                ) : (
+                  '0'
+                )
+              }
+              label="Racha actual"
+            />
+          </div>
+          <div className="rounded-xl border py-3" style={blockStyle}>
+            <StatBlock value={String(streaks.best)} label="Mejor racha" />
+          </div>
         </div>
       )}
 
@@ -239,19 +246,24 @@ export function PlayerStatBlocks({
           className="w-full rounded-2xl border p-4 space-y-3 text-left"
           style={blockStyle}
         >
-          <div className="flex">
+          <div className="flex items-center justify-between">
+            <span className="font-poster text-lg" style={{ color: 'var(--color-paper-50)' }}>
+              Pica-pica
+            </span>
+            <span className="flex items-center gap-1 text-xs font-bold" style={{ color: 'var(--color-ember-500)' }}>
+              {picaPicaExpanded ? 'Ocultar duelos' : 'Ver duelos'}
+              <ChevronRightIcon
+                className={`w-3.5 h-3.5 transition-transform ${picaPicaExpanded ? '-rotate-90' : 'rotate-90'}`}
+              />
+            </span>
+          </div>
+
+          <div className="flex pt-1" style={{ borderTop: '1px solid rgba(203, 170, 106, 0.15)' }}>
             <StatBlock value={String(picaPicaMatchRecord.won)} label="Pica-pica ganados" valueColor="var(--color-ember-500)" />
             <div className="w-px" style={dividerStyle} />
             <StatBlock value={String(picaPicaMatchRecord.drawn)} label="Empatados" />
             <div className="w-px" style={dividerStyle} />
             <StatBlock value={String(picaPicaMatchRecord.lost)} label="Perdidos" valueColor={LOST_COLOR} />
-          </div>
-
-          <div className="flex items-center justify-center gap-1 text-xs font-bold pt-1" style={{ color: 'var(--color-ember-500)' }}>
-            {picaPicaExpanded ? 'Ocultar duelos' : 'Ver duelos'}
-            <ChevronRightIcon
-              className={`w-3.5 h-3.5 transition-transform ${picaPicaExpanded ? '-rotate-90' : 'rotate-90'}`}
-            />
           </div>
 
           {picaPicaExpanded && picaPicaDuels && (

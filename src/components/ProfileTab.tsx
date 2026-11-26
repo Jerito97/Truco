@@ -3,7 +3,7 @@ import type { User } from '../types'
 import { useMatches } from '../state/useMatches'
 import { useStreaks } from '../state/useStreaks'
 import { PencilIcon, PersonIcon } from './icons'
-import { computePicaPicaMatchRecord, computeRivalStats, listPicaPicaDuels, PlayerStatBlocks } from './PlayerStats'
+import { computePicaPicaMatchRecord, computeRivalStats, listPicaPicaDuels, PlayerStatBlocks, TierTag } from './PlayerStats'
 import { ScreenHeader } from './ScreenHeader'
 
 export function ProfileTab({
@@ -59,39 +59,45 @@ export function ProfileTab({
       <ScreenHeader title="Mi perfil" />
 
       <div className="flex-1 flex flex-col justify-center gap-6 min-h-0">
-      <div className="text-center">
+      {/* Fila compacta: avatar + nombre (editable) + tier, todo junto en vez
+          de apilado y centrado — el peso visual va para las tarjetas de
+          estadísticas de abajo. */}
+      <div className="flex items-center gap-3">
         <div
-          className="w-20 h-20 rounded-full mx-auto mb-3 flex items-center justify-center border"
+          className="w-14 h-14 rounded-full flex items-center justify-center border shrink-0"
           style={{ borderColor: 'var(--color-ember-600)' }}
         >
-          <PersonIcon className="w-9 h-9" style={{ color: 'var(--color-ember-500)' }} />
+          <PersonIcon className="w-7 h-7" style={{ color: 'var(--color-ember-500)' }} />
         </div>
-        {editingName ? (
-          <input
-            value={nameDraft}
-            onChange={(e) => setNameDraft(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
-            onBlur={saveEditName}
-            autoFocus
-            maxLength={40}
-            disabled={renaming}
-            className="font-poster text-2xl bg-transparent border-b outline-none text-center disabled:opacity-50"
-            style={{ color: 'var(--color-paper-50)', borderColor: 'var(--color-ember-600)' }}
-          />
-        ) : (
-          <button type="button" onClick={startEditName} className="inline-flex items-center gap-2">
-            <h3 className="font-poster text-2xl" style={{ color: 'var(--color-paper-50)' }}>
-              {user.name}
-            </h3>
-            <PencilIcon className="w-4 h-4 opacity-40" style={{ color: 'var(--color-paper-100)' }} />
-          </button>
-        )}
-        {renameError && (
-          <p className="text-xs mt-1" style={{ color: '#d9695f' }}>
-            {renameError}
-          </p>
-        )}
-        {since && <p className="text-sm opacity-60">Jugando desde {since}</p>}
+        <div className="flex-1 min-w-0">
+          {editingName ? (
+            <input
+              value={nameDraft}
+              onChange={(e) => setNameDraft(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+              onBlur={saveEditName}
+              autoFocus
+              maxLength={40}
+              disabled={renaming}
+              className="font-poster text-xl bg-transparent border-b outline-none w-full disabled:opacity-50"
+              style={{ color: 'var(--color-paper-50)', borderColor: 'var(--color-ember-600)' }}
+            />
+          ) : (
+            <button type="button" onClick={startEditName} className="inline-flex items-center gap-2 max-w-full">
+              <h3 className="font-poster text-xl truncate" style={{ color: 'var(--color-paper-50)' }}>
+                {user.name}
+              </h3>
+              <PencilIcon className="w-4 h-4 opacity-40 shrink-0" style={{ color: 'var(--color-paper-100)' }} />
+            </button>
+          )}
+          {renameError && (
+            <p className="text-xs mt-1" style={{ color: '#d9695f' }}>
+              {renameError}
+            </p>
+          )}
+          {since && <p className="text-xs opacity-60 truncate">Jugando desde {since}</p>}
+        </div>
+        {streaks?.tier != null && <TierTag tier={streaks.tier} />}
       </div>
 
       <PlayerStatBlocks
